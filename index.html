@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SupremeTOTO versi 50</title>
+    <title>SupremeTOTO versi 56</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -43,7 +43,7 @@
                     <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 50</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 56</span>
                     </div>
                 </div>
             </div>
@@ -279,17 +279,54 @@
                             </p>
                         </div>
 
-                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
-                            <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
-                                <i class="ph-fill ph-key text-blue-400 text-lg"></i> Kunci API Gemini
+                        <!-- GEMINI MULTI-API REGISTRY -->
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl mb-4">
+                            <h3 class="text-sm font-bold text-white flex items-center justify-between mb-4 border-b border-slate-700 pb-3">
+                                <span class="flex items-center gap-2">
+                                    <i class="ph-fill ph-key text-purple-400 text-lg"></i> Multi-Engine Gemini
+                                </span>
+                                <span id="active-api-count" class="text-[10px] bg-purple-500/25 text-purple-400 px-2.5 py-0.5 rounded-full font-extrabold border border-purple-500/20">0 Aktif</span>
                             </h3>
-                            <form onsubmit="saveSettings(event)" class="space-y-4">
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-2">Google Gemini API Key</label>
-                                    <input id="input-setting-apikey" placeholder="AIzaSy..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-blue-500 text-white shadow-inner font-mono">
+
+                            <!-- Inline Form: Tambah / Edit Key -->
+                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-750 mb-4 space-y-3">
+                                <span id="gemini-form-title" class="text-[10px] font-black tracking-widest text-purple-400 uppercase block mb-1">Tambah Kunci Baru</span>
+                                <input type="hidden" id="gemini-key-editing-id" value="">
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[8px] text-slate-400 uppercase font-extrabold tracking-wider mb-1">Judul / Pemilik API</label>
+                                        <input id="gemini-key-title" placeholder="cth: Utama, Cadangan, Ardy" class="w-full p-2 rounded-lg bg-slate-950 border border-slate-850 text-xs text-white outline-none focus:border-purple-500 font-bold placeholder:text-slate-600">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[8px] text-slate-400 uppercase font-extrabold tracking-wider mb-1">Google Gemini API Key</label>
+                                        <input id="gemini-key-val" type="password" placeholder="AIzaSy..." class="w-full p-2 rounded-lg bg-slate-950 border border-slate-850 text-xs text-white outline-none focus:border-purple-500 font-mono placeholder:text-slate-600">
+                                    </div>
                                 </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]">SIMPAN KUNCI API</button>
-                            </form>
+                                <div class="flex justify-end gap-2 pt-1">
+                                    <button onclick="cancelGeminiKeyEdit()" id="btn-cancel-gk" class="hidden text-[10px] text-slate-400 hover:text-white uppercase font-bold px-3 py-1.5 transition-colors">Batal</button>
+                                    <button onclick="saveGeminiKey()" id="btn-submit-gk" class="bg-purple-600 hover:bg-purple-550 text-white font-extrabold px-4 py-1.5 rounded-lg text-[10px] uppercase transition-all tracking-wider shadow-md">Simpan</button>
+                                </div>
+                            </div>
+
+                            <!-- List of Registered Keys -->
+                            <div class="space-y-2 mb-4 max-h-[220px] overflow-y-auto pr-1" id="gemini-keys-list-container">
+                                <!-- Will be rendered dynamically -->
+                            </div>
+
+                            <!-- Import/Restore khusus Gemini Keys -->
+                            <div class="border-t border-slate-700/60 pt-4 flex flex-col gap-2">
+                                <label class="block text-[9px] text-slate-400 uppercase font-bold tracking-wider">Spesifik Backup / Restore Kunci Gemini</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="exportGeminiKeys()" class="bg-slate-950 hover:bg-slate-900 border border-slate-850 p-2 rounded-lg font-bold text-slate-300 hover:text-purple-400 text-[9px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all">
+                                        <i class="ph ph-download-simple text-sm"></i> Backup Key
+                                    </button>
+                                    <input type="file" id="import-gk-file" accept=".json" class="hidden" onchange="importGeminiKeys(event)">
+                                    <button onclick="document.getElementById('import-gk-file').click()" class="bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 hover:border-purple-500/40 p-2 rounded-lg font-extrabold text-purple-400 text-[9px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all">
+                                        <i class="ph ph-upload-simple text-sm"></i> Restore Key
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- FITUR BACKUP RESTORE FULL DB -->
