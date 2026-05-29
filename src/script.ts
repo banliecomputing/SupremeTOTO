@@ -724,6 +724,10 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                             <i class="ph-bold ph-broadcast text-emerald-500/50 text-sm ml-1 mr-1"></i>
                             ${livePreviewBtns}
                         </div>
+                        <div class="flex gap-1 bg-slate-900 px-1 py-1 rounded border border-slate-700/50">
+                            <button onclick="movePasaranUp('${p.id}')" class="p-1 md:p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded transition-colors" title="Geser ke Atas"><i class="ph-bold ph-arrow-up"></i></button>
+                            <button onclick="movePasaranDown('${p.id}')" class="p-1 md:p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded transition-colors" title="Geser ke Bawah"><i class="ph-bold ph-arrow-down"></i></button>
+                        </div>
                         <button onclick="previewTableScrape('${p.id}')" class="p-2 md:p-3 text-amber-400 hover:bg-amber-500/20 rounded-lg border border-transparent hover:border-amber-500/30 transition-colors" title="Cek Mapping Tabel Histori"><i class="ph-bold ph-table text-lg"></i></button>
                         <button onclick="editPasaran('${p.id}')" class="p-2 md:p-3 text-blue-400 hover:bg-blue-500/20 rounded-lg border border-transparent hover:border-blue-500/30 transition-colors" title="Edit"><i class="ph-bold ph-pencil text-lg"></i></button>
                         <button onclick="duplicatePasaran('${p.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-transparent hover:border-emerald-500/30 transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button>
@@ -1055,6 +1059,157 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
         if(container) container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-red-400 p-4 text-center"><i class="ph-fill ph-warning-octagon text-6xl mb-3 opacity-80"></i><p class="text-base font-bold uppercase tracking-wider">Gagal</p><p class="text-xs text-slate-500 mt-2 bg-slate-800 p-3 rounded-lg border border-slate-700 max-w-sm">${error.message}</p></div>`;
         if(isSilentPreview) throw error;
     }
+};
+
+(window as any).addPasaran = async (e: any) => {
+    e.preventDefault();
+    if(!(window as any).cloudUserId) return (window as any).showToast("Cloud DB belum siap", true);
+    
+    const btn = document.getElementById('btn-submit-pasaran') as HTMLButtonElement;
+    if(btn) {
+        btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
+        btn.disabled = true;
+    }
+
+    const name = (document.getElementById('input-name') as HTMLInputElement).value;
+    const imageUrl = (document.getElementById('input-image-url') as HTMLInputElement).value;
+    const urlHistory = (document.getElementById('input-url-history') as HTMLInputElement).value;
+    const sheetName = (document.getElementById('input-pasaran-sheetname') as HTMLInputElement).value;
+    const rangeHistory = (document.getElementById('input-pasaran-rangehistory') as HTMLInputElement).value;
+    const mapCols = (document.getElementById('input-pasaran-map-cols') as HTMLInputElement).value;
+    const mapHeaders = (document.getElementById('input-pasaran-map-headers') as HTMLInputElement).value;
+    const autoFill = (document.getElementById('input-pasaran-autofill') as HTMLInputElement).checked;
+    const visible = (document.getElementById('input-visible') as HTMLInputElement).checked;
+    
+    // Validate live draws
+    const validLiveDraws = (window as any).currentLiveDraws.filter((d: any) => d.name && d.urlLive);
+
+    const id = (window as any).editingPasaranId || Date.now().toString();
+    
+    const docData: any = {
+        id, name, imageUrl, urlHistory, sheetName, rangeHistory, 
+        mapCols, mapHeaders, autoFill, visible,
+        liveDraws: validLiveDraws
+    };
+    
+    await setDoc(doc(db, 'pools', id), docData, {merge: true});
+    
+    (window as any).showToast((window as any).editingPasaranId ? "Pasaran Diperbarui!" : "Pasaran Baru ditambahkan!");
+    (window as any).cancelEditPasaran();
+    
+    if(btn) {
+        btn.innerHTML = `SIMPAN KE CLOUD`;
+        btn.disabled = false;
+    }
+};
+
+(window as any).editPasaran = (id: string) => {
+    const p = (window as any).pools.find((x:any) => x.id === id);
+    if(!p) return;
+    
+    (window as any).editingPasaranId = id;
+    (document.getElementById('input-name') as HTMLInputElement).value = p.name || '';
+    (document.getElementById('input-image-url') as HTMLInputElement).value = p.imageUrl || '';
+    (document.getElementById('input-url-history') as HTMLInputElement).value = p.urlHistory || '';
+    (document.getElementById('input-pasaran-sheetname') as HTMLInputElement).value = p.sheetName || '';
+    (document.getElementById('input-pasaran-rangehistory') as HTMLInputElement).value = p.rangeHistory || '';
+    (document.getElementById('input-pasaran-map-cols') as HTMLInputElement).value = p.mapCols || '';
+    (document.getElementById('input-pasaran-map-headers') as HTMLInputElement).value = p.mapHeaders || '';
+    (document.getElementById('input-pasaran-autofill') as HTMLInputElement).checked = !!p.autoFill;
+    (document.getElementById('input-visible') as HTMLInputElement).checked = p.visible !== false;
+    
+    (window as any).currentLiveDraws = p.liveDraws ? JSON.parse(JSON.stringify(p.liveDraws)) : [];
+    (window as any).renderLiveDrawsEditor();
+    
+    document.getElementById('btn-cancel-pasaran')?.classList.remove('hidden');
+    (document.getElementById('btn-submit-pasaran') as HTMLButtonElement).innerText = 'UPDATE PASARAN CLOUD';
+    
+    document.getElementById('sub-admin-pasaran')?.scrollIntoView({ behavior: 'smooth' });
+};
+
+(window as any).cancelEditPasaran = () => {
+    (window as any).editingPasaranId = null;
+    ['input-name', 'input-image-url', 'input-url-history', 'input-pasaran-sheetname', 'input-pasaran-rangehistory', 'input-pasaran-map-cols', 'input-pasaran-map-headers'].forEach(id => {
+        const el = document.getElementById(id) as HTMLInputElement;
+        if(el) el.value = '';
+    });
+    (document.getElementById('input-pasaran-autofill') as HTMLInputElement).checked = false;
+    (document.getElementById('input-visible') as HTMLInputElement).checked = true;
+    (window as any).currentLiveDraws = [];
+    (window as any).renderLiveDrawsEditor();
+    
+    document.getElementById('btn-cancel-pasaran')?.classList.add('hidden');
+    (document.getElementById('btn-submit-pasaran') as HTMLButtonElement).innerText = 'SIMPAN KE CLOUD';
+};
+
+(window as any).duplicatePasaran = async (id: string) => {
+    const p = (window as any).pools.find((x:any) => x.id === id);
+    if(!p) return;
+    
+    const newId = Date.now().toString();
+    const newP = { ...p, id: newId, name: p.name + " (Copy)" };
+    
+    await setDoc(doc(db, 'pools', newId), newP);
+    (window as any).showToast("Pasaran diduplikasi!");
+};
+
+(window as any).deletePasaran = (id: string) => {
+    (window as any).showConfirm("Yakin hapus pasaran ini secara permanen?", async () => {
+        if(!(window as any).cloudUserId) return;
+        await deleteDoc(doc(db, 'pools', id));
+        (window as any).showToast("Pasaran dihapus!", true);
+    });
+};
+
+(window as any).movePasaranUp = async (id: string) => {
+    const pools = (window as any).pools;
+    const idx = pools.findIndex((p:any) => p.id === id);
+    if(idx <= 0) return;
+    // Swap with above
+    const current = pools[idx];
+    const above = pools[idx - 1];
+    
+    // Assign order property to fix sorting persistently
+    // We rewrite all order sequentially
+    const batch = writeBatch(db);
+    pools.forEach((p:any, i:number) => { p.order = i; });
+    
+    // Swap order
+    current.order = idx - 1;
+    above.order = idx;
+    
+    // Sort locally first
+    pools.sort((a:any, b:any) => (a.order || 0) - (b.order || 0));
+    
+    pools.forEach((p:any) => {
+        batch.set(doc(db, 'pools', p.id), p);
+    });
+    await batch.commit();
+    (window as any).renderAdminLists();
+};
+
+(window as any).movePasaranDown = async (id: string) => {
+    const pools = (window as any).pools;
+    const idx = pools.findIndex((p:any) => p.id === id);
+    if(idx === -1 || idx === pools.length - 1) return;
+    const current = pools[idx];
+    const below = pools[idx + 1];
+    
+    const batch = writeBatch(db);
+    pools.forEach((p:any, i:number) => { p.order = i; });
+    
+    // Swap order
+    current.order = idx + 1;
+    below.order = idx;
+    
+    // Sort locally first
+    pools.sort((a:any, b:any) => (a.order || 0) - (b.order || 0));
+    
+    pools.forEach((p:any) => {
+        batch.set(doc(db, 'pools', p.id), p);
+    });
+    await batch.commit();
+    (window as any).renderAdminLists();
 };
 
 (window as any).openFormSandingan = () => {
@@ -1838,6 +1993,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
 
                     onSnapshot(collection(db, 'pools'), (snap) => {
                         (window as any).pools = snap.docs.map(d => d.data());
+                        (window as any).pools.sort((a:any, b:any) => (a.order || 0) - (b.order || 0));
                         (window as any).renderAdminLists();
                         (window as any).renderDropdowns();
                         (window as any).fetchAllLiveResults();
