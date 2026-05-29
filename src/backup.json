@@ -1,0 +1,994 @@
+{
+  "pools": [
+    {
+      "mapHeaders": "",
+      "id": "1778845873716p",
+      "name": "TOTO MACAU 4D",
+      "liveDraws": [
+        {
+          "sheetNameLive": "Pasaran",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "Live Result",
+          "rangeLive": "B36"
+        },
+        {
+          "rangeLive": "C7",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "sheetNameLive": "Pasaran",
+          "name": "TM1 00:01"
+        },
+        {
+          "rangeLive": "C8",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "TM2 13:00",
+          "sheetNameLive": "Pasaran"
+        },
+        {
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "TM3 16:00",
+          "sheetNameLive": "Pasaran",
+          "rangeLive": "C9"
+        },
+        {
+          "name": "TM4 19:00",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "sheetNameLive": "Pasaran",
+          "rangeLive": "C10"
+        },
+        {
+          "rangeLive": "C11",
+          "sheetNameLive": "Pasaran",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "TM5 22:00"
+        },
+        {
+          "sheetNameLive": "Pasaran",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "TM6 23:00",
+          "rangeLive": "C12"
+        }
+      ],
+      "visible": true,
+      "urlHistory": "http://159.65.5.72:369/data-totomacau/",
+      "sheetName": "",
+      "imageUrl": "https://veldrive.com/Ne5eDfXD/rokcupcolombia/logo.webp",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetNameLive": "Pasaran",
+      "rangeHistory": "",
+      "rangeLive": "B36",
+      "autoFill": false,
+      "mapCols": ""
+    },
+    {
+      "mapHeaders": "",
+      "name": "HK LOTTO",
+      "id": "1778846527378",
+      "visible": true,
+      "liveDraws": [
+        {
+          "sheetNameLive": "Pasaran",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "Live Result",
+          "rangeLive": "C2"
+        }
+      ],
+      "urlHistory": "http://159.65.5.72:369/data-keluaran-hk-lotto/",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetName": "",
+      "imageUrl": "",
+      "sheetNameLive": "Pasaran",
+      "rangeHistory": "",
+      "mapCols": "B, C, D",
+      "autoFill": false,
+      "rangeLive": "C2"
+    },
+    {
+      "visible": true,
+      "liveDraws": [
+        {
+          "rangeLive": "C3",
+          "name": "Live Result",
+          "sheetNameLive": "Pasaran",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit"
+        }
+      ],
+      "urlHistory": "http://159.65.5.72:369/data-keluaran-hk/",
+      "mapHeaders": "",
+      "name": "HK POOLS",
+      "id": "1778846600081",
+      "rangeHistory": "",
+      "mapCols": "",
+      "autoFill": false,
+      "rangeLive": "C3",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetName": "",
+      "imageUrl": "",
+      "sheetNameLive": "Pasaran"
+    },
+    {
+      "mapHeaders": "",
+      "name": "SINGAPORE",
+      "id": "1778846972985",
+      "visible": true,
+      "liveDraws": [
+        {
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "Live Result",
+          "sheetNameLive": "Pasaran",
+          "rangeLive": "c4"
+        }
+      ],
+      "urlHistory": "http://159.65.5.72:369/data-keluaran-sgp/",
+      "sheetName": "",
+      "imageUrl": "",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetNameLive": "Pasaran",
+      "rangeHistory": "",
+      "autoFill": false,
+      "mapCols": "",
+      "rangeLive": "c4"
+    },
+    {
+      "rangeHistory": "",
+      "mapCols": "",
+      "autoFill": false,
+      "rangeLive": "C5",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "imageUrl": "",
+      "sheetName": "",
+      "sheetNameLive": "Pasaran",
+      "visible": true,
+      "liveDraws": [
+        {
+          "rangeLive": "C5",
+          "sheetNameLive": "Pasaran",
+          "name": "Live Result",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit"
+        }
+      ],
+      "urlHistory": "http://159.65.5.72:369/data-keluaran-sydney/",
+      "mapHeaders": "",
+      "name": "SDY LOTTO",
+      "id": "1778847011097"
+    },
+    {
+      "sheetName": "RESULT MACAU 5D",
+      "imageUrl": "https://veldrive.com/Ne5eDfXD/rokcupcolombia/logo.webp",
+      "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetNameLive": "Pasaran",
+      "rangeHistory": "A1:D31",
+      "rangeLive": "B36",
+      "autoFill": false,
+      "mapCols": "",
+      "mapHeaders": "",
+      "id": "1779552037154",
+      "name": "TOTO MACAU 5D",
+      "liveDraws": [
+        {
+          "rangeLive": "J8",
+          "sheetNameLive": "RESULT MACAU 5D",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "Live Result"
+        },
+        {
+          "rangeLive": "J9",
+          "sheetNameLive": "RESULT MACAU 5D",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "name": "TM1 15:15 WIB"
+        },
+        {
+          "name": "TM2 21:15 WIB",
+          "urlLive": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+          "sheetNameLive": "RESULT MACAU 5D",
+          "rangeLive": "J10"
+        }
+      ],
+      "visible": true,
+      "urlHistory": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit"
+    }
+  ],
+  "mimpi": [
+    {
+      "id": "17789544600010",
+      "type": "2D",
+      "desc": "MIMPI 2D - 00 = Penyair – Tapir – Kupas Kelapa – Sempritan – Tanggalan – Pindah Rumah – Bulan – Kumbo Karno – Kerbau – Jendral -Pedagang – Kelapa Muda -Lampu Teplok Menyala – Nyiur, Semut – Tuan Tanah.",
+      "no": "00"
+    },
+    {
+      "no": "01",
+      "desc": "MIMPI 2D - 01 = Hantu – Ikan Bandeng – Tukang Jual Ikan – Lampu atau Api Obor – Jambu Klutuk / Mente – Tangan Manusia – Betara Kala – Burung Pipit – Gerombolan Perampok - Prajurit atau Tentara – Pencak Silat - Cicak Sedang Kawin – Langsat – Binatang Naga – Abdi Raja",
+      "type": "2D",
+      "id": "17789544600031"
+    },
+    {
+      "no": "02",
+      "desc": "MIMPI 2D - 02 = Wisuda / Sarjana – Keong – Lompat Jauh dan Tinggi – Sayuran Wortel – Jangkar Besi – Sepasang Sandal – Betara Bromo – Binatang Kucing – Uang Kas - Orang Eropa / BULE – Tukang Mucikari - Kodok Masuk Rumah – Jagung – Binatang Singa – Kepala Penjahat",
+      "type": "2D",
+      "id": "17789544600032"
+    },
+    {
+      "no": "03",
+      "desc": "MIMPI 2D - 03 = Orang Mati – Binatang Angsa – Lompat Galah – Sayuran Hijau Sawi – Sepasang Kaki – Sedang Cemburu – Subali – Binatang Kupu-Kupu – Pelacur Kelas Tinggi - Orang Dayak – Kepala Kelompok Polisi - Kupu-Kupu Masuk Rumah di Malam Hari – Pohon Nipah – Badak – Penjahat / Brandalan",
+      "type": "2D",
+      "id": "17789544600043"
+    },
+    {
+      "no": "04",
+      "desc": "MIMPI 2D - 04 = Dewi Kwan Im – Sepasang Balon – Sayuran Petai – Lompat Jauh – Sayuran Hijau Kangkung – Burung Merak – Membaca Buku – Dewi Ratih – Burung Kutilang – Orang / Seniman - Hipnotis – Anggar - Orang Gila Sedang Ngamuk di Jalan – Jeruk Bali – Burung Elang / Rajawali – Menantu Raja",
+      "type": "2D",
+      "id": "17789544600044"
+    },
+    {
+      "id": "17789544600045",
+      "no": "05",
+      "desc": "MIMPI 2D - 05 = Raja Perampok – Singa Jantan – Jemur Baju – Loncat Indah – Kayu Manis – Bumbu Merica – Kereta Api – Garu Langit – Burung Kicau Murai – Dapat Untung Besar -Pekerjaan Tukang Sapu – Pekerjaan Pemahat -Burung Elang Sedang Terbang – Pohon Durian – Angsa – Orang Meninggal",
+      "type": "2D"
+    },
+    {
+      "id": "17789544600046",
+      "type": "2D",
+      "desc": "MIMPI 2D - 06 = Dewi Bulan – Hewan Kelinci – Minta Bantuan – Sedang Berenang – Kapas – Boneka – Daun Teh Hijau – Dewi Sri – Naga – Raja - Penjual Sayur – Pelukis - Anjing Melolong Ketika Malam Hari – Manggis – Hewan Macan – Maling",
+      "no": "06"
+    },
+    {
+      "id": "17789544600057",
+      "no": "07",
+      "desc": "MIMPI 2D - 07 = Pelayan – Hewan Babi – Kapal Keruk – Perahu Layar – Sayuran Bawang – memancing – Batu Arang – Sulastri – Hewan Kera – Setan Gantung - Sedang Ronda Malam – Serdadu - Kucing Sedang Kawin – Pohon Kenari – Hewan Kodok – Sumur Air",
+      "type": "2D"
+    },
+    {
+      "no": "08",
+      "desc": "MIMPI 2D - 08 = Maling Kecil – Hewan Macan – Melanggar – Motor Atau Mesin Bot – Bunga Kecubung – Sayuran Daun Sop – Pasar – Tuan Mariam – Anjing – Jendral Serakah - Pramugari Cantik – Ahli Nujum - Mendengar Suara Burung Hantu – Pohon Jati – Hewan Ikan Belut – Kerajaan / Jendral",
+      "type": "2D",
+      "id": "17789544600058"
+    },
+    {
+      "no": "09",
+      "desc": "MIMPI 2D - 09 = Jendral – Hewan Kerbau – Jala Ikan – Mendayung – Kates – Pinang – Anak Gadis – Bima – Ikan Paus – Raja Laut - Koki Masak – Si Bungkuk - Perampok Ditangan Polisi – Pohon Jambu – Musang – Pendeta",
+      "type": "2D",
+      "id": "17789544600059"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 10 = Kelenteng / Vihara – Kelapa – Hewan Kelabang – Rileks – Minum Bir – Panjat Pohon – Sedang Menyelam – Sedang Sembahyang / Pemujaan – Hewan Macan – Maling - Polisi wanita – Sakit Mata - Tikus Lewat Depan Kita – Pepaya – Ayam Kalkun – Sang Buddha",
+      "no": "10",
+      "id": "177895446000610"
+    },
+    {
+      "id": "177895446000611",
+      "no": "11",
+      "desc": "MIMPI 2D - 11 = Menteri Yang Serakah – Hewan Anjing – Sayuran Jamur – Lari Cepat – Kipas – Kerudung – Sapu – Sengkuni – Kepala Hewan Singa – Raja Rampok - Pencopet – Bidadari - Ular Lewat Depan Kita – Pohon Gambas – Hewan Bebek – Sepasang Suami Istri",
+      "type": "2D"
+    },
+    {
+      "desc": "MIMPI 2D - 12 = Penasihat Untuk Perang – Hewan Kuda – Lemon – Lari Gawang – Bola – Luku – Air Panas – Wibisana – Hewan Kelinci – Dewi Bulan - Pak Polisi – Hostes - Orang dibunuh hingga Meninggal / Mati – Pohon Randu – Lebah / Tawon – Sakit Kudis",
+      "no": "12",
+      "type": "2D",
+      "id": "177895446000612"
+    },
+    {
+      "type": "2D",
+      "no": "13",
+      "desc": "MIMPI 2D - 13 = Menjaga Pintu – Hewan Gajah – Sarang Burung – Estafet – Senjata Keris – Kipas Angin – Sedang Cuci Rambut – Prabu Kesa – Hewan Capung – Peti Mati - Intel / Polisi Wanita – Main Bola Basket - Orang Meninggal Ditabrak Mobil – Jeruk Nipis – Hewan Gajah – Penjaga",
+      "id": "177895446000813"
+    },
+    {
+      "id": "177895446000814",
+      "no": "14",
+      "desc": "MIMPI 2D - 14 = Sedang Memotong Babi – Hewan Unta – Beras – Tolak Peluru – Jembatan – Sayuran Kentang – Spet – Jaya Langsuan – Hewan Kuda – Penasihat Perang - Tukang Becak – Dayang Dayang - Orang Terbakar – Keladi – Kuda – Prajurit Perang",
+      "type": "2D"
+    },
+    {
+      "type": "2D",
+      "no": "15",
+      "desc": "MIMPI 2D - 15 = Hakim – Tikus – Sayuran Lengkuas – Lempar Martil – Kantor Pos – Karantina – Skrup – Kresna – Burung Merpati – Sejodoh - Kerdil – Dokter Gigi - Pakai Baju Terbalik – Pohon Rumbia – Hewan Kerbau – Sang Jendral",
+      "id": "177895446000815"
+    },
+    {
+      "id": "177895446000916",
+      "no": "16",
+      "desc": "MIMPI 2D - 16 = Sakit Gudik – Buah Nenas – Tawon – Lembaran Surat – Buah Durian – Lempar Cakram – Pisang – Jembawan – Burung Cendrawasih – Putri raja - Lepra – Petinju - Berkelahi Sewaktu Judi – Pohon Pisang – Kupu-Kupu – Pelacur Tinggi",
+      "type": "2D"
+    },
+    {
+      "no": "17",
+      "desc": "MIMPI 2D - 17 = Pemadat – Burung Bangau – Aren – Lempar Lembing – Buah Durian – Telepon – Api – Terong – Burung Murai – Untung Besar - Anak Brandalan – Karateka - Lelaki Memakai Anting Sebelah – Cabai – Hewan Lalat – Istri Setia",
+      "type": "2D",
+      "id": "177895446000917"
+    },
+    {
+      "type": "2D",
+      "no": "18",
+      "desc": "MIMPI 2D - 18 = Uang Kas – Kantor Polisi – Hewan Kucing – Pisau Parang – Lombok – Jual Es – Polo Air – Bisma – Hewan Udang – Jenis Kelamin - Dokterandus – Sepak Takrau - Mati Listrik atau mati lampu Ketika Pesta – Pohon Aren – Hewan Bekicot – Wisuda",
+      "id": "177895446000918"
+    },
+    {
+      "id": "177895446001019",
+      "no": "19",
+      "desc": "MIMPI 2D - 19 = Pelacur Kelas Tinggi – Serikaya – Hewan Kupu-Kupu – Sedang Cabut Gigi – Main Lotre – Ban Sepeda – Sepak Bola – Banowati – Hewan Bekicot – Wisuda - Lempar Bola – Wartawan Wanita - Kuduk Berdiri Sewaktu Berjalan Di Malam Hari – Pohon Nangka – Burung Walet – Pelacur Wanita Tua",
+      "type": "2D"
+    },
+    {
+      "type": "2D",
+      "no": "20",
+      "desc": "MIMPI 2D - 20 = Istri Sejati – Ban Mobil – Hewan Lalat – Sedang Bermesraan – Kedai Tuak – Palu – Bola Volli – Satyawati – Hewan Anjing – Jendral Yang Serakah - Pak Satpam – Petruk - Musang Lewat Malam Hari – Pohon Delima – Hewan Tikus – Ahli Nujum",
+      "id": "177895446001020"
+    },
+    {
+      "type": "2D",
+      "no": "21",
+      "desc": "MIMPI 2D - 21 = Pelacur – Burung Walet – Sedang Memotret – Bulu Tangkis – Kapak – Sayuran Bayam – Makan Permen – Lesmanawati – Hewan Capung – Peti Mati - Perantara – Berenang - Ban Kendaraan Pecah – Bambu – Ikan Mas – Nelayan",
+      "id": "177895446001021"
+    },
+    {
+      "desc": "MIMPI 2D - 22 = Peti Mati – Sayuran Terong – Hewan Capung – Buah Kana Cina – Sedang Cuci Muka – Harmonika – Bola Tenis – Sembadra – Hewan Beruang – Orang Eskimo - Hewan Babi Hutan – Kulit Hitam - Cicak Masuk Wadah Gula – Pohon Rimbang – Hewan Kelabang – Vihara / Kelenteng",
+      "no": "22",
+      "type": "2D",
+      "id": "177895446001122"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 23 = Setan Gantung – Kera – Potong Ayam – Main Bola Basket – Buah Pisang – Bedak – Piano – Wilkampana – Hewan Serigala – Siluman Air - Putri Ayu – Pompa Bensin - Lembu Sedang Ngamuk – Jeruk Manis – Binatang Kancil – Penipu",
+      "no": "23",
+      "id": "177895446001123"
+    },
+    {
+      "desc": "MIMPI 2D - 24 = Sumber Air – Katak / Kodok – Bersolek – Bola Ping Pong – Sayuran Wortel – Kelentang – Sikat Gigi – Dewa Ruci – Ikan Paus – Raja Laut - Ibu Guru – Main Sepak Bola - Merpati Sedang Terbang - Salak – Hewan Buaya – Perawan Tua",
+      "no": "24",
+      "type": "2D",
+      "id": "177895446001124"
+    },
+    {
+      "id": "177895446001125",
+      "no": "25",
+      "desc": "MIMPI 2D - 25 = Menantu Raja – Burung Rajawali – Sedang Menelepon – Baseball – Jagung – Memasak – Pasta Gigi – Rongga Dewa – Hewan Musang – Pendeta - Suster – Bendera Negara Jepang - Durian Jatuh – Pohon Kuini – Hewan Kura-Kura – Cewek Cantik",
+      "type": "2D"
+    },
+    {
+      "no": "26",
+      "desc": "MIMPI 2D - 26 = Menantu Raja – Burung Rajawali – Sedang Menelepon – Baseball – Jagung – Memasak – Pasta Gigi –Rongga Dewa – Hewan Musang – Pendeta - Berdoa – Bendera Negara Amerika - Cicak Sedang Makan Capung – Pohon Sukun – Hewan Kambing – Cewek Cantik / Wanita",
+      "type": "2D",
+      "id": "177895446001226"
+    },
+    {
+      "id": "177895446001227",
+      "type": "2D",
+      "no": "27",
+      "desc": "MIMPI 2D - 27 = Wanita Cantik – Hewan Kura-Kura – Otak – Billiard – Sabun Bubuk – Bidan – Isi Minyak – Dewi Supraba – Hewan Jangkrik – Penyihir Wanita - Tukang Air – Berjodoh - Cicak Sedang Makan Kupu-Kupu – Pohon Rambung – Hewan Onta – Sedang Potong Babi"
+    },
+    {
+      "id": "177895446001328",
+      "type": "2D",
+      "no": "28",
+      "desc": "MIMPI 2D - 28 = Pemotong Kayu – Ayam – Buah Pala – Menembak – Sayuran Tomat – Montir – Jarum – Raden Nakula – Katak / Kodok – Sumber Air - Penyelam Air – Siluman Kera - Dompet Ketinggalan – Pohon Coklat – Hewan Rusa – Orang Buta"
+    },
+    {
+      "id": "177895446001329",
+      "type": "2D",
+      "desc": "MIMPI 2D - 29 = Pendeta Sakti – Ikan Belut – Truck / Mobil Barang – Memanah – Kursi – Uang Perak – Koran – Sidi Wacana – Burung Kalong – Dracula - Kepala Sekolah – Siluman Babi - Ketemu Uang Kertas Di Jalan – Kedondong – Cicak – Ketua Polisi",
+      "no": "29"
+    },
+    {
+      "id": "177895446001330",
+      "type": "2D",
+      "no": "30",
+      "desc": "MIMPI 2D - 30 = Nelayan – Ikan Mas – Tas – Sedang Angkat Besi – Belimbing – Pembunuh – Toilet – Naga Tatmala – Bebek – Suami istri - Kepala Stasiun – Semar - Banci Nyebrang Jalan – Pohon Lompong – Ikan Paus – Raja Lautan"
+    },
+    {
+      "id": "177895446001431",
+      "type": "2D",
+      "no": "31",
+      "desc": "MIMPI 2D - 31 = Kelamin – Udang – Mencari Uang – Sedang Senam – Sangkar Burung – Jas Hujan – Cacing Kecil atau Pita – Yuyu Rumpung – Belibis – Penyihir Pria - Marsekal – Tabrak Lari - Pengemis Sedang Bawa Anak – Tomat – Tokek – Raksasa"
+    },
+    {
+      "id": "177895446001432",
+      "type": "2D",
+      "desc": "MIMPI 2D - 32 = Ahli Nujum – Hewan Ular – Cari Kerang – Yudo – Kamar Mandi – Sarang Lebah – Tali – Abiyasa – Hewan Kepiting – Pahlawan - Menteri Kehutanan – Bayi Tabung - Ketangkap Sedang Mencuri Ayam – Padi – Kelinci – Dewi Bulan",
+      "no": "32"
+    },
+    {
+      "id": "177895446001433",
+      "no": "33",
+      "desc": "MIMPI 2D - 33 = Pengemis – Laba-laba – Uang – Gulat – Sabun – Gigi – Sayur Tahu – Petruk – Hewan Tikus – Hakim - Pengairan – Duta - Gajah Sedang Mengamuk – Pohon Sawit – Binatang Banteng – Pengacara",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001434",
+      "desc": "MIMPI 2D - 34 = Orang Buta – Hewan Rusa – Jelarut – Silat – Jamu – Paru-Paru – Burung Merpati – Destarata – Ayam Jantan – Pemotong Kayu - Wisuda / Sarjana – Koran - Balon Pecah – Terong – Burung Bangau – Pemadat",
+      "no": "34",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001535",
+      "no": "35",
+      "desc": "MIMPI 2D - 35 = Cewek / Wanita– Lambung – Kambing – Sedang Boncengan – Jalan-Jalan – Tinju – Drupadi – Burung Walet – Pelacur Umum - Menteri Wanita – Pecandu - Jatuh Dompet – Pohon Sawit – Duyung – Wanita Pembantu",
+      "type": "2D"
+    },
+    {
+      "no": "36",
+      "desc": "MIMPI 2D - 36 = Pendeta Wanita – Binatang Musang – Apotek – Balap Sepeda – Buah Manggis – Sekop – Kacamata – Sayemprabu – Hewan Macan – Maling - Dokter – Tertuduh - Kudis Dipatok Ayam – Pohon Sawo – Ikan Tongkol – Penjaga Malam",
+      "type": "2D",
+      "id": "177895446001536"
+    },
+    {
+      "id": "177895446001537",
+      "type": "2D",
+      "no": "37",
+      "desc": "MIMPI 2D - 37 = Si Bungkuk – Gabus – Bra / Pakaian Dalam – Balap Mobil – Anggur – Berpacaran – Mobil Truk – Gareng – Kalong – Drakula - Pilot – Pengadilan - Orang Mata Satu – Pohon Rambutan – Kumbang – Pendekar Wanita"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 38 = Putra Raja – Burung Cendrawasih – Wanita hamil – Balap Motor – Tong – Kapal Perang – Engsel – Utari – Burung Bangau – Pemahat - Inang – Pemandangan - Wanita Rambut Ekor Kuda – Petai – Burung Hantu – Pemahat Pedang",
+      "no": "38",
+      "id": "177895446001638"
+    },
+    {
+      "id": "177895446001639",
+      "no": "39",
+      "desc": "MIMPI 2D - 39 = Sepasang Kekasih – Hewan Kalajengking – Balap Kuda – Topi – Bemo – Binatang Kedelai – Narasoma – Kumbang – Pendekar Cewek - Pemabuk – Kebun Binatang - Pemain Bola Patah Kaki – Jengkol – Anjing – Jendral Nafsu dan Serakah",
+      "type": "2D"
+    },
+    {
+      "type": "2D",
+      "no": "40",
+      "desc": "MIMPI 2D - 40 = Penolong – Gelatik – Penjual Jagung – Golf – Peci – Buah Duku – Tang – Widura – Burung Puyuh – Orang Bisu - Pelancong – Kolam Berenang - Pakai Akar Bahar – Kopi – Ikan Gabus – Si Bungkuk",
+      "id": "177895446001640"
+    },
+    {
+      "no": "41",
+      "desc": "MIMPI 2D - 41 = Pahlawan – Kepiting – Berkuda – Lilin – Paku – Sabuk – Warsaya – Katak – Sumber Air - Putri Duyung – Pabrik - Cicak Terjatuh – Lada – Ikan Bendera – Pemabuk",
+      "type": "2D",
+      "id": "177895446001641"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 42 = Jejaka Tua – Buaya – Marinir – Berjalan – Catur – Pakis – Dokter – Widakta – Kambing – Wanita - Jerat Anjing – Petromak - Kucing Tangkap Kadal – Cengkeh – Perkutut – Petani",
+      "no": "42",
+      "id": "177895446001742"
+    },
+    {
+      "id": "177895446001743",
+      "no": "43",
+      "desc": "MIMPI 2D - 43 = Janda Muda – Hiu – Bom – Anggar – Bunga Mawar – Buah Langsat – Grendel – Sembadra – Macan Tutul – Pemburu - Wasit – Lampu Aladin - Helm Jatuh Ketika naik motor – Pohon Merica – Binatang Serigala – Siluman Air",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001744",
+      "no": "44",
+      "desc": "MIMPI 2D - 44 = Penjahat atau Berandalan – Badak – Gadung – Ski Air – Sisir – Kuaci – Seruling – Citraksa – Bebek – Sepasang Suami Istri - Pelancong – Montir - Gunung Api Meletus – Kayu Manis – Nyamuk – Jenderal",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001745",
+      "no": "45",
+      "desc": "MIMPI 2D - 45 = Pengembara – Kendi – Banteng – Tas – Mata-Mata – Ketupat – Terbang Layang – Rama – Siput / Keong – Wisuda - Kerja Bakti – Akrobat - Latihan Baris – Pohon Kemiri – Ikan Hiu – Raja Setan",
+      "type": "2D"
+    },
+    {
+      "no": "46",
+      "desc": "MIMPI 2D - 46 = Nenek Moyang – Orang Hutan – Tukar Ban Mobil – Terjun Bebas – Toko – Rumah Sakit – Sikat – Hyang Wenang – Kupu-Kupu – Pelacur Mewah - Tukang Jam – Fotographer - Orang hamil dilanggar – Sirsak – Kepiting – Pahlawan",
+      "type": "2D",
+      "id": "177895446001846"
+    },
+    {
+      "no": "47",
+      "desc": "MIMPI 2D - 47 = Banci Kaleng – Sayuran Keladi – Zebra – Upacara Bendera – Hotel – Tangga – Sirkus – Stuna – Ayam – Pemotong Kayu - Sabung Ayam – Permata Pirus - Guru Selingkuh Dengan Murid – Rukam – Binatang Tapir – Penyair",
+      "type": "2D",
+      "id": "177895446001847"
+    },
+    {
+      "type": "2D",
+      "no": "48",
+      "desc": "MIMPI 2D - 48 = Ceroboh – Landak – Sayur Labu – Catur – Bioskop – Garuk – Botol dari Obat – Dasa Muka – Burung Cendrawasih – Putri Raja - Sedang Menyelam – Badut - Ngebut Di Jalan – Akasia – Laba-Laba – Pengemis",
+      "id": "177895446001848"
+    },
+    {
+      "type": "2D",
+      "no": "49",
+      "desc": "MIMPI 2D - 49 = Drakula – Kelelawar – Orang Melahirkan – Mendaki Gunung – Cetok – Lipstik – Rok – Betara Durga – Puyuh – Bisu - Robot – Berpidato - Pejabat dipecat Sebab Korupsi – Pohon Seri – Trenggiling – Orang tahanan",
+      "id": "177895446001949"
+    },
+    {
+      "id": "177895446001950",
+      "desc": "MIMPI 2D - 50 = Eskimo – Beruang – Daun Sirih – Pembawa Obor – Pacul – Guru – Penjual Satay – Bagong – Burung Walet – Pelacur / Wanita Penghibur - Nenek Moyang – Bhiksu - Orang Gila Bernyanyi – Buah Alpukat – Kerang – Ahli Filsafat",
+      "no": "50",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001951",
+      "desc": "MIMPI 2D - 51 = Ahli Filsafat – Kerang – Lonceng – Patel Lele – Tebu – Celana – Rapat Kerja – Narada – Binatang Harimau – Tukang Tenung - Tukang Kayu – Kasih Ibu - Penyeludup Cewek Dan Tertangkap Polisi – Beringin – Udang – Uang",
+      "no": "51",
+      "type": "2D"
+    },
+    {
+      "id": "177895446001952",
+      "no": "52",
+      "desc": "MIMPI 2D - 52 = Raja Laut – Ikan Paus – Buah Nona – Tali – Dompet – Meminum Racun – Matahari – Antasena – Burung Kutilang – Seniman - Tukang Batu – Arjuna - Sekelompok Preman Meninggal Karena Dibunuh – Pinus – Hewan Kangguru – Pertapa",
+      "type": "2D"
+    },
+    {
+      "type": "2D",
+      "no": "53",
+      "desc": "MIMPI 2D - 53 = Penjual Silat – Ikan Duri – Garam – Akrobat – Buah Rambutan – Ngirim Surat – Taxi – Abimanyu – Burung Hantu – Pemahat Pedang - Pandir – Pendekar - Orang Mengemudi Becak – Cendana – Kuda Nil – Penggembala",
+      "id": "177895446002053"
+    },
+    {
+      "type": "2D",
+      "no": "54",
+      "desc": "MIMPI 2D - 54 = Raja Hutam / Monyet – IkanLele – Kursi Untuk Malas Malasan – Sepatu Roda – Kalung – Juara – Dokar – Hanoman – Burung Elang dan Rajawali – Menantu Sang Raja - Kusir – Raja - Kepergok Sedang Selingkuh – Cempaka – Binatang Panjang /Jerapah – Dewa Bumi",
+      "id": "177895446002054"
+    },
+    {
+      "id": "177895446002155",
+      "type": "2D",
+      "desc": "MIMPI 2D - 55 = Pertapa – Kangguru – Memetik Tembakau – Bola Kasti – Gelang – Lagi di Kelenteng – Pengaron – Raden Seta – Hiu – Raja Setan - Menjual Bunga – Pelarian - Sepasang Nenek Kakek Jalan Berdua – Pohon Kamboja – Ikan Gergaji – Orang Kaya",
+      "no": "55"
+    },
+    {
+      "no": "56",
+      "desc": "MIMPI 2D - 56 = Budak – Ikan Duyung – Durian – Kenanga – Cikar – Bengkung – Limbuk – Ringen – Udang – Kelamin - Cewek Montok – Profesor - Tanaman Padi Kena Banjir – Pohon Rambe – Jangkrik – Wanita Sihir",
+      "type": "2D",
+      "id": "177895446002156"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 57 = Anak Sakti – Ulat Sutra – Kunyit – Layangan – Sepatu – Jual Bakso – Tempat Tidur – Gatot Kaca – Kepiting – Pahlawan - Supir Taksi – Dewa Kwan Kong - Hidung Lagi Berdarah / Mimisan – Duku – Kera – Nenek Moyang",
+      "no": "57",
+      "id": "177895446002157"
+    },
+    {
+      "id": "177895446002158",
+      "type": "2D",
+      "no": "58",
+      "desc": "MIMPI 2D - 58 = Penari – Sekolahan – Pacuan Kuda – Cumi-Cumi – Rumah – Hantu – Kelereng – Selir – Macan Tutul – Memburu - Kap salon – Selir - Orang Keling Mabuk Lalu Masuk Parit – Cempedak – Hewan Buas Beruang – Orang Eskimo"
+    },
+    {
+      "no": "59",
+      "desc": "MIMPI 2D - 59 = Putra Raja – Burung Kakak Tua – Kaos – Dakon – Kedondong – Jam Dinding – Kencur – Raden Lesmana – Kuda – Penasihat Perang - Petani – Gentleman - Goreng Pisang dan Gosong – Buah Nona – Orang Hutan – Setan Gentayangan",
+      "type": "2D",
+      "id": "177895446002259"
+    },
+    {
+      "no": "60",
+      "desc": "MIMPI 2D - 60 = Kepala Polisi – Cicak – Pot Bunga – Karambol – Buah Delima – Mencuri Ayam – Handuk – Sentiyaki – Burung Merak – Dewi Kwan Im - Tukang Pukul – Terjun Payung - Orang Eropa Tawar Buah – Pohon Mahoni – Ulat Sutra – Terjerat",
+      "type": "2D",
+      "id": "177895446002260"
+    },
+    {
+      "id": "177895446002261",
+      "desc": "MIMPI 2D - 61 = Pedagang – Kecoak – Gendongan – Mayat – Kacamata – Buku – Roti – Bala dewa – Tawon – Lagi Sakit Kudisan - Orang Tahanan – Main Bola Kasti - Diancam Ketika Di Tengah Jalan – Belimbing – Ikan Suro – Janda Muda",
+      "no": "61",
+      "type": "2D"
+    },
+    {
+      "desc": "MIMPI 2D - 62 = Pagoda – Walang Kadung – Meriam – Petan – Termos – Terhalang – Selendang – Sapta Arga – Burung Hantu – Pembuat / Pemahat Pedang - Mata-Mata – Ambulans - Musang Makan Ayam – Pohon Turi – Ikan Nus – Prajurit Perang",
+      "no": "62",
+      "type": "2D",
+      "id": "177895446002362"
+    },
+    {
+      "no": "63",
+      "desc": "MIMPI 2D - 63 = Pendekar Wanita – Kumbang – Belanja – Treksando – Bantal Tidur – Jendela – Talas – Larasati – Kelabang – Kelenteng - Tukang Rombengan – Televisi - Pedagang Obat Di Jalanan – Apel – Kuda Laut – Dewa Angin",
+      "type": "2D",
+      "id": "177895446002363"
+    },
+    {
+      "id": "177895446002464",
+      "type": "2D",
+      "desc": "MIMPI 2D - 64 = Dewa Uang – Kuda Laut – Ronggeng – Bandulan – Buah Apel – Tidur dan Guling – Kecambah – Batara Indra – Naga – Raja - Firaun – Lapangan Kosong - Wanita Sedang Bertengkar – Kentang – Mimi – Pencari Jejak",
+      "no": "64"
+    },
+    {
+      "id": "177895446002565",
+      "type": "2D",
+      "no": "65",
+      "desc": "MIMPI 2D - 65 = Raja Setan – Ikan Hiu – Sayur Jipang – Kayang – Klompen – Petromak – Hisap Dan Candu – Kalasrenggi – Babi – Pelayan - Bajingan – Eskimo - Kelelawar Masuk Ke dalam Rumah – Petai – Unta – Penjual Daging"
+    },
+    {
+      "id": "177895446002566",
+      "no": "66",
+      "desc": "MIMPI 2D - 66 = Dewa Bumi – Jerapah – Sawatan – Potong Tangkai Padi – Sukun – Korek Ubi – Gelas – Antaboga – Jangkrik – Penyihir Cewek / Wanita - Kuli Pasir – Roket - Anak Kecil Tersiram Air Panas – Jamblu Klutuk – Lintah – Penghisap Bumi",
+      "type": "2D"
+    },
+    {
+      "no": "67",
+      "desc": "MIMPI 2D - 67 = Penjual Daging Mentah – Burung Unta – Korek Api – Egrang – Sendok – Kacang Panjang – Abilawa – Binatang Kerbau – Jenderal - Wanita Malam Penghibur – Bulan - Tukang Becak LAgi Tidur – Lontar – Cumi-Cumi – Penari",
+      "type": "2D",
+      "id": "177895446002567"
+    },
+    {
+      "id": "177895446002568",
+      "no": "68",
+      "desc": "MIMPI 2D - 68 = Pemahat Pedang – Burung hantu – Naik Jambe – Ubi – Garpu – Pisau – Sapi – Cepot – Tikus Haki - Buddhisme – Kalung Berlian - Tangan Terpotong – Lumih – Bandeng – Setan / Hantu",
+      "type": "2D"
+    },
+    {
+      "desc": "MIMPI 2D - 69 = Pencari Jejak – Mimi – Gunung – Main Permainan Engklek – Gunting – Tukang Jam – Peti Mati – Antareja – Burung Bangau – Pemahat - Wanita Hamil – Permaisuri - Tukang Es Terlanggar – Pohon Belinjo – Walang Kadung – Pagoda",
+      "no": "69",
+      "type": "2D",
+      "id": "177895446002669"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 70 = Panglima – Keledai – Tarik Tambang – Lampu Minyak – Rumah Makan – Ubi Kayu – Dewa Karno – Ikan Mas – Nelayan Ikan - Timpang – Kelana - Kena Razia Polisi – Jambu Monyet – Betet – Orang Gila",
+      "no": "70",
+      "id": "177895446002670"
+    },
+    {
+      "id": "177895446002671",
+      "desc": "MIMPI 2D - 71 = Pemburu – Macan Tutul – Baju Kemeja – Loncat Karet – Sumur – Kacang Goreng – Pistol Ecek Ecek / Mainan – Pandu – Burung Rajawali – Menantu Raja - Lintah Darat – Piala - Ayam Makan Ikan, Lengkeng – Lele – Raja Kera",
+      "no": "71",
+      "type": "2D"
+    },
+    {
+      "id": "177895446002772",
+      "type": "2D",
+      "no": "72",
+      "desc": "MIMPI 2D - 72 = Dewa Langit – Ikan Dorang – Tanam Kelapa – Sepak Kenci – Keran Air – Arloji – Tugu – Batara Guru – Kambing – Cewek - Tukang Parkir – Candi - Pedagang Kain LAgi Marah – Pohon Roda – Zebra – Bencong"
+    },
+    {
+      "no": "73",
+      "desc": "MIMPI 2D - 73 = Tuan Tanah – Semut – Bolpoin – Sempritan – Anting-Anting – Kemoceng – Bintang – Dursasana – Burung Merak – Dewi Kwan Im - Pandai Besi – Kartu AS - Memijak Kotoran Manusia – Pohon Waru – Ikan Sampan – Dewa Laut",
+      "type": "2D",
+      "id": "177895446002773"
+    },
+    {
+      "type": "2D",
+      "no": "74",
+      "desc": "MIMPI 2D - 74 = Bajak Laut – Pinguin – Burung Kenari – Ketapel – Gentong – Radio – Kamera – Indrajit – Kelabang – Kelenteng - Waria / Banci / Bencong – Lukisan - Kencan Di bawah Pohon – Pohon Juar – Ikan Tenggiri – Putri Kipas",
+      "id": "177895446002774"
+    },
+    {
+      "type": "2D",
+      "no": "75",
+      "desc": "MIMPI 2D - 75 = Sepasang Suami Istri – Bebek – Kuini – Balapan Lari – Buah Nangka – Jatuh – Lemari Baju – Ratih Kamajaya – Ikan Mas – Nelayan Ikan - Maling – Kunci - Mancing Dan Dapat Ular – Pohon Buni – Kalong – Dracula",
+      "id": "177895446002875"
+    },
+    {
+      "type": "2D",
+      "no": "76",
+      "desc": "MIMPI 2D - 76 = Jendral wanita – Nyamuk – Kasur – Teplekan – Timbangan – Mata – Ngambil Air – Srikandi – Monyet – Setan Gentayangan - Pengemis – Ayunan - Gubuk Terbakar – Pohon Cermai – Kepompong – Terjerat",
+      "id": "177895446002876"
+    },
+    {
+      "id": "177895446002877",
+      "desc": "MIMPI 2D - 77 = Walikota – Penyu – Cincin – Bekel – Payung – Sayur Pari – Anjing Bercinta – Togog; Laba-Laba – Pengemis - Sekretaris – Barongsai - Pemain Sulap Pinggir Jalan – Lengkuas – Kucing – Uang Kas",
+      "no": "77",
+      "type": "2D"
+    },
+    {
+      "desc": "MIMPI 2D - 78 = Orang kaya – Ikan Gergaji – Wajan – Balapan Becak – Semangka – Ketumbar – Jual Obat – Lesmana – Burung Gereja – Jurus Sakti - Ahli Sepatu – Dakkochan - Pencopet Lagi Beraksi – Kurma – Kecoak – Pedagang",
+      "no": "78",
+      "type": "2D",
+      "id": "177895446002878"
+    },
+    {
+      "id": "177895446002979",
+      "type": "2D",
+      "desc": "MIMPI 2D - 79 = Jendral Nafsu dan Serakah – Orong-Orong – Jagung – Panco – Jeruk bali – Bermain – Kompor – Suyudana – Kucing – Kas Uang - Potong Rambut – Harimau - Plaza Terbakar – Pohon Dringo – Orong-Orong – Gerombolan Maling Besar",
+      "no": "79"
+    },
+    {
+      "id": "177895446002980",
+      "no": "80",
+      "desc": "MIMPI 2D - 80 = Kepala Desa – Bajing Loncat – Pensil – Apollo – Bunga – Ceret – Menyiram Sayur – Semar – Rusa – Orang Buta - Biduan – Lilin - Anak Induk Puyuh – Pohon Jerangau – Landak – Ceroboh",
+      "type": "2D"
+    },
+    {
+      "id": "177895446002981",
+      "desc": "MIMPI 2D - 81 = Penipu – Janur Aren – Menyulam – Cangkir – Dam-Daman – Hidung – Aswatama – Singa – Kepala Geng Rampok - Wartawan – Matahari - Orang Naik Sepeda – Pohon Kincong – Orong-Orong – Jendral Serakah",
+      "no": "81",
+      "type": "2D"
+    },
+    {
+      "type": "2D",
+      "no": "82",
+      "desc": "MIMPI 2D - 82 = Gembala Sapi – Kuda Nil – Lilin – Kartu HP – Berlian – Telinga – Lencana – Udawa; Merpati – Sejodoh - Polisi Lalu Lintas atau Polantas – Nokturama - Dapur Terbakar – Pohon Asam Jawa – Pinguin – Bajak Laut",
+      "id": "177895446002982"
+    },
+    {
+      "type": "2D",
+      "no": "83",
+      "desc": "MIMPI 2D - 83 = Ibu Suri – Ikan Layur – Sayur Buncis – Mainan Dadu – Pipa – Kumis – Berkasihan – Dewi Kunti – Burung Gereja - Juru Masak – Jantung - Anak kembar – Pohon Gelugur – Keledai – Panglima",
+      "id": "177895446003083"
+    },
+    {
+      "no": "84",
+      "desc": "MIMPI 2D - 84 = Buddha – Burung Kalkun – Bibir – Koprol – Kacang – Berkunjung – Kol – Bagaspati – Kumbang – Pendekar Wanita - Kepala Kantor – Kuku Jari - Atap Rumah dilempar Batu – Pinang – Cendrawasih – Putri Raja",
+      "type": "2D",
+      "id": "177895446003084"
+    },
+    {
+      "id": "177895446003085",
+      "no": "85",
+      "desc": "MIMPI 2D - 85 = Penyihir – Jangkrik – Rotan – Latihan Hansip – Bunga Teratai – Pintu – Naik Kapal – Sarpa Kenaka – Babi – Pelayan - Penerjemah – Jenggot / Janggut - Orang Mati dan Hanyut di Sungai – Rotan – Babi – Pelayan",
+      "type": "2D"
+    },
+    {
+      "no": "86",
+      "desc": "MIMPI 2D - 86 = Pencabut Nyawa – Ikan Sampan – Dapat Lencana – Gerak Badan – Salak – Rokok – Mentimun – Yamadipati – Buaya – Perjaka Tua - Nahkoda Kapal – Piring Pecah - Ayam kokok Jam 12 Malam – Pohon Jahe – Binatang Bajing – Kepala Desa",
+      "type": "2D",
+      "id": "177895446003086"
+    },
+    {
+      "id": "177895446003187",
+      "type": "2D",
+      "desc": "MIMPI 2D - 87 = Orang Gila – Burung Betet – Bengkuang – Kerja Bakti – Botol – WC atau Toilet – Naik Pesawat – Burisrawa – Gajah – Penjaga Pintu - Rambu – Duda - Pakai Kacamata Hitam – Kantil – Domba – Dewi Naga",
+      "no": "87"
+    },
+    {
+      "id": "177895446003188",
+      "type": "2D",
+      "no": "88",
+      "desc": "MIMPI 2D - 88 = Dewi Naga – Domba – Bawang – Balap Karung – Jeruk manis – Piring – Meluku – Wilutama – Harimau – Tukang Tenung - Direktur – Helikopter - Rayakan Ulang Tahun ke-17 – pohon Teh – Ayam – Pemotong Kayu"
+    },
+    {
+      "id": "177895446003189",
+      "type": "2D",
+      "no": "89",
+      "desc": "MIMPI 2D - 89 = Sedang Mabuk dan Pemabuk – Ikan Bendera – Lampu Merah – Tambal Ban – Jeruk Keprok – Ciuman – Ember – Boma Nara – Tawon – Sakit Kudis - Pengeboran – Batu Kelapa - Mobil Roda Empat Terbalik – Pohon Kemenyan – Ikan Duri – Penjual Silat"
+    },
+    {
+      "no": "90",
+      "desc": "MIMPI 2D - 90 = Orang Tahanan – Trenggiling – Ke Pasar – Simpang Jalan – Sawah – Berjudi – Pil – Shinta – Kelinci – Dewi Bulan - Pemburu – Sate Kerang - Wanita Botak – Gandum – Penyu – Walikota",
+      "type": "2D",
+      "id": "177895446003190"
+    },
+    {
+      "no": "91",
+      "desc": "MIMPI 2D - 91 = Siluman Air – Serigala – Tanam Padi – Ambulan – Bambu – Toples – Toko Samsu – Witaksini – Serigala – Siluman Air - Agama Hindu – Pinggul - Anak Kecil Pegang Kotoran – Pohon Damar – Merak – Kwan Im",
+      "type": "2D",
+      "id": "177895446003291"
+    },
+    {
+      "id": "177895446003292",
+      "type": "2D",
+      "no": "92",
+      "desc": "MIMPI 2D - 92 = Pendekar Besi – Ikan Tenggiri – Kain – Garis Finish – Alpukat – Sarung – Sabun – Siti Sundari – Buaya – Perjaka Tua - Anak Haram – Rambut - Main Catur Sendiri – Jambu Bol – Kakak Tua – Anak Raja"
+    },
+    {
+      "id": "177895446003293",
+      "type": "2D",
+      "no": "93",
+      "desc": "MIMPI 2D - 93 = Penjilat – Babi Hutan – Sampan Perahu – Lrangan – Kaos Kaki – Buah Jengkol– Pondok – Durna – Beruang – Orang Eskimo - Pendusta – Janur - Pengusaha SudahBangkrut – Pohon Gayong – Babi Hutan – Dewi Kwan Im"
+    },
+    {
+      "id": "177895446003394",
+      "type": "2D",
+      "no": "94",
+      "desc": "MIMPI 2D - 94 = Kwan Kong – Kakap – Tidur – Pemandian – Pohon jambu – Jahit Baju – Pena – Prabu Salya – Gajah – Penjaga Pintu - Zatoichi – Kare ayam - Mobil Masuk Dalam Jurang – Gandung – Ikan Kakap"
+    },
+    {
+      "type": "2D",
+      "desc": "MIMPI 2D - 95 = Petani – Burung Perkutut – Pisau Cukur – Jalan Raya – Ceret Listrik – Tanam Padi – Kunci – Irawan – Burung Pipit – Perampok - Motor Cross – Kari ayam - Mati Mendadak – Anggrek – Ikan Layur – Ibu Suri",
+      "no": "95",
+      "id": "177895446003395"
+    },
+    {
+      "desc": "MIMPI 2D - 96 = Prajurit – Ikan Nus – Selimut – Laut – Mangga – Minyak Angin – Ayam Betina – Citrayuda – Ikan Hiu – Raja Setan - Pramuwisma – Taik Lalat - Membunuh Ayah – Pala – Kalajengking – Kekasih",
+      "no": "96",
+      "type": "2D",
+      "id": "177895446003396"
+    },
+    {
+      "no": "97",
+      "desc": "MIMPI 2D - 97 = Raksasa – Tokek – Ambil Kelapa – Kali Brankas – Sirsak – Lemari Es – Tuli – Prahasta – Rusa – Orang Buta - Tukang Pijat dan Urut – Shampoo - Bayi Kembar Tiga – Pohon Sampinur – Jalak – Hidung Belang",
+      "type": "2D",
+      "id": "177895446003497"
+    },
+    {
+      "no": "98",
+      "desc": "MIMPI 2D - 98 = Ronda Malam – Tongkol – Kupas Kelapa – Kecelakaan – Lengkeng – Televisi – Ubi Obat – Dewi Trijata – Kucing – Pendeta - Pedagang – Jambang - Pohon Tumbang Menghalangi Jalan – Pohon Resak – Gelatik – Penolong",
+      "type": "2D",
+      "id": "177895446003498"
+    },
+    {
+      "no": "90, 09",
+      "desc": "Ikan",
+      "type": "2D",
+      "id": "1778954460035100"
+    },
+    {
+      "type": "2D",
+      "no": "1, 5",
+      "desc": "Polisi - Kriminal",
+      "id": "1778954460035101"
+    },
+    {
+      "id": "1778954460035102",
+      "desc": "Belalang Sembah",
+      "no": "76",
+      "type": "2D"
+    },
+    {
+      "id": "177895446003599",
+      "desc": "MIMPI 2D - 99 = Kegatelan atau Hidung Belang – Burung Jalak – Sawo – Kodak – Meja Belajar – bayi – Meneun – Arjuna – Belibis – Lelaki - Gelandangan – Sangkur - Telor di semak – Pohon Meranti – Ular – Ahli Nujum",
+      "no": "99",
+      "type": "2D"
+    }
+  ],
+  "prompts": [
+    {
+      "text": "Tolong analisis pergerakan silang angka ganjil dan genap dari posisi As dan Ekor. Berikan racikan BBFS terbaik.",
+      "title": "Pola Silang Ganjil Genap",
+      "id": "17787102873330"
+    },
+    {
+      "text": "0=8, 1=7 atau 4, 2=5, 3=8, 4=1 atau 7, 5=2, 6=9, 7=1 atau 4, 8=3, 9=6",
+      "title": "POLA Mistik Baru",
+      "id": "17787102873356"
+    },
+    {
+      "text": "Ambil data jam sebelumnya KEP dan EKR di +1",
+      "title": "POLA +1",
+      "id": "17787102873368"
+    },
+    {
+      "text": "Ambil data jam sebelumnya KEP dan EKR di -1",
+      "title": "POLA -1",
+      "id": "177871028733810"
+    },
+    {
+      "id": "177871028733812",
+      "text": "Ambil data jam di hari sebelumnya masing-masing silang AS & KOP ditambah 1",
+      "title": "POLA Silang KEP&EKR+1"
+    },
+    {
+      "text": "Ambil data jam di hari sebelumnya masing-masing silang AS & KOP dikurang 1",
+      "title": "POLA Silang KEP&EKR-1",
+      "id": "177871028733814"
+    },
+    {
+      "id": "1779088096827",
+      "title": "POLA MASTER (BACA SEMUA) ",
+      "text": "Pola Silang Ganjil Genap | Tolong analisis pergerakan silang angka ganjil dan genap dari posisi As,Kop, kepala(KEP)dan Ekor(EKR).\nPOLA MISTIK : 0=8, 1=7 atau 4, 2=5, 3=8, 4=1 atau 7, 5=2, 6=9, 7=1 atau 4, 8=3, 9=6\nPOLA +1 :  Ambil data jam sebelumnya KEP dan EKR di +1\nPOLA -1 : Ambil data jam sebelumnya KEP dan EKR di -1\nPOLA Silang KEP&EKR+1 : Ambil data jam di hari sebelumnya masing-masing silang AS & KOP ditambah 1\nPOLA Silang KEP&EKR-1 :  Ambil data jam di hari sebelumnya masing-masing silang AS & KOP dikurang 1.\nPOLA Silang MISTIK : Ambil data jam di hari sebelumnya masing-masing silang AS & KOP dijadikan mistik.\n"
+    },
+    {
+      "text": "Pencarian angka tarung terdiri dari 4 angka terkuat dari as,kop,kepala,ekor dalam setiap rumus yang sudah ada yaitu angka 4x4",
+      "title": "angka tarung 4x4",
+      "id": "1779412107476"
+    },
+    {
+      "id": "1779522761027",
+      "text": "Khusus digunakan untuk membaca hubungan TM yang sama pada hari sebelumnya untuk prediksi posisi target pada TM berikutnya. Jika ditemukan dua angka yang sama (twin) yang saling mengapit, maka angka yang berada tepat di area apit dijadikan angka inti. Kandidat utama diperoleh dari angka inti +1. Angka inti asli tetap dipertahankan sebagai kandidat tambahan dan angka twin juga dimasukkan sebagai kandidat tambahan. Kandidat turunan dapat diperoleh dari transformasi Database Mistik terhadap angka inti dan hasil turunan dari angka twin. Posisi hasil prediksi mengikuti posisi yang tepat berada di area apit dan tidak terbatas hanya pada AS, KOP, KEP, atau EKR. Semua kandidat wajib divalidasi menggunakan pola lain sebelum menjadi kandidat akhir.\n\nContoh:\n1030\n\nAS=1\nKOP=0\nKEP=3\nEKR=0\n\nTwin:\n0 dan 0\n\nPosisi target:\nKEP\n\nAngka inti:\n3\n\nKandidat:\nutama = 4\ntambahan = 3, 0\nturunan = 8, 7, 4.",
+      "title": "POLA Twin Antar TM (Posisi Apit) "
+    }
+  ],
+  "globals": [
+    {
+      "id": "1779086971149",
+      "text": "Aturan Analisis R3 Plus\n\nJadikan R3 Plus Now 1/2 sebagai patokan probabilitas utama.\n\nR3 Plus Old 1/2 hanya digunakan untuk membaca pola pembanding.\n\n\nMekanisme Silang\n\nJika result sebelumnya 1234, cari dominasi angka 1,2,3,4 pada:\n\nR3 Plus Old 1\n\nR3 Plus Old 2\n\n\nJika dominan di Old 2, maka analisis utama berikutnya mengambil patokan dari Now 1.\n\nJika dominan di Old 1, maka analisis utama berikutnya mengambil patokan dari Now 2.\n\n\nMetode ini digunakan untuk membaca efek silang antara histori lama dan pergerakan terbaru agar kandidat angka lebih stabil.\n\nPengambilan pola TM wajib mengikuti hasil silang data Old dan Now.\n\nData TM tidak boleh diambil secara acak, tetapi harus mengikuti arah dominasi pola hasil pembanding.\n\nTM dengan kecocokan silang paling kuat wajib dijadikan patokan utama pembentukan kandidat berikutnya.\n\nJika terdapat 6 TM dalam 1 result harian, maka setiap pencarian TM wajib menggunakan pola silang antar TM hari yang sama dan TM hari sebelumnya.\n\n\n\n---\n\nMekanisme Pengambilan Pola TM\n\nUntuk mencari TM1, gunakan data pembanding dari:\n\nTM6 hari-hari sebelumnya\n\n\nUntuk mencari TM2, gunakan data pembanding dari:\n\nTM1 pada hari yang sama\n\nlalu lanjut mencocokkan TM6 → TM5 → TM4 dari hari-hari sebelumnya\n\n\nUntuk mencari TM3, gunakan data pembanding dari:\n\nTM2 → TM1 pada hari yang sama\n\nlalu lanjut mencocokkan TM6 → TM5 → TM4 dari hari-hari sebelumnya\n\n\nPola yang sama berlaku untuk TM4, TM5, dan TM6, yaitu wajib membaca hubungan silang antara TM hari aktif dan histori TM hari sebelumnya.\n\nTujuan metode ini adalah mencari pola yang paling mirip, paling sering berulang, dan paling sinkron agar arah pergerakan angka lebih akurat serta tidak terpaku pada satu titik data saja.\n\n\n\n---\n\nScope Kepala dan Ekor\n\nAnalisis wajib dimulai dari Kepala sebagai arah utama kandidat putaran berikutnya.\n\nSetelah pola Kepala ditemukan, baru lakukan validasi pada Ekor.\n\nJika Kepala dan Ekor memiliki irisan angka yang sama, maka angka tersebut menjadi kandidat prioritas tinggi."
+    },
+    {
+      "id": "1779087204013",
+      "text": "Anda wajib membaca SELURUH database pola sebelum melakukan analisis.\n\nJangan hanya menggunakan 1 pola terakhir.\n\nSemua database pola harus dibandingkan silang untuk mencari:\n- pola paling mirip\n- pola paling sinkron\n- pola paling dominan\n- pola yang paling sering berulang"
+    },
+    {
+      "id": "1779543015128",
+      "text": "Tolong buatkan verifikasi data 10 result terakhir 5D(jika ada/opsional), 4D(opsi), 3D(opsi), dan terutama harus patokan pada 2D (KEPALA DAN EKOR) secara urutan mundur (backtrack) dalam bentuk berisi Result (Sesi Ini), Patokan Hitung (Sesi Sebelumnya), dan Pola Database yang Cocok secara berurutan, di mana logika mundurnya adalah TM3 dihitung dari TM2, TM2 dihitung dari TM1, TM1 dihitung dari TM6 hari sebelumnya, dan seterusnya hingga 10 sesi ke belakang, serta jawab dengan jujur \"Tidak Ada Pola yang Cocok\" jika memang tidak ada pada sistem [database pola] yang cocok."
+    },
+    {
+      "id": "1780010948694",
+      "text": "Aturan analisis : - Selalu prediksi putaran/jam berikutnya. Jadwal pasaran: jam 00:01(TM1), 13:00(TM2), 16:00(TM3), 19:00(TM4), 22:00(TM5), 23:00(TM6). - Berikan Kesimpulan Tren: rangkuman singkat pergerakan angka saat ini. - Racikan BBFS: WAJIB hasilkan 1 set angka BBFS (Bolak Balik Full Set) berisi 5-7 digit angka. Cetak tebal angka tersebut. - Anda wajib membaca SELURUH database pola sebelum melakukan analisis. Jangan hanya menggunakan 1 pola terakhir. Semua database pola harus dibandingkan silang untuk mencari: - pola paling mirip - pola paling sinkron - pola paling dominan - pola yang paling sering berulang - Utamakan Probabilitas UMUM Matematika Sains sebagai hasil akhir. - Jika beberapa pola menghasilkan kandidat berbeda: 1. Cari pola paling sinkron 2. Cari pola paling sering berulang 3. Cari pola dengan kecocokan TM tertinggi 4. Gunakan mistik hanya sebagai penguat 5. Gunakan probabilitas umum sebagai hasil akhir.\n - Tentukan Angka tarung 4x4. - Tentukan masing-masing Presentase kemungkinan Angka terkuat 0-9."
+    },
+    {
+      "id": "1780011610641",
+      "text": "Tolong buatkan/baca pola data  Ganjil Genap 10 result terakhir 5D(jika ada/opsional), 4D(opsi), 3D(opsi), dan terutama harus patokan pada 2D (KEPALA DAN EKOR) secara urutan mundur (backtrack) dalam bentuk berisi Sesi Ini/prediksi Probabilitas. "
+    },
+    {
+      "id": "1780041942963",
+      "text": "Aturan Syair SupremeTOTO : - Bertindaklah sebagai analis angka untuk membuat racikan prediksi SupremeTOTO PNG terdiri dari variasi kandidat 4D, 3D, 2D, berdasarkan nomor hasil deksipsi yang sama persis generate ai, berikan output hasil berbentuk satu kesatuan menjadi png berukuran maksimal 500px 16:9 portrait. nama penyedia SupremeTOTO. - Tentukan dalam syair sesuai Semua Variabel Output AI (Placeholder) pada output html/PNG. - Tentukan 2 digit angka kembar dan shio dalam syair. Berikan Id generate {{GEN_ID}} dan template Pola database spesifik {{POLA_ID}} yang digunakan."
+    },
+    {
+      "id": "1780042968096",
+      "text": "Scope x8 KEP atau scope x8 ekor  wajib digunakan sebagai presentase perhitungan angka terkuat seperti R3 Plus. Pencocokan angka diambil misal di result sebelumnya (backtrack)  terdapat banyak angka pada patokan kepala maka ambil data Scope x8 kepala, begitu sebaliknya jika result sebelumnya terdapat banyak angka pada patokan ekor maka pembanding analisis untuk result selanjutnya mengambil patokan ekor. "
+    }
+  ],
+  "extraSources": [
+    {
+      "prompt": "Ini adalah data hasil rumus 1 pembanding untuk result berikutnya",
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "sheetName": "R3 Manual",
+      "query": "",
+      "active": true,
+      "range": "U5:U9",
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI",
+      "title": "R3 Plus 1 Now",
+      "id": "1778709984897"
+    },
+    {
+      "prompt": "Ini adalah data hasil rumus 2 pembanding untuk result berikutnya",
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "range": "U10:U15",
+      "active": true,
+      "query": "",
+      "sheetName": "R3 Manual",
+      "id": "177895331657630",
+      "title": "R3 Plus 2 Now ",
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI"
+    },
+    {
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "prompt": "Ini adalah data hasil rumus 1 pembanding dari hasil result sebelumnya ke result sekarang. ",
+      "title": "R3 Plus 1 Old",
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI",
+      "id": "1778953376167342",
+      "sheetName": "R3 Manual",
+      "query": "",
+      "range": "V5:V9",
+      "active": true
+    },
+    {
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI",
+      "title": "R3 Plus 2 Old",
+      "id": "1778953433076529",
+      "query": "",
+      "sheetName": "R3 Manual",
+      "active": true,
+      "range": "V10:V14",
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "prompt": "Ini adalah data hasil rumus 2 pembanding dari hasil result sebelumnya ke result sekarang"
+    },
+    {
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "prompt": "Ini adalah Patokan Scope x8  mengambil  digit Kepala Result sebelumnya",
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI",
+      "title": "Scope x8 Kepala",
+      "id": "1778954939013",
+      "sheetName": "Data Base",
+      "query": "",
+      "active": true,
+      "range": "AH19:AN19"
+    },
+    {
+      "url": "https://docs.google.com/spreadsheets/d/1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI/edit",
+      "prompt": "Ini adalah Patokan Scope x8  mengambil  digit EKOR Result sebelumnya",
+      "title": "Scope x8 Ekor",
+      "sheetId": "1CMF5u_vosfFP2LhelHuEXFrMmOtiv5-vkAAIOohwqpI",
+      "id": "1778954943057104",
+      "sheetName": "Data Base",
+      "query": "",
+      "range": "AH20:AN20",
+      "active": true
+    }
+  ],
+  "settings": {
+    "config": {
+      "apiKey": "AIzaSyDsajDboT7LDDVirQ0BRNzfEBtf38Ye7bQ"
+    },
+    "syairTemplate": {
+      "bgUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+      "footer": "Utamakan Prediksi Sendiri",
+      "glow": true,
+      "opacity": "80",
+      "accentColor": "#b45309",
+      "variables": [
+        "BBFS",
+        "AM",
+        "AI",
+        "CB",
+        "CM",
+        "KEPALA",
+        "EKOR",
+        "SHIO",
+        "4D",
+        "3D",
+        "2D",
+        "TWIN",
+        "JITU",
+        "SHIO_ICON",
+        "TANGGAL",
+        "2D_TOP",
+        "2D_BOM",
+        "TM",
+        "GEN_ID",
+        "POLA_ID"
+      ],
+      "mainColor": "#fbbf24",
+      "html": "<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Syair Toto - SupremeTOTO Vertical 16:9</title>\n    <style>\n        /* GAYA BADGE / LABEL MERAH */\n        .badge {\n            font-sifont-sizeze: 11px;\n            background: #8B0000;\n            color: #fff;\n            padding: 2px 10px;\n            border-radius: 4px;\n            font-weight: 900;\n            display: inline-block;\n            margin-bottom: 2px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.4);\n            white-space: nowrap;\n        }\n\n        /* PERTAHANAN MUTLAK 1 BARIS */\n        .force-one-line {\n            display: block !important;\n            width: 100% !important;\n            white-space: nowrap !important;\n            text-align: center;\n            line-height: 1.2 !important; \n            padding: 2px 0 !important;\n            box-sizing: border-box;\n            overflow: hidden; /* Mencegah pelebaran ekstra */\n        }\n\n        .force-one-line br {\n            display: none !important;\n        }\n        .force-one-line div, .force-one-line p, .force-one-line span, .force-one-line ul, .force-one-line li {\n            display: inline !important;\n            margin: 0 !important;\n            padding: 0 2px !important;\n            white-space: nowrap !important;\n        }\n\n        /* CSS UNTUK SHIO */\n        #shio-emoji-display {\n            font-size: 50px;\n            line-height: 1;\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));\n        }\n\n        /* WADAH UTAMA ELASTIS */\n        .flex-container {\n            width: 100%; \n            max-width: 450px; \n            height: 800px; \n            background-color: #ebd19b; \n            background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0), linear-gradient(rgba(235, 209, 155, 0.88), rgba(235, 209, 155, 0.88)), url('https://i.ibb.co.com/C5DvffxF/IMG-20260519-032719-913.png'); \n            background-size: 15px 15px, cover, cover; \n            background-position: 0 0, center, center; \n            border: 5px solid #4a3319; \n            padding: 15px; \n            box-sizing: border-box; \n            box-shadow: 0 15px 40px rgba(0,0,0,0.6); \n            display: flex; \n            flex-direction: column; \n            gap: 8px; /* Jarak aman antar semua seksi, MENCEGAH TUMPANG TINDIH */\n            overflow: hidden;\n            position: relative; /* INI KUNCI YANG DITAMBAHKAN AGAR WATERMARK TIDAK TERBANG */\n        }\n    </style>\n</head>\n<body style=\"background-color: #2b2b2b; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Arial Black', 'Arial', sans-serif;\">\n\n    <!-- KONTAINER UTAMA (450x800) DENGAN SISTEM FLEX ELASTIS -->\n    <div class=\"flex-container\">\n\n        <!-- ============================================== -->\n        <!-- 1. HEADER -->\n        <!-- ============================================== -->\n        <div style=\"flex-shrink: 0; border-bottom: 3px double #4a3319; padding-bottom: 5px; text-align: center;\">\n            <span class=\"badge\" style=\"font-size: 10px; margin-bottom: 2px;\">{{TANGGAL}}</span>\n            <h1 style=\"margin: 0; font-size: 38px; color: #8B0000; font-style: italic; font-family: 'Brush Script MT', cursive, sans-serif; text-shadow: 2px 2px 0px #000; line-height: 0.9;\">Supreme TOTO</h1>\n            <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"18\" style=\"font-size: 18px; font-weight: 900; color: #111; margin-top: 3px; letter-spacing: 1px;\">\n                {{PASARAN}} <span style=\"color: #8B0000;\">{{TM}}</span>\n            </div>\n        </div>\n\n        <!-- ============================================== -->\n        <!-- 2. DATA UTAMA (BBFS, JITU, AM, AI) -->\n        <!-- ============================================== -->\n        <div style=\"flex-shrink: 0; border-bottom: 2px dashed #4a3319; padding-bottom: 8px; display: flex; flex-direction: column; gap: 6px;\">\n            <div style=\"display: flex; justify-content: space-between; align-items: center;\">\n                <div style=\"width: 48%; text-align: center;\">\n                    <span class=\"badge\">BBFS</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"20\" style=\"font-size: 20px; color: #111; font-weight: 900; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);\">{{BBFS}}</div>\n                </div>\n                <div style=\"width: 48%; text-align: center;\">\n                    <span class=\"badge\">ANGKA JITU</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"20\" style=\"font-size: 20px; color: #111; font-weight: 900; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);\">{{JITU}}</div>\n                </div>\n            </div>\n            <div style=\"display: flex; justify-content: space-between; align-items: flex-end;\">\n                <div style=\"width: 32%; text-align: center;\">\n                    <span class=\"badge\">AM</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"20\" style=\"font-size: 20px; color: #111; font-weight: 900; letter-spacing: 1px;\">{{AM}}</div>\n                </div>\n                <div style=\"width: 32%; text-align: center;\">\n                    <span class=\"badge\" style=\"background: #111;\">SHIO</span>\n                    <div id=\"shio-name-text\" class=\"force-one-line auto-shrink clean-text\" data-max-size=\"14\" style=\"font-size: 14px; color: #8B0000; font-weight: 900;\">{{SHIO}}</div>\n                </div>\n                <div style=\"width: 32%; text-align: center;\">\n                    <span class=\"badge\">AI</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"20\" style=\"font-size: 20px; color: #111; font-weight: 900; letter-spacing: 1px;\">{{AI}}</div>\n                </div>\n            </div>\n        </div>\n\n        <!-- ============================================== -->\n        <!-- 3. BLOK TENGAH 3D/4D (Penyerap Ruang Kosong) -->\n        <!-- ============================================== -->\n        <div style=\"flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 2px 0; overflow: hidden; min-height: 0;\">\n            <div style=\"width: 120px; height: 100%; text-align: center; display: flex; flex-direction: column;\">\n                <span class=\"badge\">3D</span>\n                <div class=\"auto-shrink-multi clean-text-multi\" style=\"flex: 1; display: flex; align-items: center; justify-content: center; word-wrap: break-word; font-size: 15px; color: #111; font-weight: bold; overflow: hidden; text-shadow: 1px 1px 0px rgba(255,255,255,0.8);\">{{3D}}</div>\n            </div>\n\n            <!-- KOTAK SHIO EMAS -->\n            <div style=\"width: 90px; height: 90px; background-color: rgba(166, 28, 28, 0.3); border: 3px solid rgba(122, 16, 16, 0.5); box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; border-radius: 50%; flex-shrink: 0;\">\n                <div style=\"width: 70px; height: 70px; border: 2px dashed rgba(229, 193, 88, 0.8); border-radius: 50%; display: flex; justify-content: center; align-items: center; background-color: rgba(189, 36, 36, 0.2); overflow: hidden;\">\n                    <div id=\"shio-emoji-display\">🐉</div>\n                </div>\n            </div>\n\n            <div style=\"width: 120px; height: 100%; text-align: center; display: flex; flex-direction: column;\">\n                <span class=\"badge\">4D</span>\n                <div class=\"auto-shrink-multi clean-text-multi\" style=\"flex: 1; display: flex; align-items: center; justify-content: center; word-wrap: break-word; font-size: 15px; color: #111; font-weight: bold; overflow: hidden; text-shadow: 1px 1px 0px rgba(255,255,255,0.8);\">{{4D}}</div>\n            </div>\n        </div>\n\n        <!-- ============================================== -->\n        <!-- 4. BLOK BAWAH 2D -->\n        <!-- ============================================== -->\n        <div style=\"flex-shrink: 0; border-top: 2px dashed #4a3319; padding-top: 8px; display: flex; flex-direction: column; gap: 8px;\">\n            \n            <!-- 2D TOP -->\n            <div style=\"text-align: center; width: 100%;\">\n                <span class=\"badge\">2D TOP</span>\n                <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"16\" style=\"font-size: 16px; color: #111; font-weight: 900; text-shadow: 1px 1px 0px rgba(255,255,255,0.8);\">{{2D_TOP}}</div>\n            </div>\n\n            <!-- 2D BOM -->\n            <div style=\"text-align: center; width: 100%;\">\n                <span class=\"badge\">2D BOM</span>\n                <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"17\" style=\"font-size: 17px; color: #8B0000; font-weight: 900; text-shadow: 1px 1px 0px #fff;\">{{2D_BOM}}</div>\n            </div>\n\n            <!-- KEPALA & EKOR -->\n            <div style=\"display: flex; justify-content: space-between; gap: 15px;\">\n                <div style=\"flex: 1; text-align: center; background: rgba(255,255,255,0.4); border: 1px dashed rgba(74,51,25,0.5); padding: 3px; border-radius: 6px;\">\n                    <span class=\"badge\" style=\"font-size: 10px;\">KEPALA</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"15\" style=\"font-size: 15px; color: #111; font-weight: 900;\">{{KEPALA}}</div>\n                </div>\n                <div style=\"flex: 1; text-align: center; background: rgba(255,255,255,0.4); border: 1px dashed rgba(74,51,25,0.5); padding: 3px; border-radius: 6px;\">\n                    <span class=\"badge\" style=\"font-size: 10px;\">EKOR</span>\n                    <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"15\" style=\"font-size: 15px; color: #111; font-weight: 900;\">{{EKOR}}</div>\n                </div>\n            </div>\n\n            <!-- CB & CM -->\n            <div style=\"display: flex; justify-content: space-between; gap: 15px;\">\n                <div style=\"flex: 1; text-align: center; background: rgba(255,255,255,0.7); border: 1px solid #4a3319; padding: 3px; border-radius: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden;\">\n                    <span class=\"badge\" style=\"font-size: 10px; margin:0 5px 0 0; flex-shrink: 0;\">CB</span>\n                    <div class=\"auto-shrink clean-text\" data-max-size=\"14\" style=\"font-size: 14px; color: #111; font-weight: 900; white-space: nowrap;\">{{CB}}</div>\n                </div>\n                <div style=\"flex: 1; text-align: center; background: rgba(255,255,255,0.7); border: 1px solid #4a3319; padding: 3px; border-radius: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden;\">\n                    <span class=\"badge\" style=\"font-size: 10px; margin:0 5px 0 0; flex-shrink: 0;\">CM</span>\n                    <div class=\"auto-shrink clean-text\" data-max-size=\"14\" style=\"font-size: 14px; color: #111; font-weight: 900; white-space: nowrap;\">{{CM}}</div>\n                </div>\n            </div>\n\n            <!-- TWIN -->\n            <div style=\"text-align: center; width: 100%;\">\n                <span class=\"badge\">TWIN</span>\n                <div class=\"force-one-line auto-shrink clean-text\" data-max-size=\"15\" style=\"font-size: 15px; color: #111; font-weight: 900; text-shadow: 1px 1px 0px rgba(255,255,255,0.8);\">{{TWIN}}</div>\n            </div>\n        </div>\n\n        <!-- ============================================== -->\n        <!-- 5. FOOTER -->\n        <!-- ============================================== -->\n        <div style=\"flex-shrink: 0; border-top: 2px dashed rgba(166, 124, 0, 0.5); padding-top: 8px; text-align: center; position: relative; z-index: 1;\">\n            <p style=\"margin: 0; font-size: 11px; color: #111; font-weight: bold; line-height: 1.3; text-shadow: 1px 1px 2px rgba(255,255,255,0.9);\">\n                Ini Hanya Prediksi Semata • Jangan Dijadikan Patokan JP<br>\n                <span style=\"color: #8B0000; font-size: 13px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 1px #fff;\">Salam JP Selalu</span>\n            </p>\n        </div>\n\n        <!-- WATERMARK ID (POLA & GEN) -->\n        <div style=\"position: absolute; bottom: 4px; left: 8px; font-size: 9px; color: #000; opacity: 0.45; font-weight: 900; letter-spacing: 0.5px; z-index: 10;\">\n            {{POLA_ID}}\n        </div>\n        <div style=\"position: absolute; bottom: 4px; right: 8px; font-size: 9px; color: #000; opacity: 0.45; font-weight: 900; letter-spacing: 0.5px; z-index: 10;\">\n            {{GEN_ID}}\n        </div>\n\n    </div>\n\n    <script>\n        function forceLayoutCorrection() {\n            // 1. Bersihkan ENTER menjadi SPASI\n            document.querySelectorAll('.clean-text').forEach(el => {\n                let currentHtml = el.innerHTML;\n                if (currentHtml.includes('<') || currentHtml.includes('\\n')) {\n                    currentHtml = currentHtml.replace(/(<br\\s*[\\/]?>|<\\/p>|<\\/div>|<\\/li>|\\n)/gi, ' ');\n                    let tempDiv = document.createElement('div');\n                    tempDiv.innerHTML = currentHtml;\n                    let pureText = tempDiv.textContent || tempDiv.innerText;\n                    el.innerHTML = pureText.replace(/\\s+/g, ' ').trim();\n                }\n            });\n\n            // 2A. Kecilkan font mendatar (2D, dll) agar tidak keluar batas\n            document.querySelectorAll('.auto-shrink').forEach(el => {\n                let maxSize = parseFloat(el.getAttribute('data-max-size')) || 16;\n                el.style.fontSize = maxSize + 'px';\n                let currentSize = maxSize;\n                \n                while (el.scrollWidth > el.clientWidth && currentSize > 7) {\n                    currentSize -= 0.5;\n                    el.style.fontSize = currentSize + 'px';\n                }\n            });\n\n            // 2B. Kecilkan font kotak besar (3D/4D) jika melebihi tinggi kotak\n            document.querySelectorAll('.auto-shrink-multi').forEach(el => {\n                let currentSize = 15;\n                el.style.fontSize = currentSize + 'px';\n                while (el.scrollHeight > el.clientHeight && currentSize > 8) {\n                    currentSize -= 0.5;\n                    el.style.fontSize = currentSize + 'px';\n                }\n            });\n\n            // 3. Emoji Shio Otomatis\n            const shioTextElement = document.getElementById('shio-name-text');\n            const shioDisplay = document.getElementById('shio-emoji-display');\n            if (shioTextElement && shioDisplay) {\n                let shioText = (shioTextElement.innerText || shioTextElement.textContent).toUpperCase();\n                const shioMap = {\n                    'TIKUS': '🐀', 'KERBAU': '🐂', 'HARIMAU': '🐅', 'MACAN': '🐅', \n                    'KELINCI': '🐇', 'NAGA': '🐉', 'ULAR': '🐍', 'KUDA': '🐎', \n                    'KAMBING': '🐐', 'MONYET': '🐒', 'AYAM': '🐓', 'ANJING': '🐕', 'BABI': '🐖'\n                };\n                for (let key in shioMap) {\n                    if (shioText.includes(key)) {\n                        shioDisplay.innerText = shioMap[key];\n                        break;\n                    }\n                }\n            }\n        }\n\n        // Jalankan pelacak bot secara real-time\n        const observer = new MutationObserver((mutations) => {\n            observer.disconnect();\n            forceLayoutCorrection();\n            observer.observe(document.body, { childList: true, subtree: true, characterData: true });\n        });\n\n        observer.observe(document.body, { childList: true, subtree: true, characterData: true });\n        window.addEventListener('DOMContentLoaded', forceLayoutCorrection);\n        window.addEventListener('load', forceLayoutCorrection);\n    </script>\n</body>\n</html>"
+    },
+    "sandinganConfig": {
+      "globalPrompt": "Aturan Analisis R3 Plus dan Scope Kepala/Ekor\n\nPatokan Analisis R3 Plus\n\nJadikan analisis sebagai patokan utama dengan metode perbandingan silang antara R3 Plus 1/2 Now dan R3 Plus 1/2 Old.\n\nR3 Plus 1/2 Now wajib dijadikan sumber probabilitas utama.\n\nR3 Plus 1/2 Old hanya digunakan sebagai data pembanding dan pencocokan pola historis.\n\n\nMekanisme Analisis\n\nJika result sebelumnya adalah 1234, maka sistem harus mencari kemunculan angka 1, 2, 3, atau 4 pada data:\n\nR3 Plus Old 1\n\nR3 Plus Old 2\n\n\nApabila kecocokan dominan ditemukan pada R3 Plus Old 2, maka patokan utama analisis berikutnya wajib mengambil data dari:\n\nR3 Plus Now 1\n\n\nSebaliknya, jika dominan ditemukan pada R3 Plus Old 1, maka patokan utama analisis berikutnya wajib mengambil data dari:\n\nR3 Plus Now 2\n\n\n\nTujuan Metode\n\nMetode ini digunakan untuk mencari efek silang pola antara histori lama dan pergerakan data terbaru agar probabilitas kandidat angka lebih stabil dan tidak hanya mengikuti satu sisi data saja.\n\n\n---\n\nAturan Scope X8 dan x9 Kepala dan Ekor\n\nPrioritas Analisis\n\nPada analisis Scope Kepala atau Ekor, sistem diwajibkan memprioritaskan analisis dari posisi Kepala terlebih dahulu.\n\nHasil analisis Kepala menjadi dasar utama pembentukan kandidat angka putaran berikutnya.\n\nSetelah pola Kepala ditemukan, baru dilakukan pencocokan tambahan pada bagian Ekor sebagai validasi atau penguat pola.\n\n\nValidasi Irisan Pola\n\nJika pola Kepala dan Ekor memiliki irisan angka yang sama, maka angka tersebut wajib dianggap sebagai kandidat prioritas tinggi.\n\nAngka irisan wajib diberikan bobot probabilitas lebih besar dibanding kandidat lain yang tidak memiliki kecocokan silang.\n\n\nTujuan Scope Kepala\n\nPendekatan ini digunakan agar analisis tidak langsung menyebar ke seluruh posisi angka, melainkan fokus terlebih dahulu pada arah pergerakan utama dari posisi Kepala sebelum diperkuat oleh pola Ekor.\n\nUtamakan Probabilitas UMUM Matematika Sains dibandingkan pola khusus atau pola paling mirip - pola paling sinkron - pola paling dominan - pola yang paling sering berulang dan seterusnya sebagai hasil akhir."
+    }
+  }
+}

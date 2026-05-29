@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SupremeTOTO versi 45</title>
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-slate-950 text-slate-200 antialiased overflow-hidden font-sans">
+
+    <!-- Container dibuat full width menyesuaikan layar desktop -->
+    <div class="flex flex-col h-[100dvh] w-full mx-auto bg-slate-900 relative shadow-2xl overflow-hidden" id="main-app-container">
+        
+        <!-- Header -->
+        <header class="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center z-40 shadow-md shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMainNav()" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-emerald-400 transition-colors shadow-inner">
+                    <i class="ph-bold ph-list text-xl"></i>
+                </button>
+                <h1 id="header-title" class="font-bold text-lg tracking-tight uppercase text-white">LIVE RESULT</h1>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-700/50" id="cloud-indicator">
+                    <span class="text-[10px] text-emerald-500 font-bold tracking-wider hidden sm:inline" id="cloud-status-text">MENYAMBUNG...</span>
+                    <i class="ph-fill ph-circle text-[8px] text-amber-500 animate-pulse" id="cloud-status-icon"></i>
+                </div>
+                <!-- Tombol Fullscreen -->
+                <button onclick="toggleFullScreen()" id="btn-fullscreen" class="p-1.5 bg-slate-900 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                    <i class="ph-bold ph-arrows-out text-lg" id="icon-fullscreen"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Drawer -->
+        <div id="main-nav-overlay" onclick="toggleMainNav()" class="fixed inset-0 bg-black/70 z-[60] hidden backdrop-blur-sm transition-opacity opacity-0 duration-300"></div>
+        <div id="main-nav-drawer" class="fixed top-0 left-0 w-64 h-full bg-slate-800 z-[70] transform -translate-x-full transition-transform duration-300 border-r border-slate-700 flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-slate-700 bg-slate-900/50">
+                <div class="flex items-center gap-3">
+                    <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
+                    <div class="flex flex-col">
+                        <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 45</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 p-4 space-y-2 overflow-y-auto no-scrollbar">
+                <button onclick="switchTab('live')" id="nav-btn-live" class="nav-btn-drawer w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold transition-all shadow-inner">
+                    <i class="ph-fill ph-broadcast text-xl"></i> Live Results
+                </button>
+                <button onclick="switchTab('tabel')" id="nav-btn-tabel" class="nav-btn-drawer w-full flex items-center gap-3 p-3 rounded-xl text-slate-400 font-bold transition-all hover:bg-slate-700">
+                    <i class="ph-fill ph-table text-xl"></i> Data Tabel
+                </button>
+                <button onclick="switchTab('ai')" id="nav-btn-ai" class="nav-btn-drawer w-full flex items-center gap-3 p-3 rounded-xl text-slate-400 font-bold transition-all hover:bg-slate-700">
+                    <i class="ph-fill ph-brain text-xl text-purple-400"></i> AI Analisis Pola
+                </button>
+                <button onclick="switchTab('bukumimpi')" id="nav-btn-bukumimpi" class="nav-btn-drawer w-full flex items-center gap-3 p-3 rounded-xl text-slate-400 font-bold transition-all hover:bg-slate-700">
+                    <i class="ph-fill ph-book-open text-xl"></i> Buku Mimpi
+                </button>
+                <div class="pt-4 mt-4 border-t border-slate-700">
+                    <button onclick="switchTab('admin')" id="nav-btn-admin" class="nav-btn-drawer w-full flex items-center gap-3 p-3 rounded-xl text-slate-400 font-bold transition-all hover:bg-slate-700">
+                        <i class="ph-fill ph-gear text-xl"></i> Setelan Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <main class="flex-1 overflow-hidden relative bg-slate-950">
+            
+            <!-- PAGE: LIVE -->
+            <div id="page-live" class="page-transition page-active h-full overflow-y-auto p-4 md:p-8 no-scrollbar">
+                <div id="live-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8"></div>
+            </div>
+
+            <!-- PAGE: TABEL -->
+            <div id="page-tabel" class="page-transition page-hidden h-full flex flex-col">
+                <div class="p-4 md:p-6 bg-slate-900 border-b border-slate-800 shrink-0">
+                    <select id="pool-selector" onchange="fetchTableData(false)" class="w-full max-w-xl mx-auto block p-4 rounded-xl bg-slate-800 border border-slate-700 outline-none font-bold text-center text-emerald-400 shadow-inner appearance-none">
+                        <option value="">-- Pilih Pasaran --</option>
+                    </select>
+                </div>
+                <div id="data-container" class="flex-1 overflow-auto p-4 md:p-8 no-scrollbar relative max-w-6xl mx-auto w-full">
+                    <div class="flex flex-col items-center justify-center h-full text-slate-600"><i class="ph ph-table text-5xl mb-2 opacity-20"></i><p class="text-sm">Pilih pasaran untuk melihat tabel</p></div>
+                </div>
+            </div>
+
+            <!-- PAGE: AI -->
+            <div id="page-ai" class="page-transition page-hidden h-full flex flex-col bg-slate-950">
+                
+                <!-- TOMBOL TOGGLE PANEL PENGATURAN -->
+                <div class="bg-slate-800 border-b border-slate-700 shrink-0 shadow-sm z-30 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-700 transition-colors" onclick="toggleAIControls()">
+                    <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2"><i class="ph-bold ph-sliders"></i> Panel Pengaturan AI</span>
+                    <i class="ph-bold ph-caret-down text-emerald-400 transition-transform duration-300" id="ai-controls-icon"></i>
+                </div>
+
+                <div id="ai-controls-body" class="p-4 md:p-6 bg-slate-900 border-b border-slate-800 shrink-0 shadow-lg z-20 transition-all duration-300">
+                    <div class="max-w-2xl mx-auto">
+                        <select id="ai-pool-selector" onchange="fetchTableData(true)" class="w-full p-3.5 rounded-xl bg-slate-800 border border-purple-500/30 outline-none font-bold text-center text-purple-400 shadow-inner mb-3 appearance-none">
+                            <option value="">-- Pilih Tabel Pasaran Utama --</option>
+                        </select>
+                        
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3 relative">
+                            <label class="block text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-2"><i class="ph-fill ph-robot"></i> Template Pola (Spesifik)</label>
+                            <select id="ai-prompt-selector" onchange="applyPromptTemplate()" class="w-full p-2.5 rounded-lg bg-slate-800 border border-purple-500/20 text-slate-300 text-sm outline-none focus:border-purple-500 transition-colors mb-2 appearance-none">
+                                <option value="">-- Tulis Instruksi Manual Bebas --</option>
+                            </select>
+                            <textarea id="analisis-prompt" placeholder="Ketik instruksi spesifik di sini (atau biarkan kosong agar AI hanya membaca System Prompt)..." class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 outline-none text-sm text-slate-300 h-16 resize-none focus:border-purple-500/50 transition-colors"></textarea>
+                        </div>
+
+                        <div id="ai-extra-sources-info" class="hidden mb-3 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[10px] text-emerald-400 leading-relaxed">
+                            <i class="ph-fill ph-plugs-connected"></i> AI akan menyedot data tambahan: <span id="ai-extra-sources-list" class="font-bold"></span>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="toggleAITablePreview()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-3.5 px-3 rounded-xl transition-all flex justify-center items-center gap-2 whitespace-nowrap" title="Lihat/Tutup TabelUtuh">
+                                <i class="ph-bold ph-table text-lg"></i> Tabel
+                            </button>
+                            <button onclick="showAIScenario()" class="bg-blue-600/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/50 font-bold py-3.5 px-3 rounded-xl transition-all flex justify-center items-center gap-2 whitespace-nowrap" title="Cek Ringkasan Skenario AI">
+                                <i class="ph-bold ph-info text-lg"></i> Skenario AI
+                            </button>
+                            <button onclick="analyzeWithGemini()" id="btn-start-ai" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all active:scale-95 flex justify-center items-center gap-2">
+                                <i class="ph-bold ph-magic-wand text-lg"></i> Mulai
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CONTAINER TABEL -->
+                <div id="ai-data-container-wrapper" class="hidden border-b border-slate-800 bg-slate-900 shrink-0 p-2 overflow-hidden h-[40vh] transition-all">
+                    <div class="flex justify-between items-center mb-2 px-2 max-w-6xl mx-auto w-full">
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Pratinjau Tabel Utama</span>
+                        <button onclick="toggleAITablePreview()" class="text-slate-400 hover:text-white"><i class="ph-bold ph-x"></i></button>
+                    </div>
+                    <div id="ai-data-container" class="h-full overflow-auto text-[10px] pb-8 max-w-6xl mx-auto w-full">
+                        <div class="flex items-center justify-center h-full text-slate-500">Tabel Kosong</div>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col relative z-10 overflow-hidden bg-slate-950">
+                    <div id="hasil-analisis" class="flex-1 overflow-auto p-4 md:p-8 no-scrollbar text-sm text-slate-300 max-w-3xl mx-auto w-full">
+                        <div class="flex flex-col items-center justify-center h-full text-slate-600">
+                            <i class="ph-fill ph-brain text-6xl mb-3 opacity-20 text-purple-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"></i>
+                            <p class="text-sm text-center px-4">Laporan detail analisis Gemini akan tampil di sini</p>
+                        </div>
+                    </div>
+                    
+                    <div id="panel-export-syair" class="hidden p-4 bg-slate-900 border-t border-slate-800 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                        <button onclick="openSyairEditor()" class="w-full max-w-md mx-auto block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all active:scale-95 flex justify-center items-center gap-2 uppercase">
+                            <i class="ph-fill ph-paint-brush-broad text-2xl"></i> Studio Syair PNG
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: BUKU MIMPI -->
+            <div id="page-bukumimpi" class="page-transition page-hidden h-full flex flex-col">
+                
+                <!-- FITUR BARU: TAFSIR MIMPI AI -->
+                <div class="bg-slate-900 border-b border-purple-500/30 shrink-0 max-w-4xl mx-auto w-full">
+                    <div class="p-4 md:p-6 bg-slate-900/50 hover:bg-slate-800 transition-colors cursor-pointer flex justify-between items-center" onclick="document.getElementById('ai-mimpi-container').classList.toggle('hidden'); document.getElementById('ai-mimpi-icon').classList.toggle('rotate-180')">
+                        <span class="text-sm font-bold text-purple-400 flex items-center gap-2 uppercase tracking-widest"><i class="ph-fill ph-magic-wand text-lg"></i> Tafsir Mimpi dengan Gemini AI</span>
+                        <i class="ph-bold ph-caret-down text-purple-400 transition-transform duration-300" id="ai-mimpi-icon"></i>
+                    </div>
+                    <div id="ai-mimpi-container" class="hidden p-4 md:p-6 pt-0 space-y-3">
+                        <p class="text-xs text-slate-400">Ceritakan mimpimu secara spesifik, AI akan mencari makna dan angka erek-erek yang paling akurat.</p>
+                        <textarea id="input-cerita-mimpi" placeholder="Contoh: Semalam saya bermimpi memancing ikan mas besar tapi pancingannya patah..." class="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 text-sm h-24 resize-none outline-none focus:border-purple-500 text-slate-300 shadow-inner"></textarea>
+                        <button onclick="window.tafsirMimpiAI()" id="btn-tafsir-ai" class="w-full bg-purple-600 hover:bg-purple-500 p-3.5 rounded-xl font-bold text-white transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(147,51,234,0.3)]">
+                            <i class="ph-bold ph-sparkle text-lg"></i> Tafsirkan Mimpiku
+                        </button>
+                        <div id="hasil-tafsir-ai" class="hidden bg-slate-950 p-5 rounded-xl border border-purple-500/30 text-sm text-slate-300 leading-relaxed shadow-inner mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 md:p-6 space-y-4 bg-slate-900 border-b border-slate-800 shrink-0 max-w-4xl mx-auto w-full">
+                    <div class="relative">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-4 text-slate-500"></i>
+                        <input type="text" id="search-mimpi" onkeyup="renderBukuMimpi()" placeholder="Cari tafsir atau angka..." class="w-full p-4 pl-12 rounded-xl bg-slate-800 border border-slate-700 outline-none text-sm transition-all focus:border-emerald-500/50 shadow-inner text-white">
+                    </div>
+                    <div class="flex gap-2 bg-slate-950 p-1 rounded-xl shadow-inner max-w-sm mx-auto">
+                        <button onclick="switchMimpiType('2D')" id="tab-mimpi-2D" class="flex-1 py-2 rounded-lg font-bold bg-emerald-500 text-slate-900 transition-all">2D</button>
+                        <button onclick="switchMimpiType('3D')" id="tab-mimpi-3D" class="flex-1 py-2 rounded-lg font-bold text-slate-400 transition-all">3D</button>
+                        <button onclick="switchMimpiType('4D')" id="tab-mimpi-4D" class="flex-1 py-2 rounded-lg font-bold text-slate-400 transition-all">4D</button>
+                    </div>
+                </div>
+                <div id="buku-mimpi-list" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 no-scrollbar pb-10 max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- PAGE: ADMIN -->
+            <div id="page-admin" class="page-transition page-hidden h-full">
+                
+                <!-- PIN Screen -->
+                <div id="pin-screen" class="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-950 absolute inset-0 z-20">
+                    <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-700 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                        <i class="ph-fill ph-lock-key text-4xl text-emerald-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2 text-white">Admin Panel</h2>
+                    <p class="text-xs text-slate-500 mb-6">Otorisasi dibutuhkan untuk mengelola basis data</p>
+                    <input type="password" id="pin-input" placeholder="****" class="w-full max-w-[240px] text-center text-3xl tracking-[0.5em] p-4 rounded-2xl bg-slate-900 border border-slate-700 outline-none mb-6 text-emerald-400 shadow-inner focus:border-emerald-500">
+                    <button onclick="checkPin()" class="w-full max-w-[240px] bg-emerald-500 text-slate-900 p-4 rounded-2xl font-bold active:scale-95 transition-transform hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)]">BUKA KUNCI</button>
+                </div>
+
+                <!-- Admin Dashboard -->
+                <div id="admin-dashboard" class="hidden h-full flex flex-col p-4 md:p-8 space-y-4 overflow-y-auto no-scrollbar pb-20 relative z-10 bg-slate-950 max-w-5xl mx-auto w-full">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 id="admin-header-title" class="font-black text-xl tracking-tighter text-white">DASHBOARD</h2>
+                        <button onclick="closeSubAdmin()" class="p-2 text-slate-400 hover:text-white transition-colors bg-slate-800 rounded-lg border border-slate-700 shadow-sm">
+                            <i class="ph-bold ph-arrow-u-up-left text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Menu Utama Admin -->
+                    <div id="admin-main-menu" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="openSubAdmin('sub-admin-settings')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-blue-500 transition-colors shadow-lg relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none"></div>
+                            <div class="bg-blue-500/20 p-3 rounded-xl text-blue-400"><i class="ph-fill ph-gear-six text-2xl"></i></div>
+                            <div><h3 class="font-bold text-blue-400">Pengaturan Cloud & Sistem</h3><p class="text-[10px] text-slate-500">API Key & Status Database Pribadi</p></div>
+                        </button>
+                        <button onclick="openSubAdmin('sub-admin-pasaran')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-emerald-500 transition-colors shadow-lg relative overflow-hidden">
+                            <div class="bg-emerald-500/20 p-3 rounded-xl text-emerald-400"><i class="ph-fill ph-database text-2xl"></i></div>
+                            <div><h3 class="font-bold text-emerald-400">Kelola Pasaran Utama</h3><p class="text-[10px] text-emerald-500/70">URL Web & Tautkan Spreadsheet</p></div>
+                        </button>
+                        
+                        <button onclick="openSubAdmin('sub-admin-spreadsheet')" class="bg-slate-800 p-5 rounded-2xl border border-emerald-500/50 flex items-center gap-4 text-left hover:border-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.15)] relative overflow-hidden md:col-span-2">
+                            <div class="bg-emerald-500/20 p-3 rounded-xl text-emerald-400"><i class="ph-fill ph-google-logo text-2xl"></i></div>
+                            <div><h3 class="font-bold text-emerald-400">Pusat Data & Impor Spreadsheet <span class="bg-emerald-500 text-slate-900 text-[8px] px-1.5 py-0.5 rounded ml-1 animate-pulse">PRO</span></h3><p class="text-[10px] text-emerald-500/70">Kelola Sandingan & Alat Impor Massal</p></div>
+                        </button>
+                        
+                        <button onclick="openSubAdmin('sub-admin-mimpi')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-indigo-500 transition-colors shadow-lg">
+                            <div class="bg-indigo-500/20 p-3 rounded-xl text-indigo-400"><i class="ph-fill ph-book-open text-2xl"></i></div>
+                            <div><h3 class="font-bold text-indigo-400">Buku Mimpi</h3><p class="text-[10px] text-slate-500">Tafsir 2D 3D 4D</p></div>
+                        </button>
+                        <button onclick="openSubAdmin('sub-admin-prompt')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-purple-500 transition-colors shadow-lg">
+                            <div class="bg-purple-500/20 p-3 rounded-xl text-purple-400"><i class="ph-fill ph-robot text-2xl"></i></div>
+                            <div><h3 class="font-bold text-purple-400">Database Pola Khusus</h3><p class="text-[10px] text-slate-500">Kelola Koleksi Prompt AI</p></div>
+                        </button>
+                        <button onclick="openSubAdmin('sub-admin-global')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-amber-500 transition-colors shadow-lg relative overflow-hidden md:col-span-2">
+                            <i class="ph-fill ph-warning absolute -right-4 -bottom-4 text-6xl text-amber-500/5 rotate-12"></i>
+                            <div class="bg-amber-500/20 p-3 rounded-xl text-amber-400"><i class="ph-fill ph-cpu text-2xl"></i></div>
+                            <div><h3 class="font-bold text-amber-400">System Prompt / Rule Global</h3><p class="text-[10px] text-slate-500">Otak & Karakter Dasar AI</p></div>
+                        </button>
+
+                        <!-- TAMBAHAN MENU STUDIO SYAIR -->
+                        <button onclick="openSubAdmin('sub-admin-syair-design')" class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex items-center gap-4 text-left hover:border-pink-500 transition-colors shadow-lg relative overflow-hidden md:col-span-2">
+                            <div class="bg-pink-500/20 p-3 rounded-xl text-pink-400"><i class="ph-fill ph-paint-brush-broad text-2xl"></i></div>
+                            <div><h3 class="font-bold text-pink-400">Desain Studio Syair (HTML)</h3><p class="text-[10px] text-slate-500">Edit Template & Preview Output</p></div>
+                        </button>
+                    </div>
+
+                    <!-- Sub-Admin: Settings -->
+                    <div id="sub-admin-settings" class="hidden space-y-6">
+                        <!-- PANDUAN DATABASE PRIBADI -->
+                        <div id="guide-db-pribadi" class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl shadow-lg relative">
+                            <i class="ph-fill ph-info absolute top-3 right-3 text-2xl text-blue-500/20"></i>
+                            <h3 class="text-sm font-bold text-blue-400 mb-2">Ingin Database Permanen Milik Sendiri?</h3>
+                            <p class="text-[10px] text-slate-400 leading-relaxed mb-3">
+                                Saat ini Anda menggunakan Cloud Sementara. Untuk membuat database Anda tidak pernah hilang, ikuti langkah ini:
+                            </p>
+                            <ul class="text-[9px] text-slate-300 list-decimal pl-4 space-y-1 mb-4">
+                                <li>Buka <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-400 underline font-bold">Firebase Console</a>, klik Create Project (bebas nama).</li>
+                                <li>Pilih menu <b>Firestore Database</b> &gt; Create &gt; Start in Test Mode.</li>
+                                <li>Pilih menu <b>Authentication</b> &gt; Get Started &gt; Anonymous (Aktifkan).</li>
+                                <li>Ke Project Overview (Home), klik logo Web <b>&lt;/&gt;</b> untuk mendaftarkan web.</li>
+                                <li>Copy kode di dalam <code class="text-amber-400 bg-slate-800 px-1 rounded">firebaseConfig = {...}</code>.</li>
+                                <li><b>Tutup menu aplikasi ini, lalu Paste/Tempel kode tersebut ke baris ke-430 di Editor Kode (Layar Kanan).</b></li>
+                            </ul>
+                        </div>
+
+                        <!-- STATUS DATABASE PRIBADI AKTIF -->
+                        <div id="status-db-pribadi" class="hidden bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl shadow-lg relative">
+                            <i class="ph-fill ph-check-circle absolute top-3 right-3 text-2xl text-emerald-500/20"></i>
+                            <h3 class="text-sm font-bold text-emerald-400 mb-2">Database Pribadi Terhubung!</h3>
+                            <p class="text-[10px] text-slate-400 leading-relaxed">
+                                Aplikasi ini sekarang berjalan secara permanen di server Firebase Anda: <br>
+                                <span class="font-mono text-emerald-300 bg-slate-900 px-2 py-1 rounded mt-2 mb-1 inline-block border border-emerald-500/30" id="active-project-id"></span><br>
+                                <span class="font-mono text-blue-400 bg-slate-900 px-2 py-1 rounded inline-block border border-blue-500/30 font-bold shadow-inner"><i class="ph-fill ph-lock-key text-blue-500"></i> Kamar: <span id="active-room-id"></span></span>
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+                                <i class="ph-fill ph-key text-blue-400 text-lg"></i> Kunci API Gemini
+                            </h3>
+                            <form onsubmit="saveSettings(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-2">Google Gemini API Key</label>
+                                    <input id="input-setting-apikey" placeholder="AIzaSy..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-blue-500 text-white shadow-inner font-mono">
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]">SIMPAN KUNCI API</button>
+                            </form>
+                        </div>
+
+                        <!-- FITUR BACKUP RESTORE FULL DB -->
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-emerald-500/30 shadow-xl mt-4">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+                                <i class="ph-fill ph-download-simple text-emerald-400 text-lg"></i> Backup & Restore Data
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Amankan semua data (Pasaran, Mimpi, Pola AI) Anda ke file PC/HP. Berguna jika Anda masih menggunakan Cloud Sementara.</p>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="exportFullDatabase()" class="flex-1 bg-slate-700 hover:bg-slate-600 p-3 rounded-lg font-bold text-emerald-400 transition-colors text-[10px] uppercase flex items-center justify-center gap-2 border border-slate-600">
+                                    <i class="ph-bold ph-download-simple text-lg"></i> BACKUP
+                                </button>
+                                <input type="file" id="import-db-file" accept=".json" class="hidden" onchange="importFullDatabase(event)">
+                                <button type="button" onclick="document.getElementById('import-db-file').click()" class="flex-[2] bg-emerald-600 hover:bg-emerald-500 p-3 rounded-lg font-bold text-white transition-colors text-[10px] uppercase flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                                    <i class="ph-bold ph-upload-simple text-lg"></i> RESTORE DB
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Admin: Spreadsheet Hub -->
+                    <div id="sub-admin-spreadsheet" class="hidden space-y-6">
+                        
+                        <!-- BAGIAN 1: DATA SANDINGAN (MULTI SHEET) -->
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)] relative">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 border-b border-slate-700 pb-3 gap-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="ph-fill ph-plugs-connected text-blue-400 text-xl"></i>
+                                    <h3 class="font-bold text-white text-sm">Kelola Data Sandingan (Multi-Sheet)</h3>
+                                </div>
+                                <button onclick="openFormSandingan()" class="w-full sm:w-auto text-[10px] uppercase font-bold tracking-wider bg-blue-500/20 border border-blue-500/50 px-3 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner flex justify-center items-center gap-1">
+                                    <i class="ph-bold ph-plus"></i> Tambah Data Baru
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Data ini akan dibaca oleh AI secara <b>real-time</b> saat melakukan analisis. Nyalakan (Toggle) data yang ingin digunakan.</p>
+                            
+                            <!-- Instruksi Global Khusus Sandingan -->
+                            <div class="mb-4 bg-slate-900 p-3 rounded-xl border border-blue-500/30">
+                                <label class="block text-[10px] text-blue-400 uppercase font-bold tracking-wider mb-2"><i class="ph-bold ph-info"></i> Instruksi Global (Khusus Sandingan)</label>
+                                <textarea id="global-sand-prompt" placeholder="Contoh: Jadikan semua data sandingan di bawah ini sebagai faktor penguat angka ekor..." class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-xs outline-none focus:border-blue-500 text-white shadow-inner h-14 resize-none" onchange="saveGlobalSandinganPrompt(this.value)"></textarea>
+                            </div>
+
+                            <!-- Daftar Data Sandingan Aktif/Tersimpan -->
+                            <div id="admin-extra-sources-list" class="space-y-2 mb-2"></div>
+
+                            <!-- Form Tambah/Edit Sandingan -->
+                            <form id="form-sandingan" onsubmit="saveSandingan(event)" class="hidden mt-4 space-y-3 bg-slate-900 p-4 rounded-xl border border-blue-500/50 shadow-lg">
+                                <h4 id="title-form-sandingan" class="text-xs font-bold text-blue-400 mb-2 border-b border-slate-800 pb-2 uppercase tracking-wider"><i class="ph-bold ph-plus-circle"></i> Tambah Koneksi Baru</h4>
+                                
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Judul Konteks (Untuk Info AI)</label>
+                                    <input id="sand-title" placeholder="Contoh: Result Pasaran Sydney" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-blue-500 text-white shadow-inner">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">URL Google Spreadsheet</label>
+                                    <input id="sand-url" placeholder="https://docs.google.com/spreadsheets/d/..." required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-blue-500 text-white shadow-inner font-mono mb-2">
+                                </div>
+
+                                <div class="flex gap-2 mb-2">
+                                    <div class="flex-1 relative">
+                                        <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Nama Sheet</label>
+                                        <div class="relative">
+                                            <input id="sand-sheet" placeholder="Cth: DataMimpi" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-blue-500 text-white shadow-inner pr-8">
+                                            <button type="button" onclick="loadTabsForInput('sand-url', 'sand-sheet')" class="absolute right-1.5 top-1.5 text-blue-400 bg-blue-500/20 p-1.5 rounded-md hover:bg-blue-500 hover:text-white transition-colors" title="Pindai Sheet Otomatis"><i class="ph-bold ph-list-magnifying-glass"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="w-1/3 relative">
+                                        <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Rentang</label>
+                                        <div class="relative">
+                                            <input id="sand-range" placeholder="A2:E" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-blue-500 text-white shadow-inner font-mono pr-8">
+                                            <button type="button" onclick="openVisualSelector('sand-url', 'sand-sheet', 'sand-range')" class="absolute right-1.5 top-1.5 text-emerald-400 bg-emerald-500/20 p-1 rounded hover:bg-emerald-500 hover:text-white transition-colors" title="Pilih Sel Visual"><i class="ph-bold ph-selection-plus text-sm"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Query SQL (Opsional)</label>
+                                    <input id="sand-query" placeholder="Cth: select A, B" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-blue-500 text-white shadow-inner font-mono">
+                                </div>
+
+                                <div class="pt-2 border-t border-slate-800">
+                                    <label class="block text-[10px] text-amber-400 uppercase font-bold tracking-wider mb-1"><i class="ph-bold ph-robot"></i> Instruksi Khusus (Prompt Child)</label>
+                                    <textarea id="sand-prompt" placeholder="Contoh: Analisa sheet ini khusus untuk mencari angka ganjil..." class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-amber-500 text-white shadow-inner h-14 resize-none"></textarea>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-4 gap-2 border-t border-slate-800 pt-3">
+                                    <button type="button" onclick="cancelSandingan()" class="text-xs text-red-400 hover:text-red-300 font-bold px-2 flex-1 border border-red-500/30 rounded-lg py-3 bg-red-500/10 transition-colors">Batal</button>
+                                    <button type="button" onclick="previewFormSheet('sandingan')" class="bg-slate-700 hover:bg-slate-600 py-3 px-4 rounded-lg font-bold text-emerald-400 transition-colors shadow-inner flex items-center justify-center gap-2">
+                                        <i class="ph-bold ph-eye text-lg"></i> Cek
+                                    </button>
+                                    <button type="submit" id="btn-sand-submit" class="flex-[2] bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)] flex justify-center gap-2">
+                                        <i class="ph-bold ph-floppy-disk text-lg"></i> SIMPAN
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- BAGIAN 2: ALAT IMPOR MASSAL (SEKALI JALAN) -->
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)] relative mt-6" id="section-import-massal">
+                            <div class="flex items-center gap-2 mb-2 border-b border-slate-700 pb-3">
+                                <i class="ph-fill ph-download-simple text-emerald-400 text-xl"></i>
+                                <h3 class="font-bold text-white text-sm">Alat Impor Massal (Buku Mimpi, Pola, dll)</h3>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Gunakan alat ini untuk "menyedot" data dari spreadsheet dan menyimpannya secara <b>permanen</b> ke database aplikasi. Aksi ini hanya perlu dilakukan sekali untuk setiap kumpulan data.</p>
+
+                            <form id="form-import" onsubmit="executeImportPermanen(event)" class="space-y-3 bg-slate-900 p-4 rounded-xl border border-slate-700 shadow-inner">
+                                <div>
+                                    <label class="block text-[10px] text-emerald-400 uppercase font-bold tracking-wider mb-1">Target Database</label>
+                                    <select id="imp-type" onchange="toggleImportMapping()" class="w-full p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs outline-none focus:border-emerald-500 shadow-inner appearance-none">
+                                        <option value="mimpi">Import ke: Database Buku Mimpi</option>
+                                        <option value="prompt">Import ke: Database Pola AI</option>
+                                        <option value="global">Import ke: Rule Global AI</option>
+                                    </select>
+                                </div>
+
+                                <div class="pt-2 border-t border-slate-800 mt-2">
+                                    <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">URL Google Spreadsheet (Wajib)</label>
+                                    <input id="imp-url" placeholder="https://docs.google.com/spreadsheets/d/..." required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono mb-2">
+                                    
+                                    <div class="flex gap-2 mb-2">
+                                        <div class="flex-1 relative">
+                                            <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Nama Sheet</label>
+                                            <div class="relative">
+                                                <input id="imp-sheet" placeholder="Cth: DataMimpi" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner pr-8">
+                                                <button type="button" onclick="loadTabsForInput('imp-url', 'imp-sheet')" class="absolute right-1.5 top-1.5 text-blue-400 bg-blue-500/20 p-1.5 rounded-md hover:bg-blue-500 hover:text-white transition-colors" title="Pindai & Pilih Sheet Otomatis"><i class="ph-bold ph-list-magnifying-glass"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="w-1/3 relative">
+                                            <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Rentang</label>
+                                            <div class="relative">
+                                                <input id="imp-range" placeholder="Cth: A2:E" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono pr-8">
+                                                <button type="button" onclick="openVisualSelector('imp-url', 'imp-sheet', 'imp-range')" class="absolute right-1.5 top-1.5 text-emerald-400 bg-emerald-500/20 p-1 rounded hover:bg-emerald-500 hover:text-white transition-colors" title="Pilih Sel Visual"><i class="ph-bold ph-selection-plus text-sm"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MAPPING FIELDS -->
+                                    <div id="mapping-mimpi" class="bg-slate-950 p-3 rounded-lg border border-slate-800 mb-2 space-y-2">
+                                        <p class="text-[9px] text-emerald-400 font-bold uppercase border-b border-slate-800 pb-1">Pemetaan Kolom (Huruf Excel)</p>
+                                        <div class="flex gap-2">
+                                            <div class="flex-1"><label class="block text-[8px] text-slate-400">Kolom Tipe (2D/3D/4D)</label><input id="map-mimpi-type" placeholder="Cth: A" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-emerald-500"></div>
+                                            <div class="flex-1"><label class="block text-[8px] text-slate-400">Kolom Nomor</label><input id="map-mimpi-no" placeholder="Cth: B" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-emerald-500"></div>
+                                            <div class="flex-1"><label class="block text-[8px] text-slate-400">Kolom Tafsir</label><input id="map-mimpi-desc" placeholder="Cth: C" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-emerald-500"></div>
+                                        </div>
+                                    </div>
+                                    <div id="mapping-prompt" class="hidden bg-slate-950 p-3 rounded-lg border border-slate-800 mb-2 space-y-2">
+                                        <p class="text-[9px] text-purple-400 font-bold uppercase border-b border-slate-800 pb-1">Pemetaan Kolom Pola AI</p>
+                                        <div class="flex gap-2">
+                                            <div class="flex-1"><label class="block text-[8px] text-slate-400">Kolom Judul Pola</label><input id="map-prompt-title" placeholder="Cth: A" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-purple-500"></div>
+                                            <div class="flex-[2]"><label class="block text-[8px] text-slate-400">Kolom Isi Instruksi</label><input id="map-prompt-text" placeholder="Cth: B" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-purple-500"></div>
+                                        </div>
+                                    </div>
+                                    <div id="mapping-global" class="hidden bg-slate-950 p-3 rounded-lg border border-slate-800 mb-2 space-y-2">
+                                        <p class="text-[9px] text-amber-400 font-bold uppercase border-b border-slate-800 pb-1">Pemetaan Kolom Global Rule</p>
+                                        <div class="flex gap-2">
+                                            <div class="flex-1"><label class="block text-[8px] text-slate-400">Kolom Isi Aturan</label><input id="map-global-text" placeholder="Cth: A" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-amber-500"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-4 gap-2 border-t border-slate-800 pt-3">
+                                    <button type="button" onclick="previewFormSheet('import')" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-lg font-bold text-emerald-400 transition-colors shadow-inner flex items-center justify-center gap-2 flex-[1]">
+                                        <i class="ph-bold ph-eye text-lg"></i> CEK TABEL
+                                    </button>
+                                    <button type="submit" id="btn-imp-submit" class="flex-[2] bg-emerald-600 hover:bg-emerald-500 p-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                                        EKSEKUSI IMPORT
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Admin: Pasaran -->
+                    <div id="sub-admin-pasaran" class="hidden space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                            <form onsubmit="addPasaran(event)" class="space-y-4">
+                                <div class="space-y-2">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Nama Pasaran</label>
+                                        <input id="input-name" placeholder="Contoh: Toto Macau" required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-emerald-500 text-white shadow-inner">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">URL Foto Background (Opsional)</label>
+                                        <input id="input-image-url" type="url" placeholder="https://..." class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono">
+                                    </div>
+                                </div>
+                                
+                                <div class="p-3 bg-slate-900/80 border border-slate-700 rounded-xl space-y-2">
+                                    <div class="flex justify-between items-center mb-2 border-b border-slate-700 pb-1">
+                                        <label class="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider"><i class="ph-fill ph-broadcast"></i> Jadwal / Putaran Live Result</label>
+                                        <button type="button" onclick="addLiveDrawField()" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded hover:bg-emerald-500 hover:text-white transition-colors">+ Tambah Putaran</button>
+                                    </div>
+                                    <div id="live-draws-wrapper" class="space-y-3 max-h-60 overflow-y-auto no-scrollbar pb-2">
+                                        <!-- Fields injected by JS -->
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-slate-900/80 border border-slate-700 rounded-xl space-y-2">
+                                    <label class="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-2 border-b border-slate-700 pb-1"><i class="ph-fill ph-table"></i> Sumber Tabel Histori</label>
+                                    <input id="input-url-history" type="url" placeholder="URL HTML / URL Spreadsheet Tabel" required class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner">
+                                    <div class="flex gap-2">
+                                        <div class="flex-1 relative mt-2">
+                                            <div class="relative">
+                                                <input id="input-pasaran-sheetname" placeholder="Nama Sheet" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner pr-8">
+                                                <button type="button" onclick="loadTabsForInput('input-url-history', 'input-pasaran-sheetname')" class="absolute right-1.5 top-1.5 text-blue-400 bg-blue-500/20 p-1 rounded hover:bg-blue-500 hover:text-white" title="Pindai & Pilih Sheet Otomatis"><i class="ph-bold ph-list-magnifying-glass text-sm"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="w-1/3 mt-2 relative">
+                                            <div class="relative">
+                                                <input id="input-pasaran-rangehistory" placeholder="Rentang (A5:F)" class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono pr-8" title="Abaikan judul berantakan di baris atas">
+                                                <button type="button" onclick="openVisualSelector('input-url-history', 'input-pasaran-sheetname', 'input-pasaran-rangehistory')" class="absolute right-1.5 top-1.5 text-emerald-400 bg-emerald-500/20 p-1 rounded hover:bg-emerald-500 hover:text-white transition-colors" title="Pilih Sel Visual"><i class="ph-bold ph-selection-plus text-sm"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-slate-950 p-2 rounded border border-emerald-500/30 mt-2">
+                                        <label class="block text-[9px] text-emerald-400 uppercase font-bold mb-2">Pilih Kolom & Buat Header Sendiri</label>
+                                        <div class="flex gap-2 flex-col md:flex-row">
+                                            <div class="flex-1">
+                                                <label class="block text-[8px] text-slate-400">Kolom yg diambil (Pisah Koma)</label>
+                                                <input id="input-pasaran-map-cols" placeholder="Cth: A, B, D" class="w-full p-2 rounded bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 font-mono text-center">
+                                            </div>
+                                            <div class="flex-[2]">
+                                                <label class="block text-[8px] text-slate-400">Nama Header Baru (Pisah Koma)</label>
+                                                <input id="input-pasaran-map-headers" placeholder="Cth: Tanggal, Result SGP, Result HK" class="w-full p-2 rounded bg-slate-800 border border-slate-600 text-xs outline-none focus:border-emerald-500 font-mono">
+                                            </div>
+                                        </div>
+                                        <label class="flex items-center gap-2 text-[9px] text-slate-400 mt-2 pt-2 border-t border-slate-800 cursor-pointer">
+                                            <input type="checkbox" id="input-pasaran-autofill" class="accent-emerald-500 w-3 h-3"> 
+                                            Isi otomatis sel kosong dengan data di atasnya
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-2">
+                                    <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer"><input type="checkbox" id="input-visible" checked class="accent-emerald-500 w-4 h-4"> Tampilkan di App</label>
+                                    <button type="button" onclick="cancelEditPasaran()" id="btn-cancel-pasaran" class="hidden text-xs text-red-400 hover:text-red-300 font-bold">Batal Edit</button>
+                                </div>
+                                <button type="submit" id="btn-submit-pasaran" class="w-full bg-emerald-600 hover:bg-emerald-500 p-3 rounded-lg font-bold text-white transition-colors">SIMPAN KE CLOUD</button>
+                            </form>
+                        </div>
+                        <div id="links-list" class="space-y-2 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- Sub-Admin: Mimpi -->
+                    <div id="sub-admin-mimpi" class="hidden space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3 flex-wrap gap-2">
+                                <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+                                    <i class="ph-fill ph-book-open text-indigo-400 text-lg"></i> Tafsir Manual
+                                </h3>
+                                <button onclick="openSubAdmin('sub-admin-spreadsheet')" class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner">
+                                    <i class="ph-bold ph-google-logo"></i> Sedot dari Spreadsheet
+                                </button>
+                            </div>
+                            <form onsubmit="addMimpi(event)" class="space-y-3">
+                                <div class="flex gap-2">
+                                    <select id="input-mimpi-type" class="p-3 rounded-lg bg-slate-900 border border-slate-700 text-xs outline-none text-white shadow-inner">
+                                        <option value="2D">2D</option><option value="3D">3D</option><option value="4D">4D</option>
+                                    </select>
+                                    <input id="input-mimpi-no" placeholder="Nomor" required class="flex-1 p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-indigo-500 text-white shadow-inner">
+                                </div>
+                                <textarea id="input-mimpi-desc" placeholder="Deskripsi Tafsir Mimpi..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm h-20 resize-none outline-none focus:border-indigo-500 text-white shadow-inner"></textarea>
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 p-3 rounded-lg font-bold text-white transition-colors">SIMPAN TAFSIR MANUAL</button>
+                            </form>
+                        </div>
+                        <div id="admin-mimpi-list" class="space-y-2 pb-10 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- Sub-Admin: Prompt Spesifik -->
+                    <div id="sub-admin-prompt" class="hidden space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3 flex-wrap gap-2">
+                                <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+                                    <i class="ph-fill ph-robot text-purple-400 text-lg"></i> Data Pola
+                                </h3>
+                                <div class="flex flex-wrap gap-2 justify-end">
+                                    <button onclick="clearAllPrompts()" class="text-[10px] uppercase font-bold tracking-wider bg-red-500/10 border border-red-500/30 px-2 py-2 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-trash"></i> Hapus Semua</button>
+                                    <button onclick="downloadPrompts()" class="text-[10px] uppercase font-bold tracking-wider bg-blue-500/10 border border-blue-500/30 px-2 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-download-simple"></i> Backup</button>
+                                    <button onclick="openSubAdmin('sub-admin-spreadsheet')" class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-google-logo"></i> Sedot Spreadsheet</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg mb-4 text-[10px] text-slate-400">
+                                <p class="font-bold text-purple-400 mb-1">Format Import File TXT:</p>
+                                <p>Gunakan tanda pemisah <code class="bg-slate-800 px-1 rounded text-white">|</code> (Garis lurus vertikal) antara judul dan instruksi.</p>
+                                <p class="text-slate-500 mt-1 font-mono bg-slate-950 p-1 rounded">Rumus Angka Silang | Lakukan analisa silang pada kop dan ekor...</p>
+                                <input type="file" id="import-prompt-file" accept=".txt" class="hidden" onchange="handleImportPrompts(event)">
+                                <button onclick="document.getElementById('import-prompt-file').click()" class="mt-2 w-full text-[10px] uppercase font-bold tracking-wider bg-slate-800 border border-slate-600 px-2 py-2 rounded-lg text-slate-300 hover:text-white hover:border-purple-500 transition-all shadow-inner">
+                                    <i class="ph-bold ph-upload-simple"></i> Upload File TXT
+                                </button>
+                            </div>
+
+                            <form id="form-prompt" onsubmit="addPrompt(event)" class="space-y-3">
+                                <input id="input-prompt-title" placeholder="Nama Pola Manual" required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500 text-white shadow-inner">
+                                <textarea id="input-prompt-text" placeholder="Tulis instruksi pola..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm h-20 resize-none outline-none focus:border-purple-500 text-white shadow-inner"></textarea>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="cancelEditPrompt()" id="btn-cancel-prompt" class="hidden text-xs text-red-400 hover:text-red-300 font-bold px-4 border border-red-500/30 rounded-lg py-3 bg-red-500/10 transition-colors">Batal</button>
+                                    <button type="submit" id="btn-submit-prompt" class="flex-1 w-full bg-purple-600 hover:bg-purple-500 p-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(147,51,234,0.3)]">SIMPAN POLA MANUAL</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="admin-prompt-list" class="space-y-2 pb-10 mt-4"></div>
+                    </div>
+
+                    <!-- Sub-Admin: System Prompt (Global Rules) -->
+                    <div id="sub-admin-global" class="hidden space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] relative overflow-hidden">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3 relative z-10 flex-wrap gap-2">
+                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i class="ph-fill ph-cpu text-amber-400 text-lg"></i> System Prompt
+                                </h3>
+                                <div class="flex flex-wrap gap-2 justify-end">
+                                    <button onclick="clearAllGlobals()" class="text-[10px] uppercase font-bold tracking-wider bg-red-500/10 border border-red-500/30 px-2 py-2 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-trash"></i> Reset</button>
+                                    <button onclick="downloadGlobals()" class="text-[10px] uppercase font-bold tracking-wider bg-blue-500/10 border border-blue-500/30 px-2 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-download-simple"></i> Backup</button>
+                                    <button onclick="openSubAdmin('sub-admin-spreadsheet')" class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-google-logo"></i> Sedot Spreadsheet</button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg mb-4 text-[10px] text-slate-400 relative z-10">
+                                <p>Format Import TXT: 1 baris = 1 aturan mutlak AI.</p>
+                                <input type="file" id="import-global-file" accept=".txt" class="hidden" onchange="handleImportGlobals(event)">
+                                <button onclick="document.getElementById('import-global-file').click()" class="mt-2 w-full text-[10px] uppercase font-bold tracking-wider bg-slate-900 border border-slate-700 px-2 py-2 rounded-lg text-slate-300 hover:text-white hover:border-amber-500 transition-all shadow-inner">
+                                    <i class="ph-bold ph-upload-simple"></i> Upload File TXT
+                                </button>
+                            </div>
+
+                            <form onsubmit="addGlobalRule(event)" class="space-y-3 relative z-10">
+                                <textarea id="input-global-text" placeholder="Ketik 1 instruksi global di sini..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm h-16 resize-none outline-none focus:border-amber-500 text-white shadow-inner"></textarea>
+                                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 p-3 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]">INJEKSI KE SISTEM</button>
+                            </form>
+                        </div>
+                        <div id="admin-global-list" class="space-y-2 pb-10 mt-4"></div>
+                    </div>
+
+                    <!-- Sub-Admin: Syair Custom HTML -->
+                    <div id="sub-admin-syair-design" class="hidden space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.1)] relative overflow-hidden">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3 relative z-10 flex-wrap gap-2">
+                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i class="ph-fill ph-paint-brush-broad text-pink-400 text-lg"></i> Custom HTML Studio Syair
+                                </h3>
+                                <div class="flex flex-wrap gap-2 justify-end">
+                                    <button onclick="resetSyairHTML()" class="text-[10px] uppercase font-bold tracking-wider bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-arrow-counter-clockwise"></i> Default</button>
+                                    <button onclick="exportSyairHTML()" class="text-[10px] uppercase font-bold tracking-wider bg-blue-500/10 border border-blue-500/30 px-3 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-download-simple"></i> Export</button>
+                                    <input type="file" id="import-syair-file" accept=".html,.txt" class="hidden" onchange="importSyairHTML(event)">
+                                    <button onclick="document.getElementById('import-syair-file').click()" class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"><i class="ph-bold ph-upload-simple"></i> Import</button>
+                                </div>
+                            </div>
+                            
+                            <p class="text-[10px] text-slate-400 mb-2 leading-relaxed">Gunakan variabel placeholder seperti <code class="text-pink-400 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">{{PASARAN}}</code>, <code class="text-pink-400 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">{{AM}}</code>, <code class="text-pink-400 bg-slate-900 px-1 py-0.5 rounded border border-slate-700">{{SHIO_ICON}}</code> yang otomatis diganti oleh jawaban AI saat prediksi selesai.</p>
+                            
+                            <!-- FITUR MANAJEMEN VARIABEL -->
+                            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 shadow-inner relative z-10">
+                                <h4 class="text-[10px] font-bold text-pink-400 uppercase tracking-wider mb-2 border-b border-slate-800 pb-2 flex items-center gap-2"><i class="ph-bold ph-brackets-curly"></i> Variabel Output AI (Placeholder)</h4>
+                                <div id="admin-syair-variables-list" class="flex flex-wrap gap-2 mb-3"></div>
+                                <form onsubmit="addSyairVar(event)" class="flex gap-2">
+                                    <input id="input-new-syair-var" placeholder="Tambah (Cth: POLA_TARUNG)" required class="flex-1 p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-xs outline-none focus:border-pink-500 text-white shadow-inner uppercase font-mono">
+                                    <button type="submit" class="bg-pink-600 hover:bg-pink-500 px-4 rounded-lg font-bold text-white text-xs transition-colors shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center gap-1"><i class="ph-bold ph-plus"></i> Tambah</button>
+                                </form>
+                                <p class="text-[9px] text-slate-500 mt-2 leading-relaxed">AI akan diwajibkan mencari angka untuk variabel di atas. Gunakan format <code class="text-emerald-400 bg-slate-950 px-1 rounded">{{NAMA_VARIABEL}}</code> di Editor HTML bawah.</p>
+                            </div>
+
+                            <!-- Box Preview Skala Kecil -->
+                            <div class="bg-slate-950 rounded-xl border border-slate-700 mb-4 flex justify-center items-start overflow-y-auto overflow-x-hidden h-[400px] md:h-[500px] relative p-4 custom-scrollbar">
+                                <div class="transform scale-[0.6] sm:scale-[0.7] md:scale-[0.8] origin-top transition-all pointer-events-none flex justify-center w-full mt-2 pb-10">
+                                    <div id="admin-syair-preview" style="width: 450px; display: block; flex-shrink: 0;"></div>
+                                </div>
+                            </div>
+
+                            <form onsubmit="saveSyairCustomHTML(event)" class="space-y-3 relative z-10">
+                                <textarea id="input-syair-html" class="w-full p-4 rounded-lg bg-slate-900 border border-slate-700 text-xs md:text-sm h-64 outline-none focus:border-pink-500 text-emerald-400 shadow-inner font-mono whitespace-pre custom-scrollbar" oninput="updateAdminSyairPreview()"></textarea>
+                                <button type="submit" class="w-full bg-pink-600 hover:bg-pink-500 p-3.5 rounded-lg font-bold text-white transition-colors shadow-[0_0_15px_rgba(236,72,153,0.3)]">SIMPAN TEMPLATE HTML</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- UI Components -->
+    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-[90%] max-w-sm pointer-events-none"></div>
+    <div id="custom-modal" class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 w-[85%] max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            <h3 id="modal-title" class="font-bold text-lg mb-2 text-white flex items-center gap-2"><i class="ph-fill ph-warning-circle text-amber-500"></i> Konfirmasi</h3>
+            <p id="modal-message" class="text-sm text-slate-400 mb-6 leading-relaxed">Apakah Anda yakin?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-700 text-white hover:bg-slate-600 transition-colors">Batal</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 rounded-lg font-bold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.5)]">Yakin, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pratinjau Tabel Sandingan & Raw Data -->
+    <div id="table-preview-modal" class="fixed inset-0 bg-black/80 z-[110] hidden items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300 p-4">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-6xl h-[85vh] rounded-2xl shadow-2xl flex flex-col transform scale-95 transition-transform duration-300" id="table-preview-content">
+            <div class="p-4 md:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800 rounded-t-2xl shrink-0">
+                <h3 id="table-preview-title" class="font-bold text-emerald-400 flex items-center gap-2 text-sm"><i class="ph-fill ph-table"></i> Pratinjau Data Mentah</h3>
+                <button onclick="closeTablePreview()" class="text-slate-400 hover:text-white bg-slate-700 p-1.5 rounded-lg"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div id="table-preview-body" class="flex-1 overflow-auto p-4 md:p-8 text-xs text-slate-300 bg-slate-950 rounded-b-2xl no-scrollbar"></div>
+        </div>
+    </div>
+
+    <!-- MODAL SKENARIO AI -->
+    <div id="ai-scenario-modal" class="fixed inset-0 bg-black/80 z-[115] hidden items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300 p-4">
+        <div class="bg-slate-900 border border-blue-500/30 w-full max-w-3xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col transform scale-95 transition-transform duration-300" id="ai-scenario-content">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800 rounded-t-2xl shrink-0">
+                <h3 class="font-bold text-blue-400 flex items-center gap-2 text-sm uppercase tracking-wider"><i class="ph-fill ph-info"></i> Skenario Tugas AI</h3>
+                <button onclick="closeAIScenario()" class="text-slate-400 hover:text-white bg-slate-700 p-1.5 rounded-lg"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div id="ai-scenario-body" class="flex-1 overflow-auto p-5 md:p-8 text-sm text-slate-300 space-y-4 md:space-y-6 no-scrollbar custom-scrollbar">
+                <!-- Konten disuntik via JS -->
+            </div>
+            <div class="p-4 border-t border-slate-800 bg-slate-800 rounded-b-2xl shrink-0">
+                <button onclick="closeAIScenario()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 md:py-4 rounded-lg transition-colors shadow-inner">Tutup Jendela Skenario</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISUAL RANGE SELECTOR -->
+    <div id="range-picker-modal" class="fixed inset-0 bg-slate-950/95 z-[130] hidden flex-col transition-opacity duration-300 opacity-0 backdrop-blur-md p-2 md:p-6">
+        <div class="flex flex-col h-full max-w-6xl mx-auto w-full bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="range-picker-content">
+            
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800 shrink-0">
+                <div>
+                    <h3 class="font-bold text-emerald-400 flex items-center gap-2 text-sm md:text-base"><i class="ph-bold ph-selection-plus"></i> Pemilih Rentang Visual</h3>
+                    <p class="text-[10px] md:text-xs text-slate-400 mt-1">Klik <b>Sel Awal</b>, lalu klik <b>Sel Akhir</b>.</p>
+                </div>
+                <button onclick="closeVisualSelector()" class="text-slate-400 hover:text-white bg-slate-700 p-2 rounded-lg"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+            
+            <div id="range-picker-body" class="flex-1 overflow-auto bg-slate-950 relative custom-scrollbar">
+                <div class="flex flex-col items-center justify-center h-full"><i class="ph-fill ph-spinner-gap animate-spin text-5xl text-emerald-500 mb-3"></i><p class="text-slate-400 text-xs">Menyediakan Spreadsheet...</p></div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-800 shrink-0 flex gap-3 items-center justify-between">
+                <div class="flex-1 bg-slate-900 px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-2">
+                    <span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold">Terpilih:</span>
+                    <span id="range-picker-result" class="text-emerald-400 font-mono font-bold text-sm md:text-base tracking-wider">A1</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetVisualSelection()" class="px-4 md:px-6 py-2 md:py-3 bg-slate-700 hover:bg-slate-600 text-white text-xs md:text-sm font-bold rounded-lg transition-colors">Reset</button>
+                    <button onclick="confirmVisualSelection()" class="px-6 md:px-8 py-2 md:py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-2"><i class="ph-bold ph-check"></i> Gunakan</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL STUDIO SYAIR (VISUAL EDITOR - FORMAT A4) -->
+    <div id="syair-editor-modal" class="fixed inset-0 z-[120] hidden bg-slate-950 flex-col transition-opacity duration-300 opacity-0">
+        
+        <!-- Header / Nav -->
+        <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900 shrink-0 shadow-lg z-20">
+            <h3 class="font-bold text-amber-400 flex items-center gap-2 text-sm md:text-base uppercase tracking-widest"><i class="ph-fill ph-palette"></i> Pratinjau Studio Syair</h3>
+            <div class="flex gap-2">
+                <button onclick="downloadSyairPNG()" id="btn-download-png" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg shadow-md transition-all active:scale-95 flex items-center gap-2 text-xs md:text-sm uppercase">
+                    <i class="ph-bold ph-download-simple text-lg"></i> Ekspor PNG
+                </button>
+                <button onclick="closeSyairEditor()" class="text-slate-400 hover:text-white bg-slate-800 p-2 rounded-lg border border-slate-700 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+        </div>
+
+        <!-- Area Preview Canvas -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-slate-950 pattern-grid relative custom-scrollbar">
+            <div class="flex justify-center items-start min-h-full pb-20">
+                <div class="transform scale-[0.6] sm:scale-[0.8] md:scale-100 origin-top transition-all shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+                    <div id="capture-canvas" class="bg-transparent" style="width: 450px; display: block; flex-shrink: 0;">
+                        <!-- Konten HTML Custom akan dirender secara dinamis di sini via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/script.ts"></script>
+</body>
+</html>
