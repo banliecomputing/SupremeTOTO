@@ -48,6 +48,43 @@ const getDocRef = (col: string, docId: string) => doc(db, col, docId);
 
 (window as any).syairVariables = ['BBFS', 'AM', 'AI', 'CB', 'CM', 'KEPALA', 'EKOR', 'SHIO', '4D', '3D', '2D', 'TWIN', 'JITU'];
 
+(window as any).robustFetch = async (url: string): Promise<string> => {
+    // List of resilient CORS proxy configurations
+    const proxies = [
+        (u: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+        (u: string) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+        (u: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+        (u: string) => `https://thingproxy.freeboard.io/fetch/${u}`,
+        (u: string) => u
+    ];
+
+    let lastError: any = null;
+    for (const getProxyUrl of proxies) {
+        try {
+            const finalUrl = getProxyUrl(url);
+            console.log(`[robustFetch] Trying URL: ${finalUrl}`);
+            const response = await fetch(finalUrl);
+            if (!response.ok) {
+                console.warn(`[robustFetch] Proxy failed with status ${response.status}`);
+                continue;
+            }
+            
+            if (finalUrl.includes('allorigins.win')) {
+                const json = await response.json();
+                if (json && json.contents) {
+                    return json.contents;
+                }
+            } else {
+                return await response.text();
+            }
+        } catch (e: any) {
+            console.warn(`[robustFetch] Exception with proxy:`, e);
+            lastError = e;
+        }
+    }
+    throw lastError || new Error(`Gagal memuat data dari ${url}. Semua jalur CORS proxy sedang sibuk.`);
+};
+
 (window as any).defaultSyairHTML = `<div style="width: 100%; max-width: 450px; background-color: #ebd19b; border: 4px solid #4a3319; padding: 25px 20px; box-sizing: border-box; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0); background-size: 15px 15px; margin: 0 auto; color: #111; font-family: 'Inter', sans-serif;">
 <div style="text-align: center; border-bottom: 2px dashed #8b0000; padding-bottom: 15px; margin-bottom: 15px;">
     <h1 style="margin: 0; font-size: 42px; color: #8B0000; font-weight: 900; text-shadow: 1px 1px 0px #fff; letter-spacing: 1px; font-family: 'Impact', sans-serif;">PREDIKSI JITU</h1>
@@ -833,7 +870,13 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const prList = document.getElementById('admin-prompt-list');
     const aiSel = document.getElementById('ai-prompt-selector');
     if(prList) prList.innerHTML = (window as any).aiPrompts.length === 0 ? '<p class="text-sm text-slate-500 text-center py-4">Belum ada pola prompt</p>' : '';
-    if(aiSel) aiSel.innerHTML = '<option value="">-- Tulis Instruksi Manual Bebas (Baca System Prompt) --</option>';
+    if(aiSel) {
+        aiSel.innerHTML = '<option value="">-- Tulis Instruksi Manual Bebas (Baca System Prompt) --</option>';
+        if ((window as any).aiPrompts && (window as any).aiPrompts.length > 0) {
+            const allPromptsText = (window as any).aiPrompts.map((p: any) => `[POLA: ${p.title}]\n${p.text}`).join("\n\n");
+            aiSel.innerHTML += `<option value="${allPromptsText}">✨ POLA MASTER (BACA SEMUA) ✨</option>`;
+        }
+    }
     
     (window as any).aiPrompts.forEach((pr: any) => {
         if(prList) prList.innerHTML += `
@@ -925,6 +968,31 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     }
 };
 
+(window as any).toggleOtherDraws = (id: string) => {
+    const el = document.getElementById(`other-draws-${id}`);
+    const icon = document.getElementById(`toggle-icon-${id}`);
+    const lbl = document.getElementById(`toggle-lbl-${id}`);
+    if (el && icon) {
+        if (el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+            el.classList.add('grid');
+            icon.style.transform = 'rotate(180deg)';
+            if (lbl) {
+                const count = el.children.length;
+                lbl.innerText = `SEMBUNYIKAN PUTARAN`;
+            }
+        } else {
+            el.classList.remove('grid');
+            el.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+            if (lbl) {
+                const count = el.children.length;
+                lbl.innerText = `TAMPILKAN ${count} PUTARAN LAIN`;
+            }
+        }
+    }
+};
+
 (window as any).fetchAllLiveResults = async () => {
     const c = document.getElementById('live-cards-container');
     if(!c) return;
@@ -942,46 +1010,87 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
             draws = [{ name: "Live Result", urlLive: p.urlLive, sheetNameLive: p.sheetNameLive, rangeLive: p.rangeLive }];
         }
 
+        let mainDrawIdx = 0;
+        let mainDraw = draws[0];
+        
+        const liveResIdx = draws.findIndex((d: any) => d.name && d.name.toLowerCase().includes("live result"));
+        if (liveResIdx !== -1) {
+            mainDrawIdx = liveResIdx;
+            mainDraw = draws[liveResIdx];
+        }
+
         const card = document.createElement('div');
-        card.className = "relative rounded-xl border border-slate-700 shadow-xl overflow-hidden bg-slate-800 transition-all";
+        card.className = "relative rounded-2xl border border-slate-800 shadow-xl overflow-hidden bg-slate-900/50 backdrop-blur-md transition-all duration-300 hover:border-slate-700/60 hover:shadow-cyan-950/20 flex flex-col justify-between";
         
         const bgStyle = p.imageUrl ? `background-image: url('${p.imageUrl}')` : '';
-        const bgLayer = p.imageUrl ? `<div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none" style="${bgStyle}"></div><div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/90 to-slate-900/40 pointer-events-none"></div>` : '';
+        const bgLayer = p.imageUrl ? `<div class="absolute inset-0 bg-cover bg-center opacity-[0.08] mix-blend-overlay pointer-events-none" style="${bgStyle}"></div><div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-slate-900/10 pointer-events-none"></div>` : '';
         
         let innerHtml = `
             ${bgLayer}
-            <div class="relative z-10 p-5 md:p-6 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-1 border-b border-slate-700/50 pb-3 md:pb-4 cursor-pointer group" onclick="togglePoolDraws('${p.id}')">
+            <div class="relative z-10 p-5 md:p-6 h-full flex flex-col justify-between">
+                <!-- Header Pasaran -->
+                <div class="flex justify-between items-center mb-4 border-b border-slate-800/80 pb-3 cursor-pointer group" onclick="togglePoolDraws('${p.id}')">
                     <div class="flex flex-col">
-                        <h3 class="text-sm md:text-base font-black text-slate-200 uppercase tracking-widest drop-shadow-md flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
-                            <i class="ph-fill ph-broadcast text-emerald-400 animate-pulse"></i> ${p.name}
+                        <h3 class="text-xs md:text-sm font-black text-slate-250 uppercase tracking-widest flex items-center gap-1.5 group-hover:text-emerald-400 transition-colors">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                            ${p.name}
                         </h3>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold bg-slate-900/50 px-2 py-1 rounded border border-slate-700"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</span>
-                            ${draws.length > 1 ? `<span class="text-[8px] md:text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold shadow-inner border border-emerald-500/30">${draws.length} Putaran</span>` : ''}
+                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-850"><i class="ph-bold ph-calendar-blank text-slate-500 text-[10px]"></i> ${dateStr}</span>
+                            ${draws.length > 1 ? `<span class="text-[9px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-extrabold border border-purple-500/20">${draws.length} Putaran</span>` : ''}
                         </div>
                     </div>
-                    <div class="p-2 md:p-2.5 bg-slate-900/50 rounded-full border border-slate-700 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 transition-all">
-                        <i class="ph-bold ph-caret-down text-slate-400 group-hover:text-emerald-400 transition-transform duration-300 text-lg" id="draws-icon-${p.id}" style="transform: rotate(180deg);"></i>
+                    <div class="p-1.5 bg-slate-950 rounded-full border border-slate-850 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-all">
+                        <i class="ph-bold ph-caret-down text-slate-500 group-hover:text-emerald-400 transition-transform duration-300 text-xs" id="draws-icon-${p.id}" style="transform: rotate(180deg);"></i>
                     </div>
                 </div>
-                <div class="flex-1 grid grid-cols-1 ${draws.length > 1 ? 'md:grid-cols-2' : ''} gap-3 md:gap-4 mt-4 md:mt-5 transition-all duration-300 origin-top content-start" id="draws-container-${p.id}">
+
+                <!-- Isi Kandungan Pasaran (Collapsible) -->
+                <div class="flex-1 flex flex-col" id="draws-container-${p.id}">
+                    <!-- Kotak Utama Live Result Sekarang -->
+                    <div class="relative bg-gradient-to-br from-slate-950 to-slate-900 p-5 md:p-6 rounded-2xl border border-emerald-500/25 shadow-inner flex flex-col items-center justify-center text-center overflow-hidden min-h-[140px] md:min-h-[150px] group/main">
+                        <div class="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-transparent to-transparent pointer-events-none"></div>
+                        <button onclick="previewLiveScrape('${p.id}', ${mainDrawIdx})" class="absolute top-3 right-3 z-20 text-slate-500 hover:text-emerald-400 opacity-60 hover:opacity-100 bg-slate-950 p-1.5 rounded-lg border border-slate-800 transition-all active:scale-95 cursor-pointer" title="Lihat Raw Data"><i class="ph-bold ph-eye text-xs md:text-sm"></i></button>
+                        <span class="text-[9px] md:text-[10px] font-extrabold text-emerald-400 tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 mb-2 uppercase">${mainDraw.name}</span>
+                        <div class="text-4xl md:text-5xl font-black text-emerald-400/40 animate-pulse tracking-widest font-mono drop-shadow-sm select-all" id="draw-res-${p.id}-${mainDrawIdx}">....</div>
+                    </div>
         `;
 
-        draws.forEach((d:any, idx:number) => {
-            const singleModeClass = draws.length === 1 ? 'text-center py-6 md:py-8' : 'p-3 md:p-4';
-            const numSizeClass = draws.length === 1 ? 'text-5xl md:text-6xl' : 'text-2xl md:text-3xl';
+        if (draws.length > 1) {
+            const otherDraws = draws.map((d: any, index: number) => ({ d, index })).filter((item: any) => item.index !== mainDrawIdx);
             
             innerHtml += `
-                <div class="bg-slate-900/60 rounded-xl border border-slate-700/50 backdrop-blur-sm relative group ${singleModeClass}">
-                    <button onclick="previewLiveScrape('${p.id}', ${idx})" class="absolute top-2 right-2 z-20 text-slate-400 hover:text-emerald-400 opacity-50 group-hover:opacity-100 bg-slate-800/80 p-1.5 md:p-2 rounded-lg border border-slate-700 transition-opacity" title="Lihat Raw Data Putaran Ini"><i class="ph-bold ph-eye text-base"></i></button>
-                    <p class="text-[9px] md:text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">${d.name}</p>
-                    <div class="${numSizeClass} font-black text-emerald-400/30 animate-pulse tracking-widest drop-shadow-sm mt-1 md:mt-2" id="draw-res-${p.id}-${idx}">....</div>
-                </div>
+                    <!-- Accordion Toggle Button -->
+                    <button id="toggle-btn-${p.id}" onclick="toggleOtherDraws('${p.id}')" class="w-full mt-3 py-2 px-3 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-emerald-400 rounded-xl border border-slate-850 hover:border-slate-800 text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm">
+                        <i class="ph-bold ph-grid-four text-slate-500"></i>
+                        <span id="toggle-lbl-${p.id}">TAMPILKAN ${otherDraws.length} PUTARAN LAIN</span>
+                        <i class="ph-bold ph-caret-down transition-transform duration-300" id="toggle-icon-${p.id}"></i>
+                    </button>
+                    
+                    <!-- Other drawings container with beautiful tight symmetry of grid -->
+                    <div id="other-draws-${p.id}" class="hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800/60 transition-all">
             `;
-        });
+            
+            otherDraws.forEach((item: any) => {
+                innerHtml += `
+                        <div class="bg-slate-950/60 hover:bg-slate-950 p-2.5 rounded-xl border border-slate-850 hover:border-emerald-500/20 text-center relative group/sub transition-all">
+                            <button onclick="previewLiveScrape('${p.id}', ${item.index})" class="absolute top-1 right-1 opacity-0 group-hover/sub:opacity-100 text-[9px] text-slate-500 hover:text-emerald-400 transition-opacity active:scale-95 cursor-pointer" title="Lihat Raw Data"><i class="ph-bold ph-eye"></i></button>
+                            <span class="text-[8px] md:text-[9px] font-bold text-slate-400 block truncate uppercase tracking-tight mb-1">${item.d.name}</span>
+                            <div class="text-sm md:text-base font-extrabold text-emerald-400/40 animate-pulse font-mono tracking-wider" id="draw-res-${p.id}-${item.index}">..</div>
+                        </div>
+                `;
+            });
+            
+            innerHtml += `
+                    </div>
+            `;
+        }
 
-        innerHtml += `</div></div>`;
+        innerHtml += `
+                </div>
+            </div>
+        `;
+        
         card.innerHTML = innerHtml;
         c.appendChild(card);
 
@@ -1009,12 +1118,12 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                     cleanRes = "---"; 
                 }
 
-                resEl.classList.remove('text-emerald-400/30', 'animate-pulse');
+                resEl.classList.remove('text-emerald-400/40', 'animate-pulse');
                 resEl.classList.add('text-emerald-400', 'drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]');
                 resEl.innerText = cleanRes;
             } catch(e) {
-                resEl.classList.remove('text-emerald-400/30', 'animate-pulse', 'text-2xl', 'text-3xl', 'text-5xl', 'text-6xl');
-                resEl.classList.add('text-red-400', 'text-sm', 'md:text-base');
+                resEl.classList.remove('text-emerald-400/40', 'animate-pulse', 'text-sm', 'text-base', 'text-lg', 'text-3xl', 'text-4xl', 'text-5xl');
+                resEl.classList.add('text-red-400', 'text-xs');
                 resEl.innerHTML = `<i class="ph-fill ph-warning-circle"></i> Offline`;
             }
         });
@@ -2005,23 +2114,280 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     }
 }
 
+(window as any).applyPromptTemplate = () => {
+    const sel = document.getElementById('ai-prompt-selector') as HTMLSelectElement;
+    const txt = document.getElementById('analisis-prompt') as HTMLTextAreaElement;
+    if (sel && txt) {
+        txt.value = sel.value;
+    }
+};
+
+(window as any).parseMarkdown = (text: string): string => {
+    if (!text) return "";
+    
+    let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    
+    html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-sm font-extrabold text-purple-300 mt-4 mb-2 flex items-center gap-2 border-l-2 border-purple-500/50 pl-2"><i class="ph-bold ph-sketch-logo"></i> $1</h3>');
+    html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-base font-black text-emerald-400 mt-5 mb-2.5 border-b border-slate-800 pb-1.5 flex items-center gap-2"><i class="ph-bold ph-arrow-circle-right animate-pulse text-emerald-500"></i> $1</h2>');
+    html = html.replace(/^#\s+(.+)$/gm, '<h1 class="text-lg font-black text-white mt-6 mb-3 uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-crown text-amber-400 animate-bounce"></i> $1</h1>');
+    
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-extrabold text-emerald-300">$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em class="italic text-slate-300">$1</em>');
+    
+    html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-950 p-3 rounded-xl font-mono text-xs text-indigo-300 border border-slate-800 my-3.5 overflow-x-auto shadow-inner">$1</pre>');
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-950 px-1.5 py-0.5 rounded font-mono text-xs text-pink-400 border border-slate-800">$1</code>');
+    
+    html = html.replace(/^>\s+(.+)$/gm, '<blockquote class="border-l-4 border-purple-500 bg-purple-500/10 px-4 py-2.5 my-3.5 rounded-r-xl text-slate-300 italic">$1</blockquote>');
+    
+    const lines = html.split('\n');
+    let insideTable = false;
+    let tableHtml = "";
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('|') && line.endsWith('|')) {
+            if (!insideTable) {
+                insideTable = true;
+                tableHtml += '<div class="overflow-x-auto my-4 rounded-xl border border-slate-800/80 shadow-xl max-w-full"><table class="w-full text-xs text-left text-slate-300 overflow-hidden">';
+            }
+            
+            const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+            if (cells.every(c => c.startsWith('-'))) {
+                continue;
+            }
+            
+            const isHeader = tableHtml.includes('</thead>') === false && !tableHtml.includes('<tbody>');
+            if (isHeader) {
+                tableHtml += '<thead class="bg-slate-900 border-b border-slate-800 text-purple-400 font-extrabold uppercase tracking-widest text-[10px]"><tr>';
+                cells.forEach(c => {
+                    tableHtml += `<th class="px-3 py-3 font-bold">${c}</th>`;
+                });
+                tableHtml += '</tr></thead><tbody>';
+            } else {
+                tableHtml += '<tr class="border-b border-slate-900/60 hover:bg-slate-900/30 transition-all font-mono">';
+                cells.forEach(c => {
+                    tableHtml += `<td class="px-3 py-2 text-slate-300 border-r border-slate-900/30">${c}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+        } else {
+            if (insideTable) {
+                insideTable = false;
+                tableHtml += '</tbody></table></div>';
+                lines[i - 1] = tableHtml;
+                tableHtml = "";
+            }
+        }
+    }
+    
+    if (insideTable) {
+        tableHtml += '</tbody></table></div>';
+        lines[lines.length - 1] = tableHtml;
+    }
+    
+    html = lines.map(l => {
+        if (l.trim().startsWith('<div') || l.trim().startsWith('<thead') || l.trim().startsWith('<tr') || l.trim().startsWith('</table') || l.trim().startsWith('<h') || l.trim().startsWith('<li') || l.trim().startsWith('<blockquote') || l.trim().startsWith('<pre')) {
+            return l;
+        }
+        
+        if (l.trim().startsWith('- ') || l.trim().startsWith('* ')) {
+            return `<li class="ml-4 list-disc text-slate-300 pl-1 py-1 leading-relaxed">${l.replace(/^[-*]\s+/, '')}</li>`;
+        }
+        
+        if (l.trim() === '') return '';
+        return `<p class="mb-3.5 leading-relaxed text-slate-300 text-sm">${l}</p>`;
+    }).join('\n');
+    
+    return html;
+};
+
+(window as any).aiChatSessionHistory = [];
+
+(window as any).resetAIChatHistory = () => {
+    const currentBasePrompt = (window as any).currentAIBasePrompt || "";
+    const activeResText = (window as any).lastAITextSyair || "";
+    
+    if (currentBasePrompt && activeResText) {
+        (window as any).aiChatSessionHistory = [
+            { role: "user", parts: [{ text: currentBasePrompt }] },
+            { role: "model", parts: [{ text: activeResText }] }
+        ];
+    } else {
+        (window as any).aiChatSessionHistory = [];
+    }
+    
+    const container = document.getElementById('ai-chat-history-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="flex items-start gap-2.5 max-w-[85%] animate-fade-in">
+                <div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-robot"></i></div>
+                <div class="bg-slate-900 p-3 rounded-2xl rounded-tl-none border border-slate-800/80 text-xs text-slate-300 leading-relaxed">
+                    Halo! Hasil analisis pola angka jitu untuk pasaran ini telah siap di atas. Anda bisa menanyakan lebih lanjut tentang rincian rumus, sandingan, Shio, atau prediksi Kepala/Ekor spesifik ke saya di sini. Silakan ketik pertanyaan Anda!
+                </div>
+            </div>`;
+    }
+    (window as any).showToast("Riwayat chat ulang berhasil direset");
+};
+
+(window as any).sendFollowUpQuestion = async () => {
+    const inputEl = document.getElementById('ai-chat-input') as HTMLTextAreaElement;
+    const btn = document.getElementById('btn-send-ai-chat') as HTMLButtonElement;
+    const sendIcon = document.getElementById('ai-chat-send-icon');
+    const container = document.getElementById('ai-chat-history-container');
+    
+    if (!inputEl || !container) return;
+    
+    const question = inputEl.value.trim();
+    if (!question) {
+        return (window as any).showToast("Ketik pertanyaan anda terlebih dahulu!", true);
+    }
+    
+    inputEl.disabled = true;
+    if (btn) btn.disabled = true;
+    if (sendIcon) {
+        sendIcon.className = "ph-bold ph-spinner-gap animate-spin text-base text-purple-200";
+    }
+    
+    // Append user query bubble
+    const userBox = document.createElement('div');
+    userBox.className = "flex items-start gap-2.5 max-w-[85%] ml-auto justify-end animate-slice-in";
+    userBox.innerHTML = `
+        <div class="bg-purple-600 p-3 rounded-2xl rounded-tr-none text-xs text-white leading-relaxed font-semibold shadow-inner">
+            ${question.replace(/\n/g, '<br>')}
+        </div>
+        <div class="bg-purple-900/40 text-purple-300 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-user"></i></div>
+    `;
+    container.appendChild(userBox);
+    container.scrollTop = container.scrollHeight;
+    
+    inputEl.value = "";
+    
+    // Add loader bubble
+    const loaderId = "ai-reply-loader-" + Date.now();
+    const loaderBox = document.createElement('div');
+    loaderBox.id = loaderId;
+    loaderBox.className = "flex items-start gap-2.5 max-w-[85%] animate-fade-in";
+    loaderBox.innerHTML = `
+        <div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-robot"></i></div>
+        <div class="bg-slate-900/60 p-3 rounded-2xl rounded-tl-none border border-slate-800/80 text-xs text-slate-400 leading-relaxed italic flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce"></div>
+            <div class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+            <div class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+            <span>Mengonsep jawaban pola jitu...</span>
+        </div>
+    `;
+    container.appendChild(loaderBox);
+    container.scrollTop = container.scrollHeight;
+    
+    if (!(window as any).aiChatSessionHistory || (window as any).aiChatSessionHistory.length === 0) {
+        const coreBasePrompt = (window as any).currentAIBasePrompt || "Kamu adalah Engine SupremeTOTO Master.";
+        const coreLastResText = (window as any).lastAITextSyair || "Analisis angka jitu.";
+        (window as any).aiChatSessionHistory = [
+            { role: "user", parts: [{ text: coreBasePrompt }] },
+            { role: "model", parts: [{ text: coreLastResText }] }
+        ];
+    }
+    
+    (window as any).aiChatSessionHistory.push({
+        role: "user",
+        parts: [{ text: question }]
+    });
+    
+    const apiKey = (window as any).getGeminiAPIKey();
+    
+    try {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: (window as any).aiChatSessionHistory })
+        });
+        
+        if (!response.ok) throw new Error("Gagal terhubung ke server Gemini.");
+        const data = await response.json();
+        
+        const replyText = data.candidates[0].content.parts[0].text;
+        
+        (window as any).aiChatSessionHistory.push({
+            role: "model",
+            parts: [{ text: replyText }]
+        });
+        
+        loaderBox.remove();
+        
+        const replyBox = document.createElement('div');
+        replyBox.className = "flex items-start gap-2.5 max-w-[85%] animate-fade-in";
+        replyBox.innerHTML = `
+            <div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-robot"></i></div>
+            <div class="bg-slate-900 p-3 rounded-2xl rounded-tl-none border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                ${(window as any).parseMarkdown(replyText)}
+            </div>
+        `;
+        container.appendChild(replyBox);
+        container.scrollTop = container.scrollHeight;
+        
+    } catch(e: any) {
+        loaderBox.remove();
+        const errorBox = document.createElement('div');
+        errorBox.className = "flex items-start gap-2.5 max-w-[85%] animate-fade-in";
+        errorBox.innerHTML = `
+            <div class="bg-red-500/20 text-red-400 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-warning-circle"></i></div>
+            <div class="bg-red-500/10 p-3 rounded-2xl rounded-tl-none border border-red-500/30 text-xs text-red-400 leading-relaxed">
+                Gagal memanggil AI: ${e.message || 'Koneksi terganggu'}. Silakan coba tanyakan kembali.
+            </div>
+        `;
+        container.appendChild(errorBox);
+        container.scrollTop = container.scrollHeight;
+        (window as any).aiChatSessionHistory.pop();
+    } finally {
+        inputEl.disabled = false;
+        if (btn) btn.disabled = false;
+        if (sendIcon) sendIcon.className = "ph-bold ph-paper-plane-right text-base text-white";
+        setTimeout(() => inputEl.focus(), 50);
+    }
+};
+
 (window as any).generateAI = async () => {
     const sel = document.getElementById('ai-pool-selector') as HTMLSelectElement;
-    const aiRes = document.getElementById('ai-result');
+    const aiRes = (document.getElementById('hasil-analisis') || document.getElementById('ai-result')) as HTMLDivElement;
     const aiRawBtn = document.getElementById('btn-raw-tafsir');
-    if(!sel.value || !aiRes) return (window as any).showToast("Pilih pasaran dulu!", true);
+    if(!sel || !sel.value || !aiRes) return (window as any).showToast("Pilih pasaran dulu!", true);
 
-    const apiKey = ((window as any).appConfig && (window as any).appConfig.apiKey && (window as any).appConfig.apiKey.trim() !== "") ? (window as any).appConfig.apiKey : (window as any).DEFAULT_API_KEY;
+    const apiKey = (window as any).getGeminiAPIKey();
     
     if(!apiKey || apiKey.trim() === "") {
          return (window as any).showToast("Kunci API Master Belum Diatur! Masukkan API Key Gemini di Panel Admin.", true);
     }
     
-    const pPrompt = (document.getElementById('ai-prompt-selector') as HTMLSelectElement).value;
-    const manualPrompt = (document.getElementById('ai-manual-prompt') as HTMLTextAreaElement).value;
+    const pPromptSelector = document.getElementById('ai-prompt-selector') as HTMLSelectElement;
+    const pPrompt = pPromptSelector ? pPromptSelector.value : "";
+    
+    const manualPromptEl = (document.getElementById('analisis-prompt') || document.getElementById('ai-manual-prompt')) as HTMLTextAreaElement;
+    const manualPrompt = manualPromptEl ? manualPromptEl.value : "";
 
-    const btn = document.getElementById('btn-generate-ai') as HTMLButtonElement;
-    if(btn) { btn.innerHTML = `<i class="ph-fill ph-spinner-gap animate-spin text-lg md:text-xl"></i> ANALISIS...`; btn.disabled = true; }
+    const btn = (document.getElementById('btn-start-ai') || document.getElementById('btn-generate-ai')) as HTMLButtonElement;
+    if(btn) { 
+        btn.innerHTML = `<i class="ph-fill ph-spinner-gap animate-spin text-lg md:text-xl"></i> ANALISIS...`; 
+        btn.disabled = true; 
+    }
+    
+    // Render dynamic premium loader inside the results container
+    if (aiRes) {
+        aiRes.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full min-h-[300px] text-center text-slate-400 select-none animate-pulse">
+                <div class="relative w-16 h-16 mb-5">
+                    <div class="absolute inset-0 rounded-full border-4 border-purple-500/20"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-t-purple-500 animate-spin"></div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-400 text-xl font-bold"><i class="ph-fill ph-brain"></i></div>
+                </div>
+                <p class="font-extrabold text-slate-100 tracking-wider text-sm flex items-center gap-2 justify-center"><span class="w-2 h-2 bg-purple-500 rounded-full animate-ping"></span> MENGHUBUNGKAN KE GEMINI ENGINE...</p>
+                <p class="text-[10px] text-slate-500 max-w-sm mx-auto mt-2 leading-relaxed font-mono">Bekerja di latar belakang. Merambah basis data histori angka pasaran, menyatukan vector data sandingan aktif, dan mensinkronisasikan pola jitu.</p>
+            </div>
+        `;
+    }
     
     let basePrompt = "Kamu adalah Engine SupremeTOTO Master yang bertugas menganalisis histori angka dan meracik angka paten.\n";
     if((window as any).globalRules && (window as any).globalRules.length > 0) {
@@ -2035,7 +2401,8 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     });
     basePrompt += dynamicVarInstruction;
 
-    const useSandingan = (document.getElementById('toggle-sandingan') as HTMLInputElement).checked;
+    const toggleSandinganEl = document.getElementById('toggle-sandingan') as HTMLInputElement;
+    const useSandingan = toggleSandinganEl ? toggleSandinganEl.checked : false;
     let sandinganDataText = "";
     if (useSandingan) {
         const activeSources = (window as any).extraSources.filter((s:any) => s.active);
@@ -2089,19 +2456,86 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
         const resTxt = data.candidates[0].content.parts[0].text;
         (window as any).lastAITextSyair = resTxt;
+        (window as any).currentAIBasePrompt = basePrompt;
 
         if (infoEl) infoEl.innerHTML = `<span class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold border border-purple-400">GEMINI 3.0</span> <span class="text-xs text-slate-400 ml-2">Analisis Selesai</span>`;
         if (aiRawBtn) aiRawBtn.classList.remove('hidden');
 
-        (window as any).openSyairEditor();
+        // Render response details inside the page container
+        if (aiRes) {
+            aiRes.innerHTML = `
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 md:p-8 text-sm text-slate-300 leading-relaxed shadow-lg mb-6 backdrop-blur-sm animate-fade-in">
+                    ${(window as any).parseMarkdown(resTxt)}
+                </div>
+                
+                <!-- Q&A Portal -->
+                <div class="mt-8 border-t border-purple-500/20 pt-6" id="ai-chat-section">
+                    <div class="bg-slate-900/50 rounded-2xl border border-purple-500/30 p-4 md:p-6 shadow-[0_0_25px_rgba(147,51,234,0.05)]">
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400">
+                                    <i class="ph-bold ph-chats-circle text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-sm text-slate-100 uppercase tracking-widest leading-none">Pusat Konsultasi AI</h4>
+                                    <span class="text-[9px] text-purple-400 font-mono font-bold font-extrabold">TANYA JAWAB POLA LANJUTAN</span>
+                                </div>
+                            </div>
+                            <button onclick="(window as any).resetAIChatHistory()" class="text-[9px] uppercase font-bold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700/50 cursor-pointer">
+                                <i class="ph-bold ph-trash font-bold"></i> Reset Chat
+                            </button>
+                        </div>
+                        
+                        <!-- Chat Bubbles -->
+                        <div id="ai-chat-history-container" class="space-y-4 max-h-[300px] overflow-y-auto mb-4 p-3 rounded-xl bg-slate-950 border border-slate-900/80 custom-scrollbar">
+                            <div class="flex items-start gap-2.5 max-w-[85%]">
+                                <div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg text-xs mt-0.5"><i class="ph-fill ph-robot"></i></div>
+                                <div class="bg-slate-900 p-3 rounded-2xl rounded-tl-none border border-slate-800/80 text-xs text-slate-300 leading-relaxed">
+                                    Halo! Hasil analisis pola angka jitu untuk pasaran ini telah siap di atas. Anda bisa menanyakan lebih lanjut tentang rincian rumus, sandingan, Shio, atau prediksi Kepala/Ekor spesifik ke saya di sini. Silakan ketik pertanyaan Anda!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input group -->
+                        <div class="flex gap-2 relative">
+                            <textarea id="ai-chat-input" placeholder="Tanyakan detail pola, BBFS, Shio, atau hapus angka..." class="flex-1 bg-slate-950 border border-slate-850 hover:border-slate-800 focus:border-purple-500/50 outline-none rounded-xl p-3 text-xs text-slate-200 h-11 resize-none transition-all leading-tight"></textarea>
+                            <button id="btn-send-ai-chat" onclick="(window as any).sendFollowUpQuestion()" class="bg-purple-600 hover:bg-purple-500 border border-purple-500 text-white font-bold px-4 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-95">
+                                <i id="ai-chat-send-icon" class="ph-bold ph-paper-plane-right text-base text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            aiRes.removeAttribute('style');
+            aiRes.scrollTop = 0;
+            
+            // Set up chat session
+            (window as any).aiChatSessionHistory = [
+                { role: "user", parts: [{ text: basePrompt }] },
+                { role: "model", parts: [{ text: resTxt }] }
+            ];
+        }
+
+        // Show studio button bar at bottom
+        const panelExp = document.getElementById('panel-export-syair');
+        if (panelExp) {
+            panelExp.classList.remove('hidden');
+        }
+
+        (window as any).showToast("Analisis AI Selesai dan disimpan!");
 
     } catch (error: any) {
         aiRes.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 p-4 rounded-lg text-red-500 flex items-center gap-3"><i class="ph-fill ph-warning-octagon text-3xl"></i><div><p class="font-bold text-sm">Gagal Sinkronisasi AI</p><p class="text-xs opacity-80">${error.message}</p></div></div>`;
         if (infoEl) infoEl.innerHTML = `<span class="text-red-400 text-xs"><i class="ph-fill ph-warning-circle"></i> Koneksi AI Terputus</span>`;
     } finally {
-        if(btn) { btn.innerHTML = `<i class="ph-fill ph-brain text-lg md:text-xl"></i> Mulai Analisis AI`; btn.disabled = false; }
+        if(btn) { 
+            btn.innerHTML = `<i class="ph-fill ph-magic-wand text-lg"></i> Mulai`; 
+            btn.disabled = false; 
+        }
     }
 };
+
+(window as any).analyzeWithGemini = (window as any).generateAI;
 
 (window as any).renderSyairVarsAdmin = () => {
     const list = document.getElementById('admin-syair-variables-list') || document.getElementById('syair-vars-list');
@@ -2657,6 +3091,11 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                             (window as any).appConfig = docSnap.data();
                             const ak = (document.getElementById('input-setting-apikey') as HTMLInputElement);
                             if(ak) ak.value = (window as any).appConfig.apiKey || '';
+                            
+                            // Render multi keys if config updates
+                            if (typeof (window as any).renderGeminiKeys === 'function') {
+                                (window as any).renderGeminiKeys();
+                            }
                         }
                     });
                     
@@ -2713,7 +3152,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     const story = inputEl.value;
     if(!story || story.trim() === '') return (window as any).showToast("Mimpi masih kosong!", true);
 
-    const apiKey = ((window as any).appConfig && (window as any).appConfig.apiKey && (window as any).appConfig.apiKey.trim() !== "") ? (window as any).appConfig.apiKey : (window as any).DEFAULT_API_KEY;
+    const apiKey = (window as any).getGeminiAPIKey();
     if(!apiKey || apiKey.trim() === "") return (window as any).showToast("Kunci API Master Belum Diatur!", true);
 
     resEl.classList.remove('hidden');
@@ -2757,6 +3196,267 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     } finally {
         btn.disabled = false;
     }
+};
+
+(window as any).getGeminiAPIKey = (): string => {
+    const config = (window as any).appConfig || {};
+    const keys = config.geminiKeys || [];
+    const activeKeys = keys.filter((k: any) => k.active && k.apiKey && k.apiKey.trim() !== "");
+    
+    if (activeKeys.length > 0) {
+        // Balancer: Rotate randomly among active keys to prevent rating limit.
+        const randomKey = activeKeys[Math.floor(Math.random() * activeKeys.length)];
+        console.log(`[getGeminiAPIKey] Using active Gemini Key: "${randomKey.title}"`);
+        return randomKey.apiKey;
+    }
+    
+    const legacyKey = config.apiKey || "";
+    if (legacyKey && legacyKey.trim() !== "") {
+        console.log(`[getGeminiAPIKey] Using legacy master Gemini Key`);
+        return legacyKey;
+    }
+    
+    console.log(`[getGeminiAPIKey] Using default master Gemini Key`);
+    return (window as any).DEFAULT_API_KEY || "";
+};
+
+(window as any).renderGeminiKeys = () => {
+    const config = (window as any).appConfig || {};
+    let keys = config.geminiKeys || [];
+    if (!Array.isArray(keys)) keys = [];
+    
+    const countEl = document.getElementById('active-api-count');
+    const activeCount = keys.filter((k: any) => k.active).length;
+    if (countEl) countEl.innerText = `${activeCount} Aktif`;
+    
+    const container = document.getElementById('gemini-keys-list-container');
+    if (!container) return;
+    
+    if (keys.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-6 text-slate-500 border border-dashed border-slate-700/60 rounded-xl bg-slate-900/30">
+                <i class="ph ph-keyhole text-xl opacity-40 mb-1 block"></i>
+                <p class="text-[10px] font-medium font-mono">Belum ada Kunci alternatif.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    keys.forEach((k: any) => {
+        const maskedKey = k.apiKey ? (k.apiKey.length > 10 ? k.apiKey.substring(0, 7) + "..." + k.apiKey.slice(-4) : "••••••••") : "Empty";
+        const activeIcon = k.active ? 'ph-fill ph-toggle-right text-lg text-emerald-400' : 'ph-bold ph-toggle-left text-lg text-slate-500';
+        
+        html += `
+            <div class="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-850 hover:border-slate-800 transition-all gap-2 group/key shadow-sm">
+                <div class="flex flex-col min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-white uppercase truncate">${k.title || 'Tanpa Judul'}</span>
+                        ${k.id === 'default' ? `<span class="text-[7px] bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-black px-1 uppercase tracking-tight">Legacy</span>` : ''}
+                    </div>
+                    <span class="text-[9px] font-mono text-slate-500 tracking-wider mt-0.5 select-all" title="${k.apiKey}">${maskedKey}</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleGeminiKeyActive('${k.id}')" class="flex items-center justify-center p-1 hover:bg-slate-850 rounded transition-colors" title="Aktifkan / Nonaktifkan">
+                        <i class="${activeIcon}"></i>
+                    </button>
+                    
+                    <div class="flex items-center gap-1 border-l border-slate-800 pl-2">
+                        <button onclick="editGeminiKey('${k.id}')" class="p-1 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded transition-all" title="Edit Key">
+                            <i class="ph-bold ph-pencil-simple text-xs"></i>
+                        </button>
+                        <button onclick="deleteGeminiKey('${k.id}')" class="p-1 text-slate-450 hover:text-red-400 hover:bg-red-500/10 rounded transition-all" title="Hapus Key">
+                            <i class="ph-bold ph-trash text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+};
+
+(window as any).saveGeminiKey = async () => {
+    const titleIn = document.getElementById('gemini-key-title') as HTMLInputElement;
+    const valIn = document.getElementById('gemini-key-val') as HTMLInputElement;
+    const editingIdIn = document.getElementById('gemini-key-editing-id') as HTMLInputElement;
+    
+    if (!titleIn || !valIn) return;
+    
+    const title = titleIn.value.trim();
+    const apiKey = valIn.value.trim();
+    const editingId = editingIdIn ? editingIdIn.value : "";
+    
+    if (!title) return (window as any).showToast("Masukkan Judul API!", true);
+    if (!apiKey) return (window as any).showToast("Masukkan Kunci API Gemini!", true);
+    
+    try {
+        const config = (window as any).appConfig || {};
+        let keys = config.geminiKeys || [];
+        if (!Array.isArray(keys)) keys = [];
+        
+        if (editingId) {
+            keys = keys.map((k: any) => {
+                if (k.id === editingId) {
+                    return { ...k, title, apiKey };
+                }
+                return k;
+            });
+            (window as any).showToast("Kunci Gemini diperbarui!");
+        } else {
+            const newKey = {
+                id: Date.now().toString(),
+                title,
+                apiKey,
+                active: true
+            };
+            keys.push(newKey);
+            (window as any).showToast("Kunci Gemini baru ditambahkan!");
+        }
+        
+        await setDoc(doc(db, 'settings', 'config'), { geminiKeys: keys }, { merge: true });
+        (window as any).cancelGeminiKeyEdit();
+    } catch (e: any) {
+        (window as any).showToast("Gagal menyimpan: " + e.message, true);
+    }
+};
+
+(window as any).cancelGeminiKeyEdit = () => {
+    const titleIn = document.getElementById('gemini-key-title') as HTMLInputElement;
+    const valIn = document.getElementById('gemini-key-val') as HTMLInputElement;
+    const editingIdIn = document.getElementById('gemini-key-editing-id') as HTMLInputElement;
+    const formTitle = document.getElementById('gemini-form-title');
+    const cancelBtn = document.getElementById('btn-cancel-gk');
+    const submitBtn = document.getElementById('btn-submit-gk');
+    
+    if (titleIn) titleIn.value = '';
+    if (valIn) valIn.value = '';
+    if (editingIdIn) editingIdIn.value = '';
+    if (formTitle) formTitle.innerText = 'Tambah Kunci Baru';
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+    if (submitBtn) submitBtn.innerText = 'Simpan';
+};
+
+(window as any).toggleGeminiKeyActive = async (id: string) => {
+    try {
+        const config = (window as any).appConfig || {};
+        let keys = config.geminiKeys || [];
+        
+        keys = keys.map((k: any) => {
+            if (k.id === id) {
+                return { ...k, active: !k.active };
+            }
+            return k;
+        });
+        
+        await setDoc(doc(db, 'settings', 'config'), { geminiKeys: keys }, { merge: true });
+        (window as any).showToast("Status Kunci diperbarui!");
+    } catch (e: any) {
+        (window as any).showToast("Gagal mengubah status: " + e.message, true);
+    }
+};
+
+(window as any).editGeminiKey = (id: string) => {
+    const config = (window as any).appConfig || {};
+    const keys = config.geminiKeys || [];
+    const keyToEdit = keys.find((k: any) => k.id === id);
+    if (!keyToEdit) return;
+    
+    const titleIn = document.getElementById('gemini-key-title') as HTMLInputElement;
+    const valIn = document.getElementById('gemini-key-val') as HTMLInputElement;
+    const editingIdIn = document.getElementById('gemini-key-editing-id') as HTMLInputElement;
+    const formTitle = document.getElementById('gemini-form-title');
+    const cancelBtn = document.getElementById('btn-cancel-gk');
+    const submitBtn = document.getElementById('btn-submit-gk');
+    
+    if (titleIn) titleIn.value = keyToEdit.title || '';
+    if (valIn) valIn.value = keyToEdit.apiKey || '';
+    if (editingIdIn) editingIdIn.value = keyToEdit.id || '';
+    if (formTitle) formTitle.innerText = 'Edit Kunci Gemini';
+    if (cancelBtn) cancelBtn.classList.remove('hidden');
+    if (submitBtn) submitBtn.innerText = 'Update';
+    
+    titleIn?.focus();
+};
+
+(window as any).deleteGeminiKey = async (id: string) => {
+    if (!confirm("Hapus Kunci Gemini ini dari daftar?")) return;
+    try {
+        const config = (window as any).appConfig || {};
+        let keys = config.geminiKeys || [];
+        
+        keys = keys.filter((k: any) => k.id !== id);
+        
+        await setDoc(doc(db, 'settings', 'config'), { geminiKeys: keys }, { merge: true });
+        (window as any).showToast("Kunci Gemini dihapus!");
+        
+        const editingIdIn = document.getElementById('gemini-key-editing-id') as HTMLInputElement;
+        if (editingIdIn && editingIdIn.value === id) {
+            (window as any).cancelGeminiKeyEdit();
+        }
+    } catch (e: any) {
+        (window as any).showToast("Gagal menghapus: " + e.message, true);
+    }
+};
+
+(window as any).exportGeminiKeys = () => {
+    try {
+        const config = (window as any).appConfig || {};
+        const keys = config.geminiKeys || [];
+        if (keys.length === 0) {
+            return (window as any).showToast("Daftar Kunci kosong, tidak ada yang dieksport.", true);
+        }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keys, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = `backup-gemini-keys-${Date.now()}.json`;
+        a.click();
+        (window as any).showToast("Berhasil ekspor Kunci Gemini!");
+    } catch(e: any) {
+        (window as any).showToast("Gagal ekspor kunci: " + e.message, true);
+    }
+};
+
+(window as any).importGeminiKeys = (e: any) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev: any) => {
+        try {
+            const parsed = JSON.parse(ev.target.result);
+            if (!Array.isArray(parsed)) {
+                return (window as any).showToast("Format file salah! Harus berupa list/array JSON Kunci Gemini.", true);
+            }
+            if (!confirm(`Impor ${parsed.length} Kunci Gemini? Data baru akan digabungkan.`)) return;
+            
+            const config = (window as any).appConfig || {};
+            let keys = config.geminiKeys || [];
+            if (!Array.isArray(keys)) keys = [];
+            
+            parsed.forEach((newK: any) => {
+                if (!newK.id) newK.id = Date.now() + Math.random().toString(36).substring(4);
+                if (!newK.title) newK.title = "Imported Key";
+                if (!newK.apiKey) return;
+                if (newK.active === undefined) newK.active = true;
+                
+                const existsIdx = keys.findIndex((x: any) => x.id === newK.id || x.apiKey === newK.apiKey);
+                if (existsIdx !== -1) {
+                    keys[existsIdx] = { ...keys[existsIdx], ...newK };
+                } else {
+                    keys.push(newK);
+                }
+            });
+            
+            await setDoc(doc(db, 'settings', 'config'), { geminiKeys: keys }, { merge: true });
+            (window as any).showToast(`Berhasil restore ${parsed.length} Kunci Gemini!`);
+        } catch(err: any) {
+            (window as any).showToast("Gagal parse/restore JSON: " + err.message, true);
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
 };
 
 (window as any).initApp();
