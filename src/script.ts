@@ -2104,12 +2104,19 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 };
 
 (window as any).renderSyairVarsAdmin = () => {
-    const list = document.getElementById('syair-vars-list');
+    const list = document.getElementById('admin-syair-variables-list') || document.getElementById('syair-vars-list');
     if (!list) return;
     
     list.innerHTML = '';
     ((window as any).syairVariables || []).forEach((v: string) => {
-        list.innerHTML += `<span class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-1 rounded text-[10px] font-bold">{{${v}}}</span>`;
+        list.innerHTML += `
+            <span class="flex items-center gap-1.5 bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 pl-2.5 pr-1.5 py-1 rounded-lg text-xs font-bold font-mono">
+                {{${v}}}
+                <button type="button" onclick="deleteSyairVar('${v}')" class="text-indigo-400 hover:text-indigo-200 hover:bg-indigo-500/35 rounded h-5 w-5 flex items-center justify-center transition-all cursor-pointer">
+                    <i class="ph-bold ph-x text-[10px]"></i>
+                </button>
+            </span>
+        `;
     });
 };
 
@@ -2123,7 +2130,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     const htmlVal = (document.getElementById('input-syair-html') as HTMLTextAreaElement)?.value || t.html || (window as any).defaultSyairHTML;
     const footerVal = (document.getElementById('edit-syair-footer') as HTMLInputElement)?.value || t.footer || 'SUPREME TOTO AI GENERATED';
 
-    const previewContainer = document.getElementById('admin-syair-preview-canvas');
+    const previewContainer = document.getElementById('admin-syair-preview') || document.getElementById('admin-syair-preview-canvas');
     if (previewContainer) {
         let compiled = htmlVal;
         
@@ -2278,29 +2285,171 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 (window as any).saveSyairTemplate = async (e: any) => {
     e.preventDefault();
     if(!(window as any).cloudUserId) return;
-    const btn = document.getElementById('btn-save-syair') as HTMLButtonElement;
-    const prevHtml = btn.innerHTML;
-    btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
-    btn.disabled = true;
+    const btn = (document.getElementById('btn-save-syair') || e.submitter || e.target.querySelector('button[type="submit"]')) as HTMLButtonElement;
+    const prevHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
+        btn.disabled = true;
+    }
 
     try {
         const docData = {
-            bgUrl: (document.getElementById('edit-syair-bg') as HTMLInputElement).value,
-            opacity: (document.getElementById('edit-syair-opacity') as HTMLInputElement).value,
-            mainColor: (document.getElementById('edit-syair-color-main') as HTMLInputElement).value,
-            accentColor: (document.getElementById('edit-syair-color-accent') as HTMLInputElement).value,
-            footer: (document.getElementById('edit-syair-footer') as HTMLInputElement).value,
+            bgUrl: (document.getElementById('edit-syair-bg') as HTMLInputElement)?.value || (window as any).syairTemplate?.bgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+            opacity: (document.getElementById('edit-syair-opacity') as HTMLInputElement)?.value || (window as any).syairTemplate?.opacity || "80",
+            mainColor: (document.getElementById('edit-syair-color-main') as HTMLInputElement)?.value || (window as any).syairTemplate?.mainColor || "#fbbf24",
+            accentColor: (document.getElementById('edit-syair-color-accent') as HTMLInputElement)?.value || (window as any).syairTemplate?.accentColor || "#b45309",
+            footer: (document.getElementById('edit-syair-footer') as HTMLInputElement)?.value || (window as any).syairTemplate?.footer || "Utamakan Prediksi Sendiri",
             html: ((document.getElementById('input-syair-html') as HTMLTextAreaElement).value).trim(),
             variables: (window as any).syairVariables
         };
         await setDoc(doc(db, 'settings', 'syair_template'), docData, {merge: true});
-        (window as any).showToast("Desain Syair & Variabel berhsail tersimpan");
-    } catch(e: any) {
-        (window as any).showToast(`Gagal nyimpan: ${e.message}`, true);
+        (window as any).showToast("Desain Syair & Variabel berhasil tersimpan!");
+    } catch(err: any) {
+        (window as any).showToast(`Gagal menyimpan: ${err.message}`, true);
     } finally {
-        btn.innerHTML = prevHtml;
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = prevHtml;
+            btn.disabled = false;
+        }
     }
+};
+
+(window as any).saveSyairCustomHTML = async (e: any) => {
+    await (window as any).saveSyairTemplate(e);
+};
+
+(window as any).addSyairVar = async (e: any) => {
+    e.preventDefault();
+    if(!(window as any).cloudUserId) return;
+    const input = document.getElementById('input-new-syair-var') as HTMLInputElement;
+    if(!input) return;
+    const newVar = input.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+    if(!newVar) return;
+    
+    if(((window as any).syairVariables || []).includes(newVar)) {
+        (window as any).showToast("Variabel sudah ada!", true);
+        return;
+    }
+    
+    (window as any).syairVariables = [...((window as any).syairVariables || []), newVar];
+    input.value = '';
+    
+    try {
+        const docData = {
+            bgUrl: (document.getElementById('edit-syair-bg') as HTMLInputElement)?.value || (window as any).syairTemplate?.bgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+            opacity: (document.getElementById('edit-syair-opacity') as HTMLInputElement)?.value || (window as any).syairTemplate?.opacity || "80",
+            mainColor: (document.getElementById('edit-syair-color-main') as HTMLInputElement)?.value || (window as any).syairTemplate?.mainColor || "#fbbf24",
+            accentColor: (document.getElementById('edit-syair-color-accent') as HTMLInputElement)?.value || (window as any).syairTemplate?.accentColor || "#b45309",
+            footer: (document.getElementById('edit-syair-footer') as HTMLInputElement)?.value || (window as any).syairTemplate?.footer || "Utamakan Prediksi Sendiri",
+            html: ((document.getElementById('input-syair-html') as HTMLTextAreaElement).value).trim(),
+            variables: (window as any).syairVariables
+        };
+        await setDoc(doc(db, 'settings', 'syair_template'), docData, {merge: true});
+        (window as any).showToast(`Variabel {{${newVar}}} berhasil ditambahkan!`);
+    } catch(err: any) {
+        (window as any).showToast("Gagal menyimpan: " + err.message, true);
+    }
+};
+
+(window as any).deleteSyairVar = async (varName: string) => {
+    if(!(window as any).cloudUserId) return;
+    if(!confirm(`Yakin ingin menghapus variabel {{${varName}}}?`)) return;
+    
+    (window as any).syairVariables = ((window as any).syairVariables || []).filter((v: string) => v !== varName);
+    
+    try {
+        const docData = {
+            bgUrl: (document.getElementById('edit-syair-bg') as HTMLInputElement)?.value || (window as any).syairTemplate?.bgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+            opacity: (document.getElementById('edit-syair-opacity') as HTMLInputElement)?.value || (window as any).syairTemplate?.opacity || "80",
+            mainColor: (document.getElementById('edit-syair-color-main') as HTMLInputElement)?.value || (window as any).syairTemplate?.mainColor || "#fbbf24",
+            accentColor: (document.getElementById('edit-syair-color-accent') as HTMLInputElement)?.value || (window as any).syairTemplate?.accentColor || "#b45309",
+            footer: (document.getElementById('edit-syair-footer') as HTMLInputElement)?.value || (window as any).syairTemplate?.footer || "Utamakan Prediksi Sendiri",
+            html: ((document.getElementById('input-syair-html') as HTMLTextAreaElement).value).trim(),
+            variables: (window as any).syairVariables
+        };
+        await setDoc(doc(db, 'settings', 'syair_template'), docData, {merge: true});
+        (window as any).showToast(`Variabel {{${varName}}} berhasil dihapus!`);
+    } catch(err: any) {
+        (window as any).showToast("Gagal menghapus: " + err.message, true);
+    }
+};
+
+(window as any).importSyairHTML = (e: any) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev: any) => {
+        try {
+            const content = ev.target.result as string;
+            
+            // Try parsing as JSON first
+            if (file.name.endsWith('.json') || content.trim().startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(content);
+                    const html = parsed.html || parsed.text || '';
+                    const variables = parsed.variables || [];
+                    
+                    if (!html) {
+                        (window as any).showToast("File JSON tidak valid / tidak ada data HTML syair", true);
+                        return;
+                    }
+                    
+                    const bgUrl = parsed.bgUrl || (window as any).syairTemplate?.bgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
+                    const opacity = parsed.opacity || (window as any).syairTemplate?.opacity || "80";
+                    const mainColor = parsed.mainColor || (window as any).syairTemplate?.mainColor || "#fbbf24";
+                    const accentColor = parsed.accentColor || (window as any).syairTemplate?.accentColor || "#b45309";
+                    const footer = parsed.footer || (window as any).syairTemplate?.footer || "Utamakan Prediksi Sendiri";
+                    
+                    if (variables.length > 0) {
+                        (window as any).syairVariables = variables;
+                    }
+                    
+                    const htmlTextarea = document.getElementById('input-syair-html') as HTMLTextAreaElement;
+                    if (htmlTextarea) htmlTextarea.value = html;
+                    
+                    await setDoc(doc(db, 'settings', 'syair_template'), {
+                        html,
+                        variables: (window as any).syairVariables,
+                        bgUrl,
+                        opacity,
+                        mainColor,
+                        accentColor,
+                        footer
+                    }, { merge: true });
+                    
+                    (window as any).showToast("Templat Syair & Variabel berhasil diimpor!");
+                    return;
+                } catch(jsonErr) {
+                    // Not valid JSON, continue to raw text
+                }
+            }
+            
+            // Raw HTML or TXT file
+            const bgUrl = (window as any).syairTemplate?.bgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
+            const opacity = (window as any).syairTemplate?.opacity || "80";
+            const mainColor = (window as any).syairTemplate?.mainColor || "#fbbf24";
+            const accentColor = (window as any).syairTemplate?.accentColor || "#b45309";
+            const footer = (window as any).syairTemplate?.footer || "Utamakan Prediksi Sendiri";
+            
+            const htmlTextarea = document.getElementById('input-syair-html') as HTMLTextAreaElement;
+            if (htmlTextarea) htmlTextarea.value = content;
+            
+            await setDoc(doc(db, 'settings', 'syair_template'), {
+                html: content,
+                variables: (window as any).syairVariables,
+                bgUrl,
+                opacity,
+                mainColor,
+                accentColor,
+                footer
+            }, { merge: true });
+            
+            (window as any).showToast("Kode HTML Syair berhasil diimpor!");
+        } catch(err: any) {
+            (window as any).showToast("Gagal mengimpor file: " + err.message, true);
+        }
+    };
+    reader.readAsText(file);
 };
 
 (window as any).exportSyairHTML = () => {
