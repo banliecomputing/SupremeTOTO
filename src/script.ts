@@ -124,6 +124,8 @@ const getDocRef = (col: string, docId: string) => doc(db, col, docId);
 
 (window as any).editingPasaranId = null;
 (window as any).editingSourceId = null;
+(window as any).editingPromptId = null;
+(window as any).editingGlobalRuleId = null;
 
 (window as any).rangeSelection = { start: null, end: null, targetInputId: null };
 
@@ -342,6 +344,66 @@ document.addEventListener('fullscreenchange', () => {
     
     const d = document.getElementById('main-nav-drawer');
     if(d && d.classList.contains('translate-x-0')) (window as any).toggleMainNav();
+};
+
+(window as any).openEditModal = (sourceElementId: string, titleText: string) => {
+    const srcEl = document.getElementById(sourceElementId);
+    const modalBody = document.getElementById('edit-modal-body');
+    const modal = document.getElementById('edit-form-modal');
+    const content = document.getElementById('edit-form-content');
+    
+    if (srcEl && modalBody && modal && content) {
+        modalBody.innerHTML = '';
+        srcEl.classList.remove('hidden');
+        modalBody.appendChild(srcEl);
+        
+        document.getElementById('edit-modal-title')!.innerHTML = `<i class="ph-bold ph-pencil"></i> ${titleText}`;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            modal.classList.add('opacity-100');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }, 50);
+    }
+};
+
+(window as any).closeEditModal = (sourceElementId: string, targetParentId: string) => {
+    const srcEl = document.getElementById(sourceElementId);
+    const parentEl = document.getElementById(targetParentId);
+    const modal = document.getElementById('edit-form-modal');
+    const content = document.getElementById('edit-form-content');
+    
+    if (modal && content) {
+        modal.classList.remove('opacity-100');
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+        
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            if (srcEl && parentEl) {
+                srcEl.classList.add('hidden');
+                parentEl.appendChild(srcEl);
+            }
+        }, 300);
+    }
+};
+
+(window as any).closeEditFormModal = () => {
+    if ((window as any).editingPasaranId || document.getElementById('container-form-pasaran')?.parentElement?.id === 'edit-modal-body') {
+        (window as any).cancelEditPasaran();
+    } else if ((window as any).editingMimpiId || document.getElementById('container-form-mimpi')?.parentElement?.id === 'edit-modal-body') {
+        (window as any).cancelEditMimpi();
+    } else if ((window as any).editingPromptId || document.getElementById('container-form-prompt')?.parentElement?.id === 'edit-modal-body') {
+        (window as any).cancelEditPrompt();
+    } else if ((window as any).editingGlobalRuleId || document.getElementById('container-form-global')?.parentElement?.id === 'edit-modal-body') {
+        (window as any).cancelEditGlobalRule();
+    } else if ((window as any).editingSourceId || document.getElementById('form-sandingan')?.parentElement?.id === 'edit-modal-body') {
+        (window as any).cancelSandingan();
+    }
 };
 
 (window as any).openSubAdmin = (menuId: string) => {
@@ -698,7 +760,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
 (window as any).renderAdminLists = () => {
     const pList = document.getElementById('links-list');
     if(pList) {
-        pList.innerHTML = (window as any).pools.length === 0 ? '<p class="text-sm text-slate-500 text-center py-4 md:col-span-2">Belum ada pasaran</p>' : '';
+        pList.innerHTML = (window as any).pools.length === 0 ? '<p class="text-sm text-slate-500 text-center py-4">Belum ada pasaran</p>' : '';
         (window as any).pools.forEach((p: any) => {
             let mappingTxt = (p.mapCols) ? `<br><span class="text-amber-500">Map: Kolom(${p.mapCols}) ${p.autoFill ? '[Auto-Fill Aktif]' : ''}</span>` : '';
             let drawsCount = p.liveDraws ? p.liveDraws.length : 1;
@@ -764,7 +826,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     if(mList) {
         mList.innerHTML = (window as any).dataBukuMimpi.length === 0 ? '<p class="text-sm text-slate-500 text-center py-4 md:col-span-2">Belum ada tafsir</p>' : '';
         (window as any).dataBukuMimpi.slice().reverse().slice(0,12).forEach((m: any) => {
-            mList.innerHTML += `<div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex justify-between items-center"><div class="truncate pr-4"><p class="text-sm md:text-base font-bold text-white">${m.type} - ${m.no}</p><p class="text-[10px] md:text-xs text-slate-500 truncate mt-1">${m.desc}</p></div><div class="flex gap-1 shrink-0"><button onclick="duplicateMimpi('${m.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button><button onclick="deleteMimpi('${m.id}')" class="p-2 md:p-3 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button></div></div>`;
+            mList.innerHTML += `<div class="bg-slate-900 p-4 rounded-lg border border-slate-700/80 flex justify-between items-center shadow-md"><div class="truncate pr-4"><p class="text-sm md:text-base font-bold text-white">${m.type} - ${m.no}</p><p class="text-[10px] md:text-xs text-slate-500 truncate mt-1">${m.desc}</p></div><div class="flex gap-1 shrink-0"><button onclick="editMimpi('${m.id}')" class="p-2 md:p-3 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors cursor-pointer" title="Edit"><i class="ph-bold ph-pencil text-lg"></i></button><button onclick="duplicateMimpi('${m.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors cursor-pointer" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button><button onclick="deleteMimpi('${m.id}')" class="p-2 md:p-3 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button></div></div>`;
         });
     }
     
@@ -775,16 +837,18 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     
     (window as any).aiPrompts.forEach((pr: any) => {
         if(prList) prList.innerHTML += `
-            <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex justify-between items-center shadow-inner gap-4">
-                <div class="pr-2 flex-1 overflow-hidden">
-                    <p class="text-sm md:text-base font-bold text-purple-400 mb-1 truncate">${pr.title}</p>
-                    <p class="text-[10px] md:text-xs text-slate-400 line-clamp-2 md:line-clamp-3 leading-relaxed">${pr.text}</p>
+            <div class="bg-slate-900 p-5 rounded-xl border border-slate-750 flex flex-col gap-3 shadow-md">
+                <div class="flex justify-between items-start gap-4">
+                    <p class="text-sm md:text-base font-bold text-purple-400 flex items-center gap-2">
+                        <i class="ph-fill ph-robot text-lg"></i> ${pr.title}
+                    </p>
+                    <div class="flex gap-1 shrink-0 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                        <button onclick="editPrompt('${pr.id}')" class="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors" title="Edit"><i class="ph-bold ph-pencil text-base"></i></button>
+                        <button onclick="duplicatePrompt('${pr.id}')" class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-base"></i></button>
+                        <button onclick="deletePrompt('${pr.id}')" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors" title="Hapus"><i class="ph-bold ph-trash text-base"></i></button>
+                    </div>
                 </div>
-                <div class="flex gap-1 shrink-0 flex-wrap justify-end w-20 md:w-auto">
-                    <button onclick="editPrompt('${pr.id}')" class="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors" title="Edit"><i class="ph-bold ph-pencil text-lg"></i></button>
-                    <button onclick="duplicatePrompt('${pr.id}')" class="p-2 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button>
-                    <button onclick="deletePrompt('${pr.id}')" class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button>
-                </div>
+                <div class="text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed bg-slate-950 p-3.5 rounded-lg border border-slate-800/85 max-h-[300px] overflow-y-auto custom-scrollbar">${pr.text}</div>
             </div>`;
         if(aiSel) aiSel.innerHTML += `<option value="${pr.text}">${pr.title}</option>`;
     });
@@ -793,7 +857,20 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     if(gList) {
         gList.innerHTML = (window as any).globalRules.length === 0 ? '<p class="text-sm text-slate-500 text-center py-6 bg-slate-900 rounded-lg">Otak AI Kosong. Harap Reset atau Injeksi Aturan.</p>' : '';
         (window as any).globalRules.forEach((g: any) => {
-            gList.innerHTML += `<div class="bg-slate-900 p-4 rounded-lg border border-slate-700 flex justify-between items-center shadow-inner gap-4"><div class="pr-2 flex-1"><p class="text-xs md:text-sm text-slate-300 leading-relaxed">${g.text}</p></div><div class="flex gap-1 shrink-0"><button onclick="duplicateGlobalRule('${g.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button><button onclick="deleteGlobalRule('${g.id}')" class="p-2 md:p-3 text-red-400 hover:bg-red-500/20 rounded-lg shrink-0 transition-colors" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button></div></div>`;
+            gList.innerHTML += `
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-750 flex flex-col gap-3 shadow-md">
+                    <div class="flex justify-between items-start gap-4">
+                        <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20 flex items-center gap-1.5">
+                            <i class="ph-fill ph-cpu"></i> System Prompt (Aturan Mutlak)
+                        </span>
+                        <div class="flex gap-1 shrink-0 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                            <button onclick="editGlobalRule('${g.id}')" class="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors" title="Edit"><i class="ph-bold ph-pencil text-base"></i></button>
+                            <button onclick="duplicateGlobalRule('${g.id}')" class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-base"></i></button>
+                            <button onclick="deleteGlobalRule('${g.id}')" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors" title="Hapus"><i class="ph-bold ph-trash text-base"></i></button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed bg-slate-950 p-3.5 rounded-lg border border-slate-800/85 max-h-[250px] overflow-y-auto custom-scrollbar">${g.text}</div>
+                </div>`;
         });
     }
 };
@@ -1124,7 +1201,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     document.getElementById('btn-cancel-pasaran')?.classList.remove('hidden');
     (document.getElementById('btn-submit-pasaran') as HTMLButtonElement).innerText = 'UPDATE PASARAN CLOUD';
     
-    document.getElementById('sub-admin-pasaran')?.scrollIntoView({ behavior: 'smooth' });
+    (window as any).openEditModal('container-form-pasaran', 'Edit Pasaran TOTO');
 };
 
 (window as any).cancelEditPasaran = () => {
@@ -1140,6 +1217,8 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     
     document.getElementById('btn-cancel-pasaran')?.classList.add('hidden');
     (document.getElementById('btn-submit-pasaran') as HTMLButtonElement).innerText = 'SIMPAN KE CLOUD';
+    
+    (window as any).closeEditModal('container-form-pasaran', 'original-slot-pasaran');
 };
 
 (window as any).duplicatePasaran = async (id: string) => {
@@ -1227,6 +1306,8 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     if(form) { form.classList.add('hidden'); form.reset(); }
     (document.getElementById('sand-prompt') as HTMLTextAreaElement).value = '';
     (window as any).editingSourceId = null;
+    
+    (window as any).closeEditModal('form-sandingan', 'original-slot-sandingan');
 };
 
 (window as any).saveGlobalSandinganPrompt = async (val: string) => {
@@ -1270,6 +1351,386 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     btn.disabled = false;
 };
 
+(window as any).addPrompt = async (e: any) => {
+    e.preventDefault();
+    if(!(window as any).cloudUserId) return (window as any).showToast("Cloud DB belum siap", true);
+    
+    const btn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
+    if(btn) {
+        btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
+        btn.disabled = true;
+    }
+
+    const title = (document.getElementById('input-prompt-title') as HTMLInputElement).value;
+    const text = (document.getElementById('input-prompt-text') as HTMLTextAreaElement).value;
+
+    const id = (window as any).editingPromptId || Date.now().toString();
+    
+    try {
+        await setDoc(doc(db, 'prompts', id), { id, title, text }, { merge: true });
+        (window as any).showToast((window as any).editingPromptId ? "Pola Prompt Diperbarui!" : "Pola Prompt Baru ditambahkan!");
+        (window as any).cancelEditPrompt();
+    } catch (err: any) {
+        (window as any).showToast("Gagal menyimpan prompt: " + err.message, true);
+    } finally {
+        if(btn) {
+            btn.innerHTML = `SIMPAN POLA MANUAL`;
+            btn.disabled = false;
+        }
+    }
+};
+
+(window as any).editPrompt = (id: string) => {
+    const pr = (window as any).aiPrompts.find((x: any) => x.id === id);
+    if(!pr) return;
+    
+    (window as any).editingPromptId = id;
+    (document.getElementById('input-prompt-title') as HTMLInputElement).value = pr.title || '';
+    (document.getElementById('input-prompt-text') as HTMLTextAreaElement).value = pr.text || '';
+    
+    document.getElementById('btn-cancel-prompt')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'UPDATE POLA MANUAL CLOUD';
+    
+    (window as any).openEditModal('container-form-prompt', 'Edit Pola AI');
+};
+
+(window as any).cancelEditPrompt = () => {
+    (window as any).editingPromptId = null;
+    const titleIn = document.getElementById('input-prompt-title') as HTMLInputElement;
+    const textIn = document.getElementById('input-prompt-text') as HTMLTextAreaElement;
+    if(titleIn) titleIn.value = '';
+    if(textIn) textIn.value = '';
+    
+    document.getElementById('btn-cancel-prompt')?.classList.add('hidden');
+    const submitBtn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'SIMPAN POLA MANUAL';
+    
+    (window as any).closeEditModal('container-form-prompt', 'original-slot-prompt');
+};
+
+(window as any).openAddNewPrompt = () => {
+    (window as any).editingPromptId = null;
+    const titleIn = document.getElementById('input-prompt-title') as HTMLInputElement;
+    const textIn = document.getElementById('input-prompt-text') as HTMLTextAreaElement;
+    if(titleIn) titleIn.value = '';
+    if(textIn) textIn.value = '';
+    
+    document.getElementById('btn-cancel-prompt')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'SIMPAN POLA MANUAL';
+    
+    (window as any).openEditModal('container-form-prompt', 'Tambah Pola Manual Baru');
+};
+
+(window as any).duplicatePrompt = async (id: string) => {
+    if(!(window as any).cloudUserId) return;
+    const pr = (window as any).aiPrompts.find((x: any) => x.id === id);
+    if(!pr) return;
+    
+    const newId = Date.now().toString();
+    try {
+        await setDoc(doc(db, 'prompts', newId), { id: newId, title: pr.title + " (Copy)", text: pr.text });
+        (window as any).showToast("Pola prompt diduplikasi!");
+    } catch (err: any) {
+        (window as any).showToast("Gagal menduplikat: " + err.message, true);
+    }
+};
+
+(window as any).deletePrompt = (id: string) => {
+    (window as any).showConfirm("Yakin menghapus pola prompt ini secara permanen?", async () => {
+        if(!(window as any).cloudUserId) return;
+        try {
+            await deleteDoc(doc(db, 'prompts', id));
+            (window as any).showToast("Pola prompt dihapus!", true);
+        } catch (err: any) {
+            (window as any).showToast("Gagal menghapus: " + err.message, true);
+        }
+    });
+};
+
+(window as any).addGlobalRule = async (e: any) => {
+    e.preventDefault();
+    if(!(window as any).cloudUserId) return (window as any).showToast("Cloud DB belum siap", true);
+    
+    const btn = document.getElementById('btn-submit-global') as HTMLButtonElement;
+    if(btn) {
+        btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
+        btn.disabled = true;
+    }
+
+    const text = (document.getElementById('input-global-text') as HTMLTextAreaElement).value;
+    const id = (window as any).editingGlobalRuleId || Date.now().toString();
+    
+    try {
+        await setDoc(doc(db, 'globals', id), { id, text }, { merge: true });
+        (window as any).showToast((window as any).editingGlobalRuleId ? "Aturan Global Diperbarui!" : "Aturan Global Baru ditambahkan!");
+        (window as any).cancelEditGlobalRule();
+    } catch (err: any) {
+        (window as any).showToast("Gagal menyimpan aturan global: " + err.message, true);
+    } finally {
+        if(btn) {
+            btn.innerHTML = `INJEKSI KE SISTEM`;
+            btn.disabled = false;
+        }
+    }
+};
+
+(window as any).editGlobalRule = (id: string) => {
+    const g = (window as any).globalRules.find((x: any) => x.id === id);
+    if(!g) return;
+    
+    (window as any).editingGlobalRuleId = id;
+    (document.getElementById('input-global-text') as HTMLTextAreaElement).value = g.text || '';
+    
+    document.getElementById('btn-cancel-global')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-global') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'UPDATE SYSTEM PROMPT CLOUD';
+    
+    (window as any).openEditModal('container-form-global', 'Edit System Prompt');
+};
+
+(window as any).cancelEditGlobalRule = () => {
+    (window as any).editingGlobalRuleId = null;
+    const textIn = document.getElementById('input-global-text') as HTMLTextAreaElement;
+    if(textIn) textIn.value = '';
+    
+    document.getElementById('btn-cancel-global')?.classList.add('hidden');
+    const submitBtn = document.getElementById('btn-submit-global') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'INJEKSI KE SISTEM';
+    
+    (window as any).closeEditModal('container-form-global', 'original-slot-global');
+};
+
+(window as any).openAddNewGlobalRule = () => {
+    (window as any).editingGlobalRuleId = null;
+    const textIn = document.getElementById('input-global-text') as HTMLTextAreaElement;
+    if(textIn) textIn.value = '';
+    
+    document.getElementById('btn-cancel-global')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-global') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'INJEKSI KE SISTEM';
+    
+    (window as any).openEditModal('container-form-global', 'Tambah Aturan Global Baru');
+};
+
+(window as any).duplicateGlobalRule = async (id: string) => {
+    if(!(window as any).cloudUserId) return;
+    const g = (window as any).globalRules.find((x: any) => x.id === id);
+    if(!g) return;
+    
+    const newId = Date.now().toString();
+    try {
+        await setDoc(doc(db, 'globals', newId), { id: newId, text: g.text + " (Copy)" });
+        (window as any).showToast("Aturan global diduplikasi!");
+    } catch (err: any) {
+        (window as any).showToast("Gagal menduplikat: " + err.message, true);
+    }
+};
+
+(window as any).deleteGlobalRule = (id: string) => {
+    (window as any).showConfirm("Yakin menghapus aturan global ini secara permanen?", async () => {
+        if(!(window as any).cloudUserId) return;
+        try {
+            await deleteDoc(doc(db, 'globals', id));
+            (window as any).showToast("Aturan global dihapus!", true);
+        } catch (err: any) {
+            (window as any).showToast("Gagal menghapus: " + err.message, true);
+        }
+    });
+};
+
+(window as any).handleImportPrompts = (e: any) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev: any) => {
+        try {
+            const content = ev.target.result;
+            const lines = content.split('\n');
+            const batch = writeBatch(db);
+            let count = 0;
+            
+            lines.forEach((line: string) => {
+                const tr = line.trim();
+                if(!tr) return;
+                const parts = tr.split('|');
+                const title = parts[0]?.trim();
+                const text = parts[1]?.trim() || '';
+                if(title) {
+                    const id = Date.now().toString() + count;
+                    batch.set(doc(db, 'prompts', id), { id, title, text });
+                    count++;
+                }
+            });
+            
+            if(count > 0) {
+                await batch.commit();
+                (window as any).showToast(`Berhasil mengimpor ${count} pola prompt!`);
+            }
+        } catch (err: any) {
+            (window as any).showToast("Gagal impor: " + err.message, true);
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+};
+
+(window as any).handleImportGlobals = (e: any) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev: any) => {
+        try {
+            const content = ev.target.result;
+            const lines = content.split('\n');
+            const batch = writeBatch(db);
+            let count = 0;
+            
+            lines.forEach((line: string) => {
+                const tr = line.trim();
+                if(!tr) return;
+                const id = Date.now().toString() + count;
+                batch.set(doc(db, 'globals', id), { id, text: tr });
+                count++;
+            });
+            
+            if(count > 0) {
+                await batch.commit();
+                (window as any).showToast(`Berhasil mengimpor ${count} aturan global!`);
+            }
+        } catch (err: any) {
+            (window as any).showToast("Gagal impor: " + err.message, true);
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+};
+
+(window as any).duplicateMimpi = async (id: string) => {
+    if(!(window as any).cloudUserId) return;
+    const m = (window as any).dataBukuMimpi.find((x: any) => x.id === id);
+    if(!m) return;
+    
+    const newId = Date.now().toString();
+    try {
+        await setDoc(doc(db, 'mimpi', newId), { id: newId, type: m.type, no: m.no, desc: m.desc + " (Copy)" });
+        (window as any).showToast("Tafsir mimpi diduplikasi!");
+    } catch (err: any) {
+        (window as any).showToast("Gagal menduplikat: " + err.message, true);
+    }
+};
+
+(window as any).deleteMimpi = (id: string) => {
+    (window as any).showConfirm("Yakin menghapus tafsir mimpi ini?", async () => {
+        if(!(window as any).cloudUserId) return;
+        try {
+            await deleteDoc(doc(db, 'mimpi', id));
+            (window as any).showToast("Tafsir mimpi dihapus!", true);
+        } catch (err: any) {
+            (window as any).showToast("Gagal menghapus: " + err.message, true);
+        }
+    });
+};
+
+(window as any).openAddNewPasaran = () => {
+    (window as any).editingPasaranId = null;
+    ['input-name', 'input-image-url', 'input-url-history', 'input-pasaran-sheetname', 'input-pasaran-rangehistory', 'input-pasaran-map-cols', 'input-pasaran-map-headers'].forEach(id => {
+        const el = document.getElementById(id) as HTMLInputElement;
+        if(el) el.value = '';
+    });
+    const autofillEl = document.getElementById('input-pasaran-autofill') as HTMLInputElement;
+    if(autofillEl) autofillEl.checked = false;
+    const visibleEl = document.getElementById('input-visible') as HTMLInputElement;
+    if(visibleEl) visibleEl.checked = true;
+    (window as any).currentLiveDraws = [];
+    (window as any).renderLiveDrawsEditor();
+    
+    document.getElementById('btn-cancel-pasaran')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-pasaran') as HTMLButtonElement;
+    if(submitBtn) submitBtn.innerText = 'SIMPAN KE CLOUD';
+    
+    (window as any).openEditModal('container-form-pasaran', 'Tambah Pasaran Baru');
+};
+
+(window as any).addMimpi = async (e: any) => {
+    e.preventDefault();
+    if (!(window as any).cloudUserId) return (window as any).showToast("Cloud DB belum siap", true);
+    
+    const btn = document.getElementById('btn-submit-mimpi') as HTMLButtonElement;
+    if (btn) {
+        btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> MENYIMPAN...`;
+        btn.disabled = true;
+    }
+
+    const type = (document.getElementById('input-mimpi-type') as HTMLSelectElement).value;
+    const no = (document.getElementById('input-mimpi-no') as HTMLInputElement).value;
+    const desc = (document.getElementById('input-mimpi-desc') as HTMLTextAreaElement).value;
+    
+    const id = (window as any).editingMimpiId || Date.now().toString();
+
+    try {
+        await setDoc(doc(db, 'mimpi', id), {
+            id,
+            type,
+            no,
+            desc
+        }, { merge: true });
+        
+        (window as any).showToast((window as any).editingMimpiId ? "Tafsir mimpi diperbarui!" : "Tafsir mimpi baru ditambahkan!");
+        (window as any).cancelEditMimpi();
+    } catch (err: any) {
+        (window as any).showToast("Gagal menyimpan: " + err.message, true);
+    } finally {
+        if (btn) {
+            btn.innerHTML = 'SIMPAN TAFSIR MANUAL';
+            btn.disabled = false;
+        }
+    }
+};
+
+(window as any).editMimpi = (id: string) => {
+    const m = (window as any).dataBukuMimpi.find((x: any) => x.id === id);
+    if (!m) return;
+    
+    (window as any).editingMimpiId = id;
+    (document.getElementById('input-mimpi-type') as HTMLSelectElement).value = m.type || '2D';
+    (document.getElementById('input-mimpi-no') as HTMLInputElement).value = m.no || '';
+    (document.getElementById('input-mimpi-desc') as HTMLTextAreaElement).value = m.desc || '';
+    
+    document.getElementById('btn-cancel-mimpi')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-mimpi') as HTMLButtonElement;
+    if (submitBtn) submitBtn.innerText = 'UPDATE TAFSIR CLOUD';
+    
+    (window as any).openEditModal('container-form-mimpi', 'Edit Tafsir Mimpi');
+};
+
+(window as any).openAddNewMimpi = () => {
+    (window as any).editingMimpiId = null;
+    (document.getElementById('input-mimpi-type') as HTMLSelectElement).value = '2D';
+    (document.getElementById('input-mimpi-no') as HTMLInputElement).value = '';
+    (document.getElementById('input-mimpi-desc') as HTMLTextAreaElement).value = '';
+    
+    document.getElementById('btn-cancel-mimpi')?.classList.remove('hidden');
+    const submitBtn = document.getElementById('btn-submit-mimpi') as HTMLButtonElement;
+    if (submitBtn) submitBtn.innerText = 'SIMPAN TAFSIR MANUAL';
+    
+    (window as any).openEditModal('container-form-mimpi', 'Tambah Tafsir Mimpi');
+};
+
+(window as any).cancelEditMimpi = () => {
+    (window as any).editingMimpiId = null;
+    (document.getElementById('input-mimpi-type') as HTMLSelectElement).value = '2D';
+    (document.getElementById('input-mimpi-no') as HTMLInputElement).value = '';
+    (document.getElementById('input-mimpi-desc') as HTMLTextAreaElement).value = '';
+    
+    document.getElementById('btn-cancel-mimpi')?.classList.add('hidden');
+    const submitBtn = document.getElementById('btn-submit-mimpi') as HTMLButtonElement;
+    if (submitBtn) submitBtn.innerText = 'SIMPAN TAFSIR MANUAL';
+    
+    (window as any).closeEditModal('container-form-mimpi', 'original-slot-mimpi');
+};
+
 (window as any).editExtraSource = (id: string) => {
     const s = (window as any).extraSources.find((x:any) => x.id === id);
     if(!s) return;
@@ -1285,7 +1746,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     (document.getElementById('sand-query') as HTMLInputElement).value = s.query || '';
     (document.getElementById('sand-prompt') as HTMLInputElement).value = s.prompt || '';
     
-    document.getElementById('sub-admin-spreadsheet')!.scrollIntoView({behavior: "smooth"});
+    (window as any).openEditModal('form-sandingan', 'Edit Koneksi Sandingan');
 };
 
 (window as any).toggleExtraSource = async (id: string, newActiveStatus: boolean) => {
@@ -1451,7 +1912,7 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const p = (window as any).pools.find((x:any) => x.id === poolId);
     if(!p) return;
     
-    document.getElementById('pool-selector')!.value = poolId;
+    (document.getElementById('pool-selector') as HTMLSelectElement).value = poolId;
     const modal = document.getElementById('table-preview-modal');
     const body = document.getElementById('table-preview-body');
     const title = document.getElementById('table-preview-title');
@@ -1530,6 +1991,19 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
          body.innerHTML = `<div class="text-center mt-20 text-red-400 bg-red-500/10 p-6 rounded-xl border border-red-500/30 max-w-md mx-auto"><i class="ph-fill ph-warning-octagon text-6xl mb-4"></i><br><p class="font-bold text-lg">GAGAL TARIK LIVE</p><p class="text-sm text-slate-400 mt-2">${e.message}</p></div>`;
     }
 };
+
+async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error("Gagal mengambil data dari Gemini API.");
+            return await response.json();
+        } catch (e) {
+            if (i === maxRetries - 1) throw e;
+            await new Promise(r => setTimeout(r, 1000 * (Math.pow(2, i))));
+        }
+    }
+}
 
 (window as any).generateAI = async () => {
     const sel = document.getElementById('ai-pool-selector') as HTMLSelectElement;
