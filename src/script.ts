@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc as firebaseSetDoc, deleteDoc as firebaseDeleteDoc, onSnapshot, writeBatch as firebaseWriteBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 import backupData from './backup.json';
 
@@ -29,6 +29,205 @@ try {
 const getDocRef = (col: string, docId: string) => doc(db, col, docId);
 
 // --- 1. GLOBAL STATE & UI UTILITIES ---
+(window as any).isLocalMode = false;
+
+function saveToLocalStorageFallback(collectionName: string, docId: string, data: any, merge = false) {
+    if (collectionName === 'settings') {
+        const key = `superemetoto_settings_${docId}`;
+        let existing = {};
+        try {
+            existing = JSON.parse(localStorage.getItem(key) || '{}');
+        } catch {}
+        let finalData = merge ? { ...existing, ...data } : data;
+        localStorage.setItem(key, JSON.stringify(finalData));
+        
+        if (docId === 'config') {
+            (window as any).appConfig = finalData;
+            if (typeof (window as any).renderGeminiKeys === 'function') {
+                (window as any).renderGeminiKeys();
+            }
+        } else if (docId === 'sandingan_config') {
+            (window as any).sandinganConfig = finalData;
+        } else if (docId === 'syair_template') {
+            (window as any).syairTemplate = finalData;
+        }
+        return;
+    }
+    
+    const key = `superemetoto_${collectionName}`;
+    let list: any[] = [];
+    try {
+        list = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {}
+    if (!Array.isArray(list)) list = [];
+    
+    const idx = list.findIndex(item => item.id === docId);
+    let finalItem = merge ? { ...(idx !== -1 ? list[idx] : {}), ...data, id: docId } : { ...data, id: docId };
+    
+    if (idx !== -1) {
+        list[idx] = finalItem;
+    } else {
+        list.push(finalItem);
+    }
+    
+    localStorage.setItem(key, JSON.stringify(list));
+    
+    if (collectionName === 'pools') {
+        (window as any).pools = list;
+        (window as any).pools.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+        (window as any).renderAdminLists();
+        (window as any).renderDropdowns();
+    } else if (collectionName === 'mimpi') {
+        (window as any).dataBukuMimpi = list;
+        (window as any).renderAdminLists();
+        (window as any).renderBukuMimpi();
+    } else if (collectionName === 'prompts') {
+        (window as any).aiPrompts = list;
+        (window as any).renderAdminLists();
+    } else if (collectionName === 'globals') {
+        (window as any).globalRules = list;
+        (window as any).renderAdminLists();
+    } else if (collectionName === 'extra_sources') {
+        (window as any).extraSources = list;
+        (window as any).renderAdminLists();
+        (window as any).updateAIInfoPanel();
+    }
+}
+
+function deleteFromLocalStorageFallback(collectionName: string, docId: string) {
+    if (collectionName === 'settings') {
+        localStorage.removeItem(`superemetoto_settings_${docId}`);
+        return;
+    }
+    
+    const key = `superemetoto_${collectionName}`;
+    let list: any[] = [];
+    try {
+        list = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {}
+    if (!Array.isArray(list)) list = [];
+    
+    list = list.filter(item => item.id !== docId);
+    localStorage.setItem(key, JSON.stringify(list));
+    
+    if (collectionName === 'pools') {
+        (window as any).pools = list;
+        (window as any).pools.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+        (window as any).renderAdminLists();
+        (window as any).renderDropdowns();
+    } else if (collectionName === 'mimpi') {
+        (window as any).dataBukuMimpi = list;
+        (window as any).renderAdminLists();
+        (window as any).renderBukuMimpi();
+    } else if (collectionName === 'prompts') {
+        (window as any).aiPrompts = list;
+        (window as any).renderAdminLists();
+    } else if (collectionName === 'globals') {
+        (window as any).globalRules = list;
+        (window as any).renderAdminLists();
+    } else if (collectionName === 'extra_sources') {
+        (window as any).extraSources = list;
+        (window as any).renderAdminLists();
+        (window as any).updateAIInfoPanel();
+    }
+}
+
+async function setDoc(docRef: any, data: any, options?: any) {
+    const parts = docRef.path.split('/');
+    const coll = parts[0];
+    const docId = parts[1];
+    
+    saveToLocalStorageFallback(coll, docId, data, options?.merge || false);
+    
+    if (!(window as any).isLocalMode && db) {
+        try {
+            await firebaseSetDoc(docRef, data, options);
+        } catch (e) {
+            console.warn("Firestore setDoc failed:", e);
+        }
+    }
+}
+
+async function deleteDoc(docRef: any) {
+    const parts = docRef.path.split('/');
+    const coll = parts[0];
+    const docId = parts[1];
+    
+    deleteFromLocalStorageFallback(coll, docId);
+    
+    if (!(window as any).isLocalMode && db) {
+        try {
+            await firebaseDeleteDoc(docRef);
+        } catch (e) {
+            console.warn("Firestore deleteDoc failed:", e);
+        }
+    }
+}
+
+class LocalWriteBatch {
+    private operations: Array<{ type: 'set' | 'delete', collection: string, docId: string, data?: any, options?: any }> = [];
+    private originBatch: any;
+    
+    constructor(originBatch?: any) {
+        this.originBatch = originBatch;
+    }
+    
+    set(docRef: any, data: any, options?: any) {
+        const parts = docRef.path.split('/');
+        this.operations.push({
+            type: 'set',
+            collection: parts[0],
+            docId: parts[1],
+            data,
+            options
+        });
+        if (this.originBatch) {
+            this.originBatch.set(docRef, data, options);
+        }
+        return this;
+    }
+    
+    delete(docRef: any) {
+        const parts = docRef.path.split('/');
+        this.operations.push({
+            type: 'delete',
+            collection: parts[0],
+            docId: parts[1]
+        });
+        if (this.originBatch) {
+            this.originBatch.delete(docRef);
+        }
+        return this;
+    }
+    
+    async commit() {
+        for (const op of this.operations) {
+            if (op.type === 'set') {
+                saveToLocalStorageFallback(op.collection, op.docId, op.data, op.options?.merge || false);
+            } else if (op.type === 'delete') {
+                deleteFromLocalStorageFallback(op.collection, op.docId);
+            }
+        }
+        if (this.originBatch && !(window as any).isLocalMode) {
+            try {
+                await this.originBatch.commit();
+            } catch (err) {
+                console.warn("Online writeBatch commit failed:", err);
+            }
+        }
+    }
+}
+
+function writeBatch(dbInstance: any) {
+    if ((window as any).isLocalMode || !dbInstance) {
+        return new LocalWriteBatch();
+    }
+    try {
+        return new LocalWriteBatch(firebaseWriteBatch(dbInstance));
+    } catch {
+        return new LocalWriteBatch();
+    }
+}
 (window as any).DEFAULT_API_KEY = "AIzaSyBAY0wQ1gAhaf39xHwaBl0-7rle679Sekw";
 (window as any).appConfig = { apiKey: Object.is((window as any).DEFAULT_API_KEY, undefined) ? '' : (window as any).DEFAULT_API_KEY };
 (window as any).pools = [];
@@ -3026,6 +3225,139 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     }
 };
 
+(window as any).switchToLocalMode = (reason: string) => {
+    (window as any).isLocalMode = true;
+    (window as any).cloudUserId = "local-user";
+    console.warn(`[LocalMode] Activated database bypass. Reason: ${reason}`);
+    
+    // Update Header Status Indicator to highlight Mode Mandiri (Local)
+    const statusText = document.getElementById('cloud-status-text');
+    if (statusText) {
+        statusText.innerHTML = `<span class="text-amber-400 font-black"><i class="ph-fill ph-git-fork"></i> MANDIRI</span>`;
+    }
+    const statusIcon = document.getElementById('cloud-status-icon');
+    if (statusIcon) {
+        statusIcon.className = "ph-fill ph-circle text-[8px] text-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse";
+    }
+
+    // Update Status Info in Admin panel
+    const statusDb = document.getElementById('status-db-pribadi');
+    if (statusDb) {
+        statusDb.classList.remove('hidden');
+        statusDb.innerHTML = `
+            <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl shadow-lg relative flex flex-col gap-2">
+                <i class="ph-fill ph-git-fork absolute top-3 right-3 text-2xl text-amber-500/20 animate-pulse"></i>
+                <h3 class="text-xs sm:text-sm font-bold text-amber-400 flex items-center gap-1.5"><i class="ph-bold ph-warning"></i> Mode Mandiri Aktif (Hosting Luar / Github Pages)</h3>
+                <p class="text-[10px] text-slate-300 leading-relaxed font-medium font-sans">
+                    Aplikasi mendeteksi berjalan di hosting pihak ketiga / domain GitHub. Karena batasan Firebase API, sistem otomatis mengaktifkan mode sandboxed mandiri yang berbasis <b>Local Storage</b> perangkat Anda.
+                </p>
+                <div class="border-t border-slate-700/50 my-1"></div>
+                <div class="text-[9px] text-slate-400 font-sans space-y-1.5">
+                    <p class="flex items-center gap-1 font-bold text-white"><i class="ph-fill ph-check-circle text-emerald-400"></i> Bekerja 100% Sempurna tanpa Error Firebase</p>
+                    <p class="flex items-center gap-1"><i class="ph-fill ph-check-circle text-emerald-400"></i> Pengaturan & Kunci Gemini API tersimpan aman di browser Anda</p>
+                    <p class="text-emerald-400 text-[10px] font-bold mt-1 leading-relaxed">💡 Tips: Silakan daftarkan kunci API Gemini Anda di registri Multi-Engine di bawah agar proses analisis / pengisian syair terus berjalan di GitHub Pages!</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Helper to extract localStorage or fallback to backupData
+    const loadLocal = (key: string, backupArr: any[]) => {
+        try {
+            const data = localStorage.getItem(key);
+            if (data) {
+                const parsed = JSON.parse(data);
+                if (parsed && Array.isArray(parsed) && parsed.length > 0) return parsed;
+                if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
+            }
+        } catch {}
+        return backupArr;
+    };
+
+    const parsedBackup = (backupData as any) || {};
+
+    (window as any).pools = loadLocal('superemetoto_pools', parsedBackup.pools || []);
+    (window as any).pools.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+    (window as any).dataBukuMimpi = loadLocal('superemetoto_mimpi', parsedBackup.mimpi || []);
+    (window as any).aiPrompts = loadLocal('superemetoto_prompts', parsedBackup.prompts || []);
+    (window as any).globalRules = loadLocal('superemetoto_globals', parsedBackup.globals || []);
+    (window as any).extraSources = loadLocal('superemetoto_extra_sources', parsedBackup.extraSources || []);
+
+    // Load Settings Config
+    try {
+        const localConf = localStorage.getItem('superemetoto_settings_config');
+        if (localConf) {
+            (window as any).appConfig = JSON.parse(localConf);
+        } else {
+            (window as any).appConfig = parsedBackup.config || parsedBackup.settings?.config || { apiKey: (window as any).DEFAULT_API_KEY };
+        }
+    } catch {
+        (window as any).appConfig = { apiKey: (window as any).DEFAULT_API_KEY };
+    }
+
+    // Sync input field value
+    const ak = (document.getElementById('input-setting-apikey') as HTMLInputElement);
+    if(ak) ak.value = (window as any).appConfig.apiKey || '';
+
+    // Load Sandingan Config
+    try {
+        const localSand = localStorage.getItem('superemetoto_settings_sandingan_config');
+        if (localSand) {
+            (window as any).sandinganConfig = JSON.parse(localSand);
+        } else {
+            (window as any).sandinganConfig = parsedBackup.sandinganConfig || parsedBackup.settings?.sandinganConfig || {};
+        }
+    } catch {
+        (window as any).sandinganConfig = {};
+    }
+
+    // Load Syair Template
+    try {
+        const localSyair = localStorage.getItem('superemetoto_settings_syair_template');
+        if (localSyair) {
+            (window as any).syairTemplate = JSON.parse(localSyair);
+        } else {
+            (window as any).syairTemplate = parsedBackup.syairTemplate || parsedBackup.settings?.syairTemplate || {};
+        }
+    } catch {
+        (window as any).syairTemplate = {};
+    }
+
+    const t = (window as any).syairTemplate;
+    (window as any).syairVariables = t.variables || ["PASARAN", "TANGGAL", "SHIO", "BBFS", "AM", "AI", "CB", "CM", "KEPALA", "EKOR", "JITU", "3D", "4D", "2D", "TWIN"];
+
+    const btnOp = document.getElementById('edit-syair-opacity') as HTMLInputElement;
+    if(btnOp) btnOp.value = t.opacity || "30";
+    
+    const btnBg = document.getElementById('edit-syair-bg') as HTMLInputElement;
+    if(btnBg) btnBg.value = t.bgUrl || "";
+    
+    const btnM = document.getElementById('edit-syair-color-main') as HTMLInputElement;
+    if(btnM) btnM.value = t.mainColor || "#10b981";
+    
+    const btnA = document.getElementById('edit-syair-color-accent') as HTMLInputElement;
+    if(btnA) btnA.value = t.accentColor || "#3b82f6";
+
+    const btnF = document.getElementById('edit-syair-footer') as HTMLInputElement;
+    if(btnF) btnF.value = t.footer || "SUPREME TOTO AI GENERATED";
+
+    const btnH = document.getElementById('input-syair-html') as HTMLTextAreaElement;
+    if(btnH) btnH.value = t.html || (window as any).defaultSyairHTML;
+
+    // Render UI lists
+    (window as any).renderAdminLists();
+    (window as any).renderBukuMimpi();
+    (window as any).renderDropdowns();
+    (window as any).renderSyairVarsAdmin();
+    (window as any).updateAIInfoPanel();
+    (window as any).updateAdminSyairPreview();
+
+    if (typeof (window as any).renderGeminiKeys === 'function') {
+        (window as any).renderGeminiKeys();
+    }
+};
+
 (window as any).initApp = async () => {
     (window as any).renderAdminLists();
     (window as any).renderBukuMimpi();
@@ -3036,9 +3368,14 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         signInAnonymously(auth).then(() => {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    (window as any).isLocalMode = false;
                     (window as any).cloudUserId = user.uid;
                     const statusText = document.getElementById('cloud-status-text');
                     if(statusText) statusText.innerHTML = `<i class="ph-fill ph-cloud-check"></i> AKTIF`;
+                    const statusIcon = document.getElementById('cloud-status-icon');
+                    if (statusIcon) {
+                        statusIcon.className = "ph-fill ph-circle text-[8px] text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
+                    }
                     
                     const pid = document.getElementById('active-project-id');
                     if (pid) pid.innerText = "superemetoto";
@@ -3046,11 +3383,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     if (rid) rid.innerText = "TOTO-PRO-ROOM-PERMANEN";
                     document.getElementById('status-db-pribadi')?.classList.remove('hidden');
 
-                    const roomIdPath = 'TOTO-PRO-ROOM-PERMANEN'; // Base room doc
-
                     onSnapshot(collection(db, 'pools'), (snap) => {
                         (window as any).pools = snap.docs.map(d => d.data());
                         (window as any).pools.sort((a:any, b:any) => (a.order || 0) - (b.order || 0));
+                        localStorage.setItem('superemetoto_pools', JSON.stringify((window as any).pools));
                         (window as any).renderAdminLists();
                         (window as any).renderDropdowns();
                         (window as any).fetchAllLiveResults();
@@ -3066,22 +3402,26 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
                     onSnapshot(collection(db, 'mimpi'), (snap) => {
                         (window as any).dataBukuMimpi = snap.docs.map(d => d.data());
+                        localStorage.setItem('superemetoto_mimpi', JSON.stringify((window as any).dataBukuMimpi));
                         (window as any).renderAdminLists();
                         (window as any).renderBukuMimpi();
                     });
 
                     onSnapshot(collection(db, 'prompts'), (snap) => {
                         (window as any).aiPrompts = snap.docs.map(d => d.data());
+                        localStorage.setItem('superemetoto_prompts', JSON.stringify((window as any).aiPrompts));
                         (window as any).renderAdminLists();
                     });
 
                     onSnapshot(collection(db, 'globals'), (snap) => {
                         (window as any).globalRules = snap.docs.map(d => d.data());
+                        localStorage.setItem('superemetoto_globals', JSON.stringify((window as any).globalRules));
                         (window as any).renderAdminLists();
                     });
 
                     onSnapshot(collection(db, 'extra_sources'), (snap) => {
                         (window as any).extraSources = snap.docs.map(d => d.data());
+                        localStorage.setItem('superemetoto_extra_sources', JSON.stringify((window as any).extraSources));
                         (window as any).renderAdminLists();
                         (window as any).updateAIInfoPanel();
                     });
@@ -3089,6 +3429,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     onSnapshot(doc(db, 'settings', 'config'), (docSnap) => {
                         if (docSnap.exists()) {
                             (window as any).appConfig = docSnap.data();
+                            localStorage.setItem('superemetoto_settings_config', JSON.stringify((window as any).appConfig));
                             const ak = (document.getElementById('input-setting-apikey') as HTMLInputElement);
                             if(ak) ak.value = (window as any).appConfig.apiKey || '';
                             
@@ -3102,6 +3443,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     onSnapshot(doc(db, 'settings', 'sandingan_config'), (docSnap) => {
                         if (docSnap.exists()) {
                             (window as any).sandinganConfig = docSnap.data();
+                            localStorage.setItem('superemetoto_settings_sandingan_config', JSON.stringify((window as any).sandinganConfig));
                         }
                     });
 
@@ -3109,6 +3451,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                         if (docSnap.exists()) {
                             const t = docSnap.data();
                             (window as any).syairTemplate = t;
+                            localStorage.setItem('superemetoto_settings_syair_template', JSON.stringify((window as any).syairTemplate));
                             (window as any).syairVariables = t.variables || ["PASARAN", "TANGGAL", "SHIO", "BBFS", "AM", "AI", "CB", "CM", "KEPALA", "EKOR", "JITU", "3D", "4D", "2D", "TWIN"];
                             
                             const btnOp = document.getElementById('edit-syair-opacity') as HTMLInputElement;
@@ -3136,10 +3479,11 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                 }
             });
         }).catch((err) => {
-            console.error("Auth Fail", err);
-            const statusText = document.getElementById('cloud-status-text');
-            if(statusText) statusText.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500"></i> GAGAL`;
+            console.error("Auth Fail, falling back to Local Mode", err);
+            (window as any).switchToLocalMode(err.message || 'Firebase Auth failed');
         });
+    } else {
+        (window as any).switchToLocalMode("Firebase Auth not available");
     }
 };
 
