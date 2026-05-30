@@ -245,6 +245,29 @@ function writeBatch(dbInstance: any) {
 (window as any).currentAnalyzedPoolName = "";
 (window as any).currentLiveDraws = []; 
 
+(window as any).updateGeminiStatusIndicator = (status: 'ready' | 'loading' | 'failed', message?: string) => {
+    const textEl = document.getElementById('gemini-status-text');
+    const iconEl = document.getElementById('gemini-status-icon');
+    if (!textEl || !iconEl) return;
+    
+    if (status === 'ready') {
+        textEl.className = "text-[9px] sm:text-[10px] text-emerald-400 font-extrabold tracking-wider";
+        textEl.innerHTML = `AI: SIAP`;
+        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-emerald-500 shrink-0";
+        textEl.parentElement?.setAttribute('title', "Gemini AI: Siap digunakan.");
+    } else if (status === 'loading') {
+        textEl.className = "text-[9px] sm:text-[10px] text-purple-400 font-extrabold tracking-wider animate-pulse";
+        textEl.innerHTML = `AI: PROSES`;
+        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-purple-500 animate-pulse shrink-0";
+        textEl.parentElement?.setAttribute('title', "Gemini AI: Sedang memproses analisis.");
+    } else if (status === 'failed') {
+        textEl.className = "text-[9px] sm:text-[10px] text-red-500 font-extrabold tracking-wider";
+        textEl.innerHTML = `AI: GAGAL`;
+        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-red-500 shrink-0 animate-pulse";
+        textEl.parentElement?.setAttribute('title', message || "Gemini AI: Gagal. Klik Mulai untuk detail.");
+    }
+};
+
 (window as any).syairVariables = ['BBFS', 'AM', 'AI', 'CB', 'CM', 'KEPALA', 'EKOR', 'SHIO', '4D', '3D', '2D', 'TWIN', 'JITU'];
 
 (window as any).robustFetch = async (url: string): Promise<string> => {
@@ -2645,6 +2668,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
             </div>`;
     }
 
+    if (typeof (window as any).updateGeminiStatusIndicator === 'function') {
+        (window as any).updateGeminiStatusIndicator('loading');
+    }
+
     try {
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
         const data = await fetchGeminiWithRetry(apiUrl, {
@@ -2659,6 +2686,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
         if (infoEl) infoEl.innerHTML = `<span class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold border border-purple-400">GEMINI 3.0</span> <span class="text-xs text-slate-400 ml-2">Analisis Selesai</span>`;
         if (aiRawBtn) aiRawBtn.classList.remove('hidden');
+
+        if (typeof (window as any).updateGeminiStatusIndicator === 'function') {
+            (window as any).updateGeminiStatusIndicator('ready');
+        }
 
         // Render response details inside the page container
         if (aiRes) {
@@ -2724,8 +2755,38 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         (window as any).showToast("Analisis AI Selesai dan disimpan!");
 
     } catch (error: any) {
-        aiRes.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 p-4 rounded-lg text-red-500 flex items-center gap-3"><i class="ph-fill ph-warning-octagon text-3xl"></i><div><p class="font-bold text-sm">Gagal Sinkronisasi AI</p><p class="text-xs opacity-80">${error.message}</p></div></div>`;
-        if (infoEl) infoEl.innerHTML = `<span class="text-red-400 text-xs"><i class="ph-fill ph-warning-circle"></i> Koneksi AI Terputus</span>`;
+        const currentKey = (window as any).getGeminiAPIKey();
+        const isDefaultKey = currentKey === (window as any).DEFAULT_API_KEY;
+        const keyStatusText = isDefaultKey 
+            ? "Anda menggunakan API Key Default sistem (mungkin kuota habis / diblokir oleh Google)." 
+            : `Menggunakan Kunci API: ${currentKey || "Belum diisi"}.`;
+
+        if (typeof (window as any).updateGeminiStatusIndicator === 'function') {
+            (window as any).updateGeminiStatusIndicator('failed', error.message || 'Koneksi AI Gagal');
+        }
+
+        aiRes.innerHTML = `
+            <div class="bg-red-500/10 border border-red-500/35 p-5 rounded-2xl text-red-400 flex flex-col gap-3 max-w-2xl mx-auto my-4 shadow-lg animate-fade-in text-left">
+                <div class="flex items-start gap-3">
+                    <i class="ph-fill ph-warning-octagon text-3xl text-red-500 shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="font-extrabold text-base text-red-400 uppercase tracking-wide">Gagal Sinkronisasi AI</p>
+                        <p class="text-xs text-slate-300 mt-1 leading-relaxed font-sans">${error.message || "Gagal mengambil data dari Gemini API. Silakan periksa koneksi internet atau API Key Anda."}</p>
+                    </div>
+                </div>
+                <div class="border-t border-red-500/10 my-1"></div>
+                <div class="text-[11px] text-slate-400 leading-relaxed font-sans space-y-1">
+                    <p class="font-bold text-slate-300"><i class="ph-bold ph-key text-amber-500"></i> Status Kunci API Gemini:</p>
+                    <p class="text-slate-400 ml-4">${keyStatusText}</p>
+                    <p class="text-amber-400 font-bold mt-2"><i class="ph-bold ph-lightbulb"></i> Solusi untuk Github Pages / Hosting Luar:</p>
+                    <p class="ml-4 font-normal text-slate-300">1. Buka <b>Panel Admin</b> (paling bawah menu navigasi samping).</p>
+                    <p class="ml-4 font-normal text-slate-300">2. Masukkan PIN Admin Anda.</p>
+                    <p class="ml-4 font-normal text-slate-300">3. Gulir ke bawah ke bagian <b>Registri Multi-Engine & API Key Gemini</b>.</p>
+                    <p class="ml-4 font-normal text-slate-300">4. Masukkan API Key Gemini pribadi Anda yang valid agar tidak terkena limit atau blokir.</p>
+                </div>
+            </div>
+        `;
+        if (infoEl) infoEl.innerHTML = `<span class="text-red-400 text-xs font-bold leading-normal"><i class="ph-fill ph-warning-circle"></i> Koneksi AI Gagal</span>`;
     } finally {
         if(btn) { 
             btn.innerHTML = `<i class="ph-fill ph-magic-wand text-lg"></i> Mulai`; 
@@ -3233,7 +3294,8 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     // Update Header Status Indicator to highlight Mode Mandiri (Local)
     const statusText = document.getElementById('cloud-status-text');
     if (statusText) {
-        statusText.innerHTML = `<span class="text-amber-400 font-black"><i class="ph-fill ph-git-fork"></i> MANDIRI</span>`;
+        statusText.className = "text-[9px] sm:text-[10px] text-amber-400 font-extrabold tracking-wider shrink-0";
+        statusText.innerHTML = `<i class="ph-fill ph-git-fork font-bold"></i> MANDIRI`;
     }
     const statusIcon = document.getElementById('cloud-status-icon');
     if (statusIcon) {
@@ -3371,7 +3433,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     (window as any).isLocalMode = false;
                     (window as any).cloudUserId = user.uid;
                     const statusText = document.getElementById('cloud-status-text');
-                    if(statusText) statusText.innerHTML = `<i class="ph-fill ph-cloud-check"></i> AKTIF`;
+                    if(statusText) {
+                        statusText.className = "text-[9px] sm:text-[10px] text-emerald-500 font-extrabold tracking-wider shrink-0";
+                        statusText.innerHTML = `<i class="ph-fill ph-cloud-check"></i> AKTIF`;
+                    }
                     const statusIcon = document.getElementById('cloud-status-icon');
                     if (statusIcon) {
                         statusIcon.className = "ph-fill ph-circle text-[8px] text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
@@ -3588,7 +3653,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     
     let html = '';
     keys.forEach((k: any) => {
-        const maskedKey = k.apiKey ? (k.apiKey.length > 10 ? k.apiKey.substring(0, 7) + "..." + k.apiKey.slice(-4) : "••••••••") : "Empty";
+        const maskedKey = k.apiKey ? k.apiKey : "Empty";
         const activeIcon = k.active ? 'ph-fill ph-toggle-right text-lg text-emerald-400' : 'ph-bold ph-toggle-left text-lg text-slate-500';
         
         html += `
