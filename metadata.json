@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "SupremeTOTO",
+  "description": "Aplikasi pendukung prediksi angka jitu toto dengan pengolah AI pintar, manajemen pasaran lengkap, dan modul generate gambar syair otomatis.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

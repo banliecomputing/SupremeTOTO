@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc as firebaseSetDoc, deleteDoc as firebaseDeleteDoc, onSnapshot, writeBatch as firebaseWriteBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeFirestore, collection, doc, setDoc as firebaseSetDoc, deleteDoc as firebaseDeleteDoc, onSnapshot, writeBatch as firebaseWriteBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 import backupData from './backup.json';
 
@@ -21,7 +21,9 @@ let db: any;
 try {
     app = initializeApp(CUSTOM_FIREBASE_CONFIG);
     auth = getAuth(app);
-    db = getFirestore(app);
+    db = initializeFirestore(app, {
+        experimentalForceLongPolling: true
+    });
 } catch (e) {
     console.warn("Firebase Init disabled");
 }
@@ -2324,16 +2326,32 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
 };
 
 async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
+    let lastError: any = null;
     for (let i = 0; i < maxRetries; i++) {
         try {
             const response = await fetch(url, options);
-            if (!response.ok) throw new Error("Gagal mengambil data dari Gemini API.");
+            if (!response.ok) {
+                let errMsg = `Gagal terhubung ke server Gemini (Status: ${response.status})`;
+                try {
+                    const errBody = await response.text();
+                    const parsedErr = JSON.parse(errBody);
+                    if (parsedErr.error && parsedErr.error.message) {
+                        errMsg = parsedErr.error.message;
+                    }
+                } catch {
+                    // fallback to status code
+                }
+                throw new Error(errMsg);
+            }
             return await response.json();
-        } catch (e) {
+        } catch (e: any) {
+            lastError = e;
             if (i === maxRetries - 1) throw e;
+            // Exponential backoff
             await new Promise(r => setTimeout(r, 1000 * (Math.pow(2, i))));
         }
     }
+    throw lastError || new Error("Gagal mengambil data dari Gemini API.");
 }
 
 (window as any).applyPromptTemplate = () => {
@@ -2467,6 +2485,17 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         return (window as any).showToast("Ketik pertanyaan anda terlebih dahulu!", true);
     }
     
+    // Add Enter key event listener to the input element if not already added
+    if (!inputEl.dataset.enterHook) {
+        inputEl.dataset.enterHook = "true";
+        inputEl.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                (window as any).sendFollowUpQuestion();
+            }
+        });
+    }
+    
     inputEl.disabled = true;
     if (btn) btn.disabled = true;
     if (sendIcon) {
@@ -2521,17 +2550,33 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     const apiKey = (window as any).getGeminiAPIKey();
     
     try {
+        let data: any = null;
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: (window as any).aiChatSessionHistory })
-        });
         
-        if (!response.ok) throw new Error("Gagal terhubung ke server Gemini.");
-        const data = await response.json();
+        try {
+            data = await fetchGeminiWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: (window as any).aiChatSessionHistory })
+            }, 2);
+        } catch (firstErr: any) {
+            console.warn("Primary model gemini-3-flash-preview failed, attempting fallback to gemini-3.5-flash...", firstErr);
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+            data = await fetchGeminiWithRetry(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: (window as any).aiChatSessionHistory })
+            }, 2);
+        }
         
-        const replyText = data.candidates[0].content.parts[0].text;
+        let replyText = "";
+        if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            replyText = data.candidates[0].content.parts[0].text || "";
+        }
+        
+        if (!replyText || replyText.trim() === "") {
+            throw new Error("Gemini mengembalikan respon kosong atau diblokir oleh filter keamanan.");
+        }
         
         (window as any).aiChatSessionHistory.push({
             role: "model",
@@ -2568,7 +2613,22 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         inputEl.disabled = false;
         if (btn) btn.disabled = false;
         if (sendIcon) sendIcon.className = "ph-bold ph-paper-plane-right text-base text-white";
-        setTimeout(() => inputEl.focus(), 50);
+        // Also ensure key listener is kept
+        setTimeout(() => {
+            const freshInput = document.getElementById('ai-chat-input') as HTMLTextAreaElement;
+            if (freshInput) {
+                freshInput.focus();
+                if (!freshInput.dataset.enterHook) {
+                    freshInput.dataset.enterHook = "true";
+                    freshInput.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' && !event.shiftKey) {
+                            event.preventDefault();
+                            (window as any).sendFollowUpQuestion();
+                        }
+                    });
+                }
+            }
+        }, 50);
     }
 };
 
@@ -2673,14 +2733,34 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     }
 
     try {
+        let data: any = null;
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-        const data = await fetchGeminiWithRetry(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: basePrompt }] }] })
-        }, 3); 
+        
+        try {
+            data = await fetchGeminiWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: basePrompt }] }] })
+            }, 3);
+        } catch (firstErr: any) {
+            console.warn("Primary model gemini-3-flash-preview failed, attempting fallback to gemini-3.5-flash...", firstErr);
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+            data = await fetchGeminiWithRetry(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: basePrompt }] }] })
+            }, 3);
+        }
 
-        const resTxt = data.candidates[0].content.parts[0].text;
+        let resTxt = "";
+        if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            resTxt = data.candidates[0].content.parts[0].text || "";
+        }
+        
+        if (!resTxt || resTxt.trim() === "") {
+            throw new Error("Gemini mengembalikan respon kosong atau diblokir oleh filter keamanan.");
+        }
+
         (window as any).lastAITextSyair = resTxt;
         (window as any).currentAIBasePrompt = basePrompt;
 
@@ -2711,7 +2791,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                                     <span class="text-[9px] text-purple-400 font-mono font-bold font-extrabold">TANYA JAWAB POLA LANJUTAN</span>
                                 </div>
                             </div>
-                            <button onclick="(window as any).resetAIChatHistory()" class="text-[9px] uppercase font-bold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700/50 cursor-pointer">
+                            <button onclick="window.resetAIChatHistory()" class="text-[9px] uppercase font-bold text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700/50 cursor-pointer">
                                 <i class="ph-bold ph-trash font-bold"></i> Reset Chat
                             </button>
                         </div>
@@ -2729,7 +2809,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                         <!-- Input group -->
                         <div class="flex gap-2 relative">
                             <textarea id="ai-chat-input" placeholder="Tanyakan detail pola, BBFS, Shio, atau hapus angka..." class="flex-1 bg-slate-950 border border-slate-850 hover:border-slate-800 focus:border-purple-500/50 outline-none rounded-xl p-3 text-xs text-slate-200 h-11 resize-none transition-all leading-tight"></textarea>
-                            <button id="btn-send-ai-chat" onclick="(window as any).sendFollowUpQuestion()" class="bg-purple-600 hover:bg-purple-500 border border-purple-500 text-white font-bold px-4 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-95">
+                            <button id="btn-send-ai-chat" onclick="window.sendFollowUpQuestion()" class="bg-purple-600 hover:bg-purple-500 border border-purple-500 text-white font-bold px-4 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-95">
                                 <i id="ai-chat-send-icon" class="ph-bold ph-paper-plane-right text-base text-white"></i>
                             </button>
                         </div>
@@ -3235,20 +3315,20 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
             if(!confirm("Anda yakin ingin MERESTORE FULL DATABASE? Ini akan memakan waktu dan menumpuk data lama.")) return;
             const b = writeBatch(db);
             
-            if(parsed.pools) parsed.pools.forEach((p: any) => b.set(doc(db, 'pools', p.id), p));
-            if(parsed.mimpi) parsed.mimpi.forEach((m: any) => b.set(doc(db, 'mimpi', m.id), m));
-            if(parsed.prompts) parsed.prompts.forEach((p: any) => b.set(doc(db, 'prompts', p.id), p));
-            if(parsed.globals) parsed.globals.forEach((g: any) => b.set(doc(db, 'globals', g.id), g));
-            if(parsed.extraSources) parsed.extraSources.forEach((s: any) => b.set(doc(db, 'extra_sources', s.id), s));
+            if(parsed.pools) parsed.pools.forEach((p: any) => b.set(doc(db, 'pools', p.id), p, { merge: true }));
+            if(parsed.mimpi) parsed.mimpi.forEach((m: any) => b.set(doc(db, 'mimpi', m.id), m, { merge: true }));
+            if(parsed.prompts) parsed.prompts.forEach((p: any) => b.set(doc(db, 'prompts', p.id), p, { merge: true }));
+            if(parsed.globals) parsed.globals.forEach((g: any) => b.set(doc(db, 'globals', g.id), g, { merge: true }));
+            if(parsed.extraSources) parsed.extraSources.forEach((s: any) => b.set(doc(db, 'extra_sources', s.id), s, { merge: true }));
             
             // Handle both old nested and new flat formats for settings
             const conf = parsed.config || parsed.settings?.config;
             const sandConf = parsed.sandinganConfig || parsed.settings?.sandinganConfig;
             const syConf = parsed.syairTemplate || parsed.settings?.syairTemplate;
             
-            if(conf) b.set(doc(db, 'settings', 'config'), conf);
-            if(sandConf) b.set(doc(db, 'settings', 'sandingan_config'), sandConf);
-            if(syConf) b.set(doc(db, 'settings', 'syair_template'), syConf);
+            if(conf) b.set(doc(db, 'settings', 'config'), conf, { merge: true });
+            if(sandConf) b.set(doc(db, 'settings', 'sandingan_config'), sandConf, { merge: true });
+            if(syConf) b.set(doc(db, 'settings', 'syair_template'), syConf, { merge: true });
 
             await b.commit();
             (window as any).showToast("Restore FULL Database Selesai!");
@@ -3265,19 +3345,19 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     try {
         const b = writeBatch(db);
         const parsed = (backupData as any);
-        if(parsed.pools) parsed.pools.forEach((p: any) => b.set(doc(db, 'pools', p.id), p));
-        if(parsed.mimpi) parsed.mimpi.forEach((m: any) => b.set(doc(db, 'mimpi', m.id), m));
-        if(parsed.prompts) parsed.prompts.forEach((p: any) => b.set(doc(db, 'prompts', p.id), p));
-        if(parsed.globals) parsed.globals.forEach((g: any) => b.set(doc(db, 'globals', g.id), g));
-        if(parsed.extraSources) parsed.extraSources.forEach((s: any) => b.set(doc(db, 'extra_sources', s.id), s));
+        if(parsed.pools) parsed.pools.forEach((p: any) => b.set(doc(db, 'pools', p.id), p, { merge: true }));
+        if(parsed.mimpi) parsed.mimpi.forEach((m: any) => b.set(doc(db, 'mimpi', m.id), m, { merge: true }));
+        if(parsed.prompts) parsed.prompts.forEach((p: any) => b.set(doc(db, 'prompts', p.id), p, { merge: true }));
+        if(parsed.globals) parsed.globals.forEach((g: any) => b.set(doc(db, 'globals', g.id), g, { merge: true }));
+        if(parsed.extraSources) parsed.extraSources.forEach((s: any) => b.set(doc(db, 'extra_sources', s.id), s, { merge: true }));
         
         const conf = parsed.config || parsed.settings?.config;
         const sandConf = parsed.sandinganConfig || parsed.settings?.sandinganConfig;
         const syConf = parsed.syairTemplate || parsed.settings?.syairTemplate;
         
-        if(conf) b.set(doc(db, 'settings', 'config'), conf);
-        if(sandConf) b.set(doc(db, 'settings', 'sandingan_config'), sandConf);
-        if(syConf) b.set(doc(db, 'settings', 'syair_template'), syConf);
+        if(conf) b.set(doc(db, 'settings', 'config'), conf, { merge: true });
+        if(sandConf) b.set(doc(db, 'settings', 'sandingan_config'), sandConf, { merge: true });
+        if(syConf) b.set(doc(db, 'settings', 'syair_template'), syConf, { merge: true });
 
         await b.commit();
         console.log("Auto-seeded database from backup.json");
@@ -3448,6 +3528,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     if (rid) rid.innerText = "TOTO-PRO-ROOM-PERMANEN";
                     document.getElementById('status-db-pribadi')?.classList.remove('hidden');
 
+                    let isFirstPoolsLoad = true;
                     onSnapshot(collection(db, 'pools'), (snap) => {
                         (window as any).pools = snap.docs.map(d => d.data());
                         (window as any).pools.sort((a:any, b:any) => (a.order || 0) - (b.order || 0));
@@ -3455,15 +3536,15 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                         (window as any).renderAdminLists();
                         (window as any).renderDropdowns();
                         (window as any).fetchAllLiveResults();
-                    });
-
-                    // Trigger auto seed if empty after 3 seconds
-                    setTimeout(() => {
-                        if (!(window as any).pools || (window as any).pools.length === 0) {
-                            console.log("No pools found, attempting auto seed from backupData...");
-                            (window as any).autoSeedDatabase();
+                        
+                        if (isFirstPoolsLoad) {
+                            isFirstPoolsLoad = false;
+                            if (snap.empty) {
+                                console.log("Database pools are empty on first Firestore load, triggering automatic auto seed...");
+                                (window as any).autoSeedDatabase();
+                            }
                         }
-                    }, 3000);
+                    });
 
                     onSnapshot(collection(db, 'mimpi'), (snap) => {
                         (window as any).dataBukuMimpi = snap.docs.map(d => d.data());
