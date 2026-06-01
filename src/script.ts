@@ -309,6 +309,66 @@ function writeBatch(dbInstance: any) {
     throw lastError || new Error(`Gagal memuat data dari ${url}. Semua jalur CORS proxy sedang sibuk.`);
 };
 
+(window as any).shioToEmoji = (shioName: string): string => {
+    if (!shioName) return '🎲';
+    const name = shioName.toUpperCase().trim();
+    const shioMap: { [key: string]: string } = {
+        'TIKUS': '🐀', 'KERBAU': '🐂', 'HARIMAU': '🐅', 'MACAN': '🐅', 
+        'KELINCI': '🐇', 'NAGA': '🐉', 'ULAR': '🐍', 'KUDA': '🐎', 
+        'KAMBING': '🐐', 'MONYET': '🐒', 'AYAM': '🐓', 'ANJING': '🐕', 'BABI': '🐖'
+    };
+    for (const key of Object.keys(shioMap)) {
+        if (name.includes(key)) return shioMap[key];
+    }
+    return '🎲';
+};
+
+(window as any).runLayoutCorrection = (container: HTMLElement) => {
+    if (!container) return;
+
+    // 1. Clean up breaklines to spaces
+    container.querySelectorAll('.clean-text').forEach((el: any) => {
+        let currentHtml = el.innerHTML;
+        if (currentHtml.includes('<') || currentHtml.includes('\n')) {
+            currentHtml = currentHtml.replace(/(<br\s*[\/]?>|<\/p>|<\/div>|<\/li>|\n)/gi, ' ');
+            let tempDiv = document.createElement('div');
+            tempDiv.innerHTML = currentHtml;
+            const pureText = tempDiv.textContent || tempDiv.innerText;
+            el.innerHTML = pureText.replace(/\s+/g, ' ').trim();
+        }
+    });
+
+    // 2A. Auto horizontal text shrink
+    container.querySelectorAll('.auto-shrink').forEach((el: any) => {
+        let maxSize = parseFloat(el.getAttribute('data-max-size')) || 16;
+        el.style.fontSize = maxSize + 'px';
+        let currentSize = maxSize;
+        
+        while (el.scrollWidth > el.clientWidth && currentSize > 7) {
+            currentSize -= 0.5;
+            el.style.fontSize = currentSize + 'px';
+        }
+    });
+
+    // 2B. Auto multi lines box shrink
+    container.querySelectorAll('.auto-shrink-multi').forEach((el: any) => {
+        let currentSize = 15;
+        el.style.fontSize = currentSize + 'px';
+        while (el.scrollHeight > el.clientHeight && currentSize > 8) {
+            currentSize -= 0.5;
+            el.style.fontSize = currentSize + 'px';
+        }
+    });
+
+    // 3. Dynamic Shio emoji mappings
+    const shioTextElement = container.querySelector('#shio-name-text') as HTMLElement | null;
+    const shioDisplay = container.querySelector('#shio-emoji-display') as HTMLElement | null;
+    if (shioTextElement && shioDisplay) {
+        let shioText = (shioTextElement.innerText || shioTextElement.textContent || '').toUpperCase();
+        shioDisplay.innerText = (window as any).shioToEmoji(shioText);
+    }
+};
+
 (window as any).defaultSyairHTML = `<div style="width: 100%; max-width: 450px; background-color: #ebd19b; border: 4px solid #4a3319; padding: 25px 20px; box-sizing: border-box; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0); background-size: 15px 15px; margin: 0 auto; color: #111; font-family: 'Inter', sans-serif;">
 <div style="text-align: center; border-bottom: 2px dashed #8b0000; padding-bottom: 15px; margin-bottom: 15px;">
     <h1 style="margin: 0; font-size: 42px; color: #8B0000; font-weight: 900; text-shadow: 1px 1px 0px #fff; letter-spacing: 1px; font-family: 'Impact', sans-serif;">PREDIKSI JITU</h1>
@@ -2933,6 +2993,11 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         Object.keys(dummyVars).forEach(k => {
             compiled = compiled.replace(new RegExp(`{{${k}}}`, 'g'), dummyVars[k]);
         });
+
+        // Calculate and replace {{SHIO_ICON}}
+        const shioVal = dummyVars['SHIO'] || '';
+        const shioIcon = (window as any).shioToEmoji(shioVal);
+        compiled = compiled.replace(/{{SHIO_ICON}}/g, shioIcon);
         
         compiled = compiled.replace(/{{MAIN_COLOR}}/g, mainCol)
                            .replace(/{{ACCENT_COLOR}}/g, accCol)
@@ -2942,6 +3007,9 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         previewContainer.style.backgroundImage = bgUrl ? `url('${bgUrl}')` : 'none';
         previewContainer.style.backgroundSize = 'cover';
         previewContainer.style.backgroundPosition = 'center';
+
+        // Apply manual layout correction for font-sizes and shio auto emoji mappings
+        (window as any).runLayoutCorrection(previewContainer);
     }
 };
 
@@ -2988,6 +3056,11 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         htmlContent = htmlContent.replace(new RegExp(`{{${k}}}`, 'g'), rawVars[k]);
     });
 
+    // Calculate and replace {{SHIO_ICON}} from rawVars['SHIO']
+    const shioVal = rawVars['SHIO'] || '';
+    const shioIcon = (window as any).shioToEmoji(shioVal);
+    htmlContent = htmlContent.replace(/{{SHIO_ICON}}/g, shioIcon);
+
     // Special variables replacement
     htmlContent = htmlContent.replace(/{{MAIN_COLOR}}/g, (window as any).syairTemplate?.mainColor || '#10b981')
                              .replace(/{{ACCENT_COLOR}}/g, (window as any).syairTemplate?.accentColor || '#3b82f6')
@@ -3000,6 +3073,9 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
          canvasObj.style.backgroundImage = ((window as any).syairTemplate?.bgUrl) ? `url('${(window as any).syairTemplate.bgUrl}')` : '';
          canvasObj.style.backgroundSize = 'cover';
          canvasObj.style.backgroundPosition = 'center';
+
+         // Run layout correction for font dimensions and auto shio selectors
+         (window as any).runLayoutCorrection(canvasObj);
     }
 
     modal.classList.remove('hidden');
@@ -3014,7 +3090,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     }
 };
 
-(window as any).downloadSyairPNG = () => {
+(window as any).downloadSyairPNG = async () => {
     const el = document.getElementById('capture-canvas');
     const btn = document.getElementById('btn-download-png') as HTMLButtonElement;
     if(!el || !btn) return;
@@ -3023,21 +3099,74 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin"></i> Rendering...`;
     btn.disabled = true;
 
-    (window as any).html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null }).then((canvas: HTMLCanvasElement) => {
+    // Helper to convert any image URL to Base64 using a CORS-safe proxy
+    const convertUrlToBase64 = async (url: string): Promise<string> => {
+        if (!url || url.startsWith('data:')) return url;
+        try {
+            let proxiedUrl = url;
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                proxiedUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+            }
+            const response = await fetch(proxiedUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const blob = await response.blob();
+            return new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            console.warn("Failed to proxy/convert image to base64, using fallback URL:", url, e);
+            return url;
+        }
+    };
+
+    // Keep track of original states to restore after canvas rendering
+    const originalBg = el.style.backgroundImage || '';
+    const imgElements = Array.from(el.getElementsByTagName('img'));
+    const originalSrcs = imgElements.map(img => ({ element: img, src: img.getAttribute('src') || '' }));
+
+    try {
+        // Convert background image if present
+        const bgMatch = originalBg.match(/url\((['"]?)(.*?)\1\)/);
+        if (bgMatch && bgMatch[2]) {
+            const bgUrl = bgMatch[2];
+            if (!bgUrl.startsWith('data:')) {
+                const bgBase64 = await convertUrlToBase64(bgUrl);
+                el.style.backgroundImage = `url("${bgBase64}")`;
+            }
+        }
+
+        // Convert all nested img elements
+        for (const item of originalSrcs) {
+            if (item.src && !item.src.startsWith('data:')) {
+                const imgBase64 = await convertUrlToBase64(item.src);
+                item.element.src = imgBase64;
+            }
+        }
+
+        // Generate canvas via html2canvas with localized resources
+        const canvas = await (window as any).html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null });
+        
         const link = document.createElement('a');
         link.download = `syair-${Date.now()}.png`;
-        link.href = canvas.toDataURL();
+        link.href = canvas.toDataURL('image/png');
         link.click();
         
-        btn.innerHTML = oriHTML;
-        btn.disabled = false;
         (window as any).showToast("Ekspor PNG Berhasil!");
-    }).catch((err: any) => {
-        console.error(err);
+    } catch (err: any) {
+        console.error("Rendering failed:", err);
+        (window as any).showToast("Gagal Merender Canvas: " + err.message, true);
+    } finally {
+        // Restore elements to their original state
+        el.style.backgroundImage = originalBg;
+        originalSrcs.forEach(item => {
+            item.element.src = item.src;
+        });
         btn.innerHTML = oriHTML;
         btn.disabled = false;
-        (window as any).showToast("Gagal Merender Canvas. Pastikan URL gambar mendukung CORS.", true);
-    });
+    }
 };
 
 (window as any).resetSyairHTML = async () => {

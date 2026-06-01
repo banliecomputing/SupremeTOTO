@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SupremeTOTO versi 60</title>
+    <title>SupremeTOTO versi 64</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -102,33 +102,33 @@
                     <i class="ph-bold ph-caret-down text-emerald-400 transition-transform duration-300" id="ai-controls-icon"></i>
                 </div>
 
-                <div id="ai-controls-body" class="p-4 md:p-6 bg-slate-900 border-b border-slate-800 shrink-0 shadow-lg z-20 transition-all duration-300">
-                    <div class="max-w-2xl mx-auto">
-                        <select id="ai-pool-selector" onchange="fetchTableData(true)" class="w-full p-3.5 rounded-xl bg-slate-800 border border-purple-500/30 outline-none font-bold text-center text-purple-400 shadow-inner mb-3 appearance-none">
+                <div id="ai-controls-body" class="p-2 md:p-3.5 bg-slate-900 border-b border-slate-800 shrink-0 shadow-lg z-20 transition-all duration-300">
+                    <div class="max-w-xl mx-auto flex flex-col gap-2">
+                        <select id="ai-pool-selector" onchange="fetchTableData(true)" class="w-full py-2 px-3 text-xs rounded-lg bg-slate-800 border border-purple-500/30 outline-none font-bold text-center text-purple-400 shadow-inner appearance-none">
                             <option value="">-- Pilih Tabel Pasaran Utama --</option>
                         </select>
                         
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3 relative">
-                            <label class="block text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-2"><i class="ph-fill ph-robot"></i> Template Pola (Spesifik)</label>
-                            <select id="ai-prompt-selector" onchange="applyPromptTemplate()" class="w-full p-2.5 rounded-lg bg-slate-800 border border-purple-500/20 text-slate-300 text-sm outline-none focus:border-purple-500 transition-colors mb-2 appearance-none">
+                        <div class="bg-slate-950 p-2 rounded-lg border border-slate-800 relative">
+                            <label class="block text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-1.5"><i class="ph-fill ph-robot"></i> Template Pola (Spesifik)</label>
+                            <select id="ai-prompt-selector" onchange="applyPromptTemplate()" class="w-full py-1.5 px-2 rounded bg-slate-800 border border-purple-500/20 text-slate-300 text-xs outline-none focus:border-purple-500 transition-colors mb-2 appearance-none">
                                 <option value="">-- Tulis Instruksi Manual Bebas --</option>
                             </select>
-                            <textarea id="analisis-prompt" placeholder="Ketik instruksi spesifik di sini (atau biarkan kosong agar AI hanya membaca System Prompt)..." class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 outline-none text-sm text-slate-300 h-16 resize-none focus:border-purple-500/50 transition-colors"></textarea>
+                            <textarea id="analisis-prompt" placeholder="Ketik instruksi spesifik di sini (atau biarkan kosong agar AI hanya membaca System Prompt)..." class="w-full p-2 rounded bg-slate-900 border border-slate-700 outline-none text-xs text-slate-300 h-11 resize-none focus:border-purple-500/50 transition-colors"></textarea>
                         </div>
 
-                        <div id="ai-extra-sources-info" class="hidden mb-3 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[10px] text-emerald-400 leading-relaxed">
+                        <div id="ai-extra-sources-info" class="hidden p-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded text-[9px] text-emerald-400 leading-relaxed">
                             <i class="ph-fill ph-plugs-connected"></i> AI akan menyedot data tambahan: <span id="ai-extra-sources-list" class="font-bold"></span>
                         </div>
 
                         <div class="flex gap-2">
-                            <button onclick="toggleAITablePreview()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-3.5 px-3 rounded-xl transition-all flex justify-center items-center gap-2 whitespace-nowrap" title="Lihat/Tutup TabelUtuh">
-                                <i class="ph-bold ph-table text-lg"></i> Tabel
+                            <button onclick="toggleAITablePreview()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-2 px-2.5 rounded-lg transition-all flex justify-center items-center gap-1.5 text-xs whitespace-nowrap" title="Lihat/Tutup TabelUtuh">
+                                <i class="ph-bold ph-table text-sm"></i> Tabel
                             </button>
-                            <button onclick="showAIScenario()" class="bg-blue-600/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/50 font-bold py-3.5 px-3 rounded-xl transition-all flex justify-center items-center gap-2 whitespace-nowrap" title="Cek Ringkasan Skenario AI">
-                                <i class="ph-bold ph-info text-lg"></i> Skenario AI
+                            <button onclick="showAIScenario()" class="bg-blue-600/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/50 font-bold py-2 px-2.5 rounded-lg transition-all flex justify-center items-center gap-1.5 text-xs whitespace-nowrap" title="Cek Ringkasan Skenario AI">
+                                <i class="ph-bold ph-info text-sm"></i> Skenario AI
                             </button>
-                            <button onclick="analyzeWithGemini()" id="btn-start-ai" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all active:scale-95 flex justify-center items-center gap-2">
-                                <i class="ph-bold ph-magic-wand text-lg"></i> Mulai
+                            <button onclick="analyzeWithGemini()" id="btn-start-ai" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg shadow-[0_0_10px_rgba(147,51,234,0.3)] transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs uppercase tracking-wider">
+                                <i class="ph-bold ph-magic-wand text-sm"></i> Mulai
                             </button>
                         </div>
                     </div>
@@ -793,7 +793,7 @@
     </div>
 
     <!-- MODAL VISUAL RANGE SELECTOR -->
-    <div id="range-picker-modal" class="fixed inset-0 bg-slate-950/95 z-[130] hidden flex-col transition-opacity duration-300 opacity-0 backdrop-blur-md p-2 md:p-6">
+    <div id="range-picker-modal" class="fixed inset-0 bg-slate-950/95 z-[150] hidden flex-col transition-opacity duration-300 opacity-0 backdrop-blur-md p-2 md:p-6">
         <div class="flex flex-col h-full max-w-6xl mx-auto w-full bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="range-picker-content">
             
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800 shrink-0">
