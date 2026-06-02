@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SupremeTOTO versi 64</title>
+    <title>SupremeTOTO versi 67</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -49,7 +49,7 @@
                     <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 60</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 67</span>
                     </div>
                 </div>
             </div>
@@ -651,8 +651,9 @@
                             <div id="container-form-prompt" class="hidden bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl font-sans">
                                 <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg mb-4 text-[10px] text-slate-400">
                                     <p class="font-bold text-purple-400 mb-1">Format Import File TXT:</p>
-                                    <p>Gunakan tanda pemisah <code class="bg-slate-800 px-1 rounded text-white">|</code> (Garis lurus vertikal) antara judul dan instruksi.</p>
-                                    <p class="text-slate-500 mt-1 font-mono bg-slate-950 p-1 rounded">Rumus Angka Silang | Lakukan analisa silang pada kop dan ekor...</p>
+                                    <p>Gunakan tanda pemisah <code class="bg-slate-800 px-1 rounded text-white">|</code> antara judul dan instruksi (bebas menggunakan baris baru/enter).</p>
+                                    <p>Gunakan baris kosong <code class="bg-slate-800 px-1 rounded text-white">---</code> atau <code class="bg-slate-800 px-1 rounded text-white">===</code> sebagai pemisah antar-pola untuk mengimpor banyak pola sekaligus.</p>
+                                    <p class="text-slate-500 mt-1.5 font-mono bg-slate-950 p-1.5 rounded text-[9px] leading-relaxed">Pola Satu | Instruksi baris 1<br>Instruksi baris 2<br>---<br>Pola Dua | Instruksi pola baru...</p>
                                     <input type="file" id="import-prompt-file" accept=".txt" class="hidden" onchange="handleImportPrompts(event)">
                                 </div>
     
@@ -690,7 +691,7 @@
                         <div id="original-slot-global">
                             <div id="container-form-global" class="hidden bg-slate-800 p-5 rounded-2xl border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] relative overflow-hidden font-sans">
                                 <div class="bg-amber-500/5 border border-amber-500/20 p-3 rounded-lg mb-4 text-[10px] text-slate-400 relative z-10">
-                                    <p>Format Import TXT: 1 baris = 1 aturan mutlak AI.</p>
+                                    <p>Format Import TXT: Isi aturan bebas menggunakan enter. Pisahkan dengan baris <code class="bg-slate-900 px-1 rounded text-white">---</code> atau <code class="bg-slate-900 px-1 rounded text-white">===</code> untuk mengimpor banyak aturan global sekaligus.</p>
                                     <input type="file" id="import-global-file" accept=".txt" class="hidden" onchange="handleImportGlobals(event)">
                                 </div>
     

@@ -1939,19 +1939,39 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const reader = new FileReader();
     reader.onload = async (ev: any) => {
         try {
-            const content = ev.target.result;
-            const lines = content.split('\n');
+            const content = ev.target.result || '';
+            // Split content into blocks using lines containing only --- or ===
+            const sections = content.split(/(?:\r?\n)+(?:---|===)+(?:\r?\n)+/);
             const batch = writeBatch(db);
             let count = 0;
             
-            lines.forEach((line: string) => {
-                const tr = line.trim();
-                if(!tr) return;
-                const parts = tr.split('|');
-                const title = parts[0]?.trim();
-                const text = parts[1]?.trim() || '';
+            sections.forEach((section: string) => {
+                const trimmedSection = section.trim();
+                if(!trimmedSection) return;
+                
+                let title = '';
+                let text = '';
+                
+                // If contains vertical bar "|", split by first occurrence
+                if(trimmedSection.includes('|')) {
+                    const pipeIdx = trimmedSection.indexOf('|');
+                    title = trimmedSection.substring(0, pipeIdx).trim();
+                    text = trimmedSection.substring(pipeIdx + 1).trim();
+                } else {
+                    // Otherwise, the first line is the title, and the rest is the instruction body
+                    const newlineIdx = trimmedSection.search(/\r?\n/);
+                    if(newlineIdx !== -1) {
+                        title = trimmedSection.substring(0, newlineIdx).trim();
+                        text = trimmedSection.substring(newlineIdx + 1).trim();
+                    } else {
+                        // Single line without "|", use as title, instruction is empty
+                        title = trimmedSection;
+                        text = '';
+                    }
+                }
+                
                 if(title) {
-                    const id = Date.now().toString() + count;
+                    const id = (Date.now() + count).toString();
                     batch.set(doc(db, 'prompts', id), { id, title, text });
                     count++;
                 }
@@ -1960,6 +1980,8 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
             if(count > 0) {
                 await batch.commit();
                 (window as any).showToast(`Berhasil mengimpor ${count} pola prompt!`);
+            } else {
+                (window as any).showToast("Format file tidak valid atau kosong!", true);
             }
         } catch (err: any) {
             (window as any).showToast("Gagal impor: " + err.message, true);
@@ -1975,22 +1997,25 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const reader = new FileReader();
     reader.onload = async (ev: any) => {
         try {
-            const content = ev.target.result;
-            const lines = content.split('\n');
+            const content = ev.target.result || '';
+            // Split into separate rule blocks using --- or === as delimiters
+            const blocks = content.split(/(?:\r?\n)+(?:---|===)+(?:\r?\n)+/);
             const batch = writeBatch(db);
             let count = 0;
             
-            lines.forEach((line: string) => {
-                const tr = line.trim();
-                if(!tr) return;
-                const id = Date.now().toString() + count;
-                batch.set(doc(db, 'globals', id), { id, text: tr });
+            blocks.forEach((block: string) => {
+                const trimmed = block.trim();
+                if(!trimmed) return;
+                const id = (Date.now() + count).toString();
+                batch.set(doc(db, 'globals', id), { id, text: trimmed });
                 count++;
             });
             
             if(count > 0) {
                 await batch.commit();
                 (window as any).showToast(`Berhasil mengimpor ${count} aturan global!`);
+            } else {
+                (window as any).showToast("File TXT kosong!", true);
             }
         } catch (err: any) {
             (window as any).showToast("Gagal impor: " + err.message, true);
