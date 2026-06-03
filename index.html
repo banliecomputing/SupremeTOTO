@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#10b981">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon.svg">
-    <title>SupremeTOTO versi 78</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    <title>SupremeTOTO versi 80</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="./src/style.css">
 </head>
 <body class="bg-slate-950 text-slate-200 antialiased overflow-hidden font-sans">
 
@@ -52,7 +52,7 @@
                     <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 78</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 80</span>
                     </div>
                 </div>
             </div>
@@ -1240,11 +1240,11 @@
         </div>
     </div>
 
-    <script type="module" src="/src/script.ts"></script>
+    <script type="module" src="./src/script.ts"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
+          navigator.serviceWorker.register('./sw.js').then(registration => {
             console.log('SW registered: ', registration);
           }).catch(registrationError => {
             console.log('SW registration failed: ', registrationError);
