@@ -1,5 +1,8 @@
+// @ts-ignore
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+// @ts-ignore
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+// @ts-ignore
 import { initializeFirestore, collection, doc, setDoc as firebaseSetDoc, deleteDoc as firebaseDeleteDoc, onSnapshot, writeBatch as firebaseWriteBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 import backupData from './backup.json';
@@ -1154,21 +1157,33 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const prList = document.getElementById('admin-prompt-list');
     const aiSel = document.getElementById('ai-prompt-selector');
     if(prList) prList.innerHTML = (window as any).aiPrompts.length === 0 ? '<p class="text-sm text-slate-500 text-center py-4">Belum ada pola prompt</p>' : '';
-    if(aiSel) {
-        aiSel.innerHTML = '<option value="">-- Tulis Instruksi Manual Bebas (Baca System Prompt) --</option>';
-        if ((window as any).aiPrompts && (window as any).aiPrompts.length > 0) {
-            const allPromptsText = (window as any).aiPrompts.map((p: any) => `[POLA: ${p.title}]\n${p.text}`).join("\n\n");
-            aiSel.innerHTML += `<option value="${allPromptsText}">✨ POLA MASTER (BACA SEMUA) ✨</option>`;
-        }
-    }
     
+    // We will call the new filtered populateAiPromptSelector function to fill ai-prompt-selector dynamically
+    (window as any).populateAiPromptSelector();
+
     (window as any).aiPrompts.forEach((pr: any) => {
+        let poolBadges = '';
+        if (!pr.poolIds || pr.poolIds.length === 0 || pr.poolIds.includes('all')) {
+            poolBadges = `<span class="text-[9px] bg-slate-800 text-slate-400 border border-slate-700 font-black px-2 py-0.5 rounded uppercase font-sans flex items-center gap-1 shrink-0"><i class="ph-bold ph-globe text-xs"></i> Semua Pasaran</span>`;
+        } else {
+            const names = pr.poolIds.map((pId: string) => {
+                const pObj = (window as any).pools.find((x: any) => x.id === pId);
+                return pObj ? pObj.name : pId;
+            }).join(', ');
+            poolBadges = `<span class="text-[9px] bg-purple-600/15 text-purple-400 border border-purple-500/20 font-black px-2 py-0.5 rounded uppercase font-sans flex items-center gap-1 max-w-full justify-start"><i class="ph-bold ph-globe-hemisphere-west text-xs"></i> Pasaran: ${names}</span>`;
+        }
+
         if(prList) prList.innerHTML += `
             <div class="bg-slate-900 p-5 rounded-xl border border-slate-750 flex flex-col gap-3 shadow-md">
                 <div class="flex justify-between items-start gap-4">
-                    <p class="text-sm md:text-base font-bold text-purple-400 flex items-center gap-2">
-                        <i class="ph-fill ph-robot text-lg"></i> ${pr.title}
-                    </p>
+                    <div class="space-y-1.5 min-w-0 flex-1">
+                        <p class="text-sm md:text-base font-bold text-purple-400 flex items-center gap-2">
+                            <i class="ph-fill ph-robot text-lg"></i> ${pr.title}
+                        </p>
+                        <div class="flex flex-wrap gap-1">
+                            ${poolBadges}
+                        </div>
+                    </div>
                     <div class="flex gap-1 shrink-0 bg-slate-950 p-1 rounded-lg border border-slate-800">
                         <button onclick="editPrompt('${pr.id}')" class="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors" title="Edit"><i class="ph-bold ph-pencil text-base"></i></button>
                         <button onclick="duplicatePrompt('${pr.id}')" class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-colors" title="Duplikat"><i class="ph-bold ph-copy text-base"></i></button>
@@ -1177,7 +1192,6 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                 </div>
                 <div class="text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed bg-slate-950 p-3.5 rounded-lg border border-slate-800/85 max-h-[300px] overflow-y-auto custom-scrollbar">${pr.text}</div>
             </div>`;
-        if(aiSel) aiSel.innerHTML += `<option value="${pr.text}">${pr.title}</option>`;
     });
     
     const gList = document.getElementById('admin-global-list');
@@ -1200,6 +1214,39 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                 </div>`;
         });
     }
+};
+
+(window as any).populateAiPromptSelector = () => {
+    const aiSel = document.getElementById('ai-prompt-selector');
+    if (!aiSel) return;
+    
+    const aiPoolSel = document.getElementById('ai-pool-selector') as HTMLSelectElement;
+    const activePoolId = aiPoolSel ? aiPoolSel.value : '';
+    
+    aiSel.innerHTML = '<option value="">-- Tulis Instruksi Manual Bebas (Baca System Prompt) --</option>';
+    
+    const prompts = (window as any).aiPrompts || [];
+    
+    // Filter prompts based on active pool ID
+    const pathPrompts = prompts.filter((p: any) => {
+        // If poolIds is not specified, empty, or contains 'all', it applies to ALL pools
+        if (!p.poolIds || p.poolIds.length === 0 || p.poolIds.includes('all')) {
+            return true;
+        }
+        return p.poolIds.includes(activePoolId);
+    });
+    
+    if (pathPrompts.length > 0) {
+        const allPromptsText = pathPrompts.map((p: any) => `[POLA: ${p.title}]\n${p.text}`).join("\n\n");
+        aiSel.innerHTML += `<option value="${allPromptsText}">✨ POLA MASTER (BACA SEMUA KHUSUS PASARAN INI) ✨</option>`;
+    }
+    
+    pathPrompts.forEach((pr: any) => {
+        const opt = document.createElement('option');
+        opt.value = pr.text;
+        opt.innerText = pr.title;
+        aiSel.appendChild(opt);
+    });
 };
 
 (window as any).updateAIInfoPanel = () => {
@@ -1469,14 +1516,23 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                 const globalIndices = targetPool.mapCols.split(',').map((s:string) => (window as any).colToIndex(s)).filter((i:number) => i >= 0);
                 const headers = (targetPool.mapHeaders || '').split(',').map((s:string) => s.trim());
                 
-                const newHeaders: string[] = [];
+                const newHeaders: string[] = ['Tanggal / Hari'];
                 globalIndices.forEach((globalIdx: number, i: number) => newHeaders.push(headers[i] || `KOLOM ${String.fromCharCode(65+globalIdx)}`));
-                if(newHeaders.length > 0) (window as any).currentTableData.push(newHeaders);
+                if(newHeaders.length > 1) (window as any).currentTableData.push(newHeaders);
 
                 let previousRowData: string[] = [];
 
                 rawMatrix.forEach((row, rowIndex) => {
-                    const newRow: string[] = [];
+                    // Check if this row is just headers from spreadsheet
+                    if (rowIndex === 0) {
+                        const containsData = row.some(cell => {
+                           const c = String(cell).trim();
+                           return c !== '' && !isNaN(Number(c)) && c.length >= 4; // usually paito output are 4 digits
+                        });
+                        if (!containsData) return; // skip header row
+                    }
+
+                    const newRow: string[] = [row[0] || '-'];
                     globalIndices.forEach((globalIdx: number, colIndex: number) => {
                         const relIdx = globalIdx - startColIdx;
                         let cellValue = '-';
@@ -1491,8 +1547,8 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                         newRow.push(cellValue);
                     });
 
-                    previousRowData = [...newRow];
-                    if(newRow.some(v => v !== '-' && v.trim() !== '')) {
+                    previousRowData = [...newRow].slice(1);
+                    if(newRow.slice(1).some(v => v !== '-' && v.trim() !== '')) {
                         (window as any).currentTableData.push(newRow);
                     }
                 });
@@ -1521,6 +1577,11 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
                 });
                 wrapper.appendChild(tbl);
                 container.appendChild(wrapper);
+                
+                // Keep the prompt selection synchronized with newly loaded market type
+                if (isAI) {
+                    (window as any).populateAiPromptSelector();
+                }
             } else {
                 throw new Error("Tabel kosong setelah dirender.");
             }
@@ -1744,6 +1805,49 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     btn.disabled = false;
 };
 
+(window as any).populatePromptPoolsChecklist = (selectedPoolIds: string[] = []) => {
+    const container = document.getElementById('prompt-pools-container');
+    if (!container) return;
+    
+    const pools = (window as any).pools || [];
+    const isAllSelected = selectedPoolIds.includes('all') || selectedPoolIds.length === 0;
+    
+    // Setup "Semua Pasaran" checkbox status
+    const allCheckbox = document.getElementById('prompt-pool-all') as HTMLInputElement;
+    if (allCheckbox) {
+        allCheckbox.checked = isAllSelected;
+    }
+    
+    let html = '';
+    pools.forEach((p: any) => {
+        const isChecked = selectedPoolIds.includes(p.id) && !isAllSelected;
+        html += `
+            <label class="flex items-center gap-2 bg-slate-950/60 p-2 rounded-xl border border-slate-800 hover:border-slate-700 cursor-pointer text-slate-300 hover:text-white transition-all">
+                <input type="checkbox" name="prompt-pool-ids" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="window.onIndividualPromptPoolChange()" class="accent-purple-500 rounded bg-slate-900 border-slate-700">
+                <span class="truncate font-sans font-extrabold text-[10px] uppercase">${p.name}</span>
+            </label>
+        `;
+    });
+    
+    container.innerHTML = html || '<p class="text-slate-500 italic text-[11px] py-2 col-span-2 text-center">Belum ada data pasaran.</p>';
+};
+
+(window as any).toggleAllPromptPools = (el: HTMLInputElement) => {
+    const checkboxes = document.getElementsByName('prompt-pool-ids') as NodeListOf<HTMLInputElement>;
+    if (el.checked) {
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+    }
+};
+
+(window as any).onIndividualPromptPoolChange = () => {
+    const allCheckbox = document.getElementById('prompt-pool-all') as HTMLInputElement;
+    if (allCheckbox) {
+        allCheckbox.checked = false;
+    }
+};
+
 (window as any).addPrompt = async (e: any) => {
     e.preventDefault();
     if(!(window as any).cloudUserId) return (window as any).showToast("Cloud DB belum siap", true);
@@ -1757,10 +1861,26 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const title = (document.getElementById('input-prompt-title') as HTMLInputElement).value;
     const text = (document.getElementById('input-prompt-text') as HTMLTextAreaElement).value;
 
+    // Get selected pool IDs
+    const poolCheckboxes = document.getElementsByName('prompt-pool-ids') as NodeListOf<HTMLInputElement>;
+    const allCheckbox = document.getElementById('prompt-pool-all') as HTMLInputElement;
+    
+    let poolIds: string[] = [];
+    if (allCheckbox && allCheckbox.checked) {
+        poolIds = ['all'];
+    } else {
+        poolCheckboxes.forEach(cb => {
+            if (cb.checked) poolIds.push(cb.value);
+        });
+        if (poolIds.length === 0) {
+            poolIds = ['all'];
+        }
+    }
+
     const id = (window as any).editingPromptId || Date.now().toString();
     
     try {
-        await setDoc(doc(db, 'prompts', id), { id, title, text }, { merge: true });
+        await setDoc(doc(db, 'prompts', id), { id, title, text, poolIds }, { merge: true });
         (window as any).showToast((window as any).editingPromptId ? "Pola Prompt Diperbarui!" : "Pola Prompt Baru ditambahkan!");
         (window as any).cancelEditPrompt();
     } catch (err: any) {
@@ -1780,6 +1900,9 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     (window as any).editingPromptId = id;
     (document.getElementById('input-prompt-title') as HTMLInputElement).value = pr.title || '';
     (document.getElementById('input-prompt-text') as HTMLTextAreaElement).value = pr.text || '';
+    
+    // Populate dynamic pasaran checklist
+    (window as any).populatePromptPoolsChecklist(pr.poolIds || ['all']);
     
     document.getElementById('btn-cancel-prompt')?.classList.remove('hidden');
     const submitBtn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
@@ -1809,6 +1932,9 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     if(titleIn) titleIn.value = '';
     if(textIn) textIn.value = '';
     
+    // Populate dynamic checklist for empty select (default: all)
+    (window as any).populatePromptPoolsChecklist(['all']);
+    
     document.getElementById('btn-cancel-prompt')?.classList.remove('hidden');
     const submitBtn = document.getElementById('btn-submit-prompt') as HTMLButtonElement;
     if(submitBtn) submitBtn.innerText = 'SIMPAN POLA MANUAL';
@@ -1823,7 +1949,12 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     
     const newId = Date.now().toString();
     try {
-        await setDoc(doc(db, 'prompts', newId), { id: newId, title: pr.title + " (Copy)", text: pr.text });
+        await setDoc(doc(db, 'prompts', newId), { 
+            id: newId, 
+            title: pr.title + " (Copy)", 
+            text: pr.text,
+            poolIds: pr.poolIds || ['all']
+        });
         (window as any).showToast("Pola prompt diduplikasi!");
     } catch (err: any) {
         (window as any).showToast("Gagal menduplikat: " + err.message, true);
@@ -1841,6 +1972,1343 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
         }
     });
 };
+
+(window as any).vpbSelectedDigits = [];
+
+(window as any).toggleVisualPatternBuilder = () => {
+    const section = document.getElementById('visual-pattern-builder-section');
+    const arrow = document.getElementById('visual-builder-arrow');
+    const selector = document.getElementById('vpb-pool-selector') as HTMLSelectElement;
+    
+    if (!section) return;
+    
+    const isHidden = section.classList.contains('hidden');
+    if (isHidden) {
+        section.classList.remove('hidden');
+        if (arrow) {
+            arrow.className = "ph-bold ph-caret-up text-lg";
+        }
+        
+        // Populate pasaran dropdown if empty or has only 1 option
+        if (selector && selector.options.length <= 1) {
+            selector.innerHTML = '<option value="">-- PILIH PASARAN --</option>';
+            if ((window as any).pools && (window as any).pools.length > 0) {
+                (window as any).pools.forEach((p: any) => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.innerText = p.name;
+                    selector.appendChild(opt);
+                });
+            }
+        }
+    } else {
+        section.classList.add('hidden');
+        if (arrow) {
+            arrow.className = "ph-bold ph-caret-down text-lg";
+        }
+    }
+};
+
+(window as any).loadVpbPoolData = async () => {
+    const selector = document.getElementById('vpb-pool-selector') as HTMLSelectElement;
+    const container = document.getElementById('vpb-table-container');
+    
+    if (!selector || !container) return;
+    const poolId = selector.value;
+    if (!poolId) {
+        container.innerHTML = `
+            <div class="text-center p-6 text-slate-500">
+                <i class="ph-bold ph-hand-pointing text-4xl text-slate-600 mb-2 animate-bounce"></i>
+                <p class="font-extrabold text-slate-400">Pilih Pasaran Terlebih Dahulu</p>
+            </div>`;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 space-y-2">
+            <i class="ph-bold ph-spinner-gap animate-spin text-3xl text-purple-400"></i>
+            <p class="text-xs text-purple-400 font-extrabold uppercase tracking-widest leading-none">Mengunduh Paito...</p>
+        </div>`;
+        
+    try {
+        // Backup current active pool selector value
+        const activePoolSel = document.getElementById('pool-selector') as HTMLSelectElement;
+        const originalValue = activePoolSel ? activePoolSel.value : '';
+        
+        if (activePoolSel) {
+            activePoolSel.value = poolId;
+        }
+        
+        // Fetch silently
+        await (window as any).fetchTableData(false, true);
+        
+        // Restore
+        if (activePoolSel && originalValue) {
+            activePoolSel.value = originalValue;
+        }
+        
+        // Render
+        (window as any).renderVpbTableGrid();
+    } catch (err: any) {
+        container.innerHTML = `
+            <div class="text-center p-6 text-red-400 bg-red-500/5 rounded-xl border border-red-500/20 max-w-sm mx-auto">
+                <i class="ph-bold ph-warning-octagon text-3xl mb-2"></i>
+                <p class="font-extrabold text-sm uppercase">Gagal Membaca Data</p>
+                <p class="text-[10px] text-slate-400 mt-1">${err.message || 'Koneksi gagal.'}</p>
+            </div>`;
+    }
+};
+
+(window as any).renderVpbTableGrid = () => {
+    const container = document.getElementById('vpb-table-container');
+    if (!container) return;
+    
+    const data = (window as any).currentTableData;
+    if (!data || data.length === 0) {
+        container.innerHTML = `
+            <div class="text-center p-6 text-slate-500">
+                <i class="ph-bold ph-ghost text-4xl text-slate-600 mb-2"></i>
+                <p class="font-extrabold text-slate-400">Data Paito Kosong</p>
+                <p class="text-[10px] text-slate-600 mt-1">Harap cek kembali URL paito history pasaran ini di admin.</p>
+            </div>`;
+        return;
+    }
+    
+    // Headers are data[0]
+    const headers = data[0];
+    const limit = Math.min(data.length, 11); // Show header + 10 rows
+    
+    let html = `
+        <div class="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80 custom-scrollbar">
+            <table class="w-full text-xs text-slate-300 border-collapse whitespace-nowrap">
+                <thead>
+                    <tr class="bg-slate-900 border-b border-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                        <th class="px-3 py-2.5 text-center border-r border-slate-800 select-none">HARI / TGL</th>
+    `;
+    
+    headers.slice(1).forEach((h: string) => {
+        html += `<th class="px-3 py-2.5 text-center border-r border-slate-800 select-none">${h}</th>`;
+    });
+    
+    html += `
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-850">
+    `;
+    
+    for (let r = 1; r < limit; r++) {
+        const row = data[r];
+        if (!row || row.length === 0) continue;
+        
+        let dateLabel = `H-${r-1}`;
+        // Try to identify date label from the row itself
+        let firstCell = row[0] || '';
+        let dateAppend = '';
+        if (firstCell && (isNaN(Number(firstCell)) || firstCell.length > 5)) {
+            // It looks like a date label
+            dateAppend = ` (${firstCell})`;
+            dateLabel = `H-${r-1}${dateAppend}`;
+        } else {
+            dateLabel = `H-${r-1}`;
+        }
+        
+        html += `
+            <tr class="hover:bg-slate-900/30 transition-colors">
+                <td class="px-3 py-2 text-center border-r border-slate-850 bg-slate-950/50 text-slate-400 font-extrabold max-w-[80px]">
+                    <span class="bg-slate-900 px-1.5 py-0.5 rounded text-[9px] text-purple-300 tracking-wider">H-${r-1}</span>
+                    <span class="block text-[8px] text-slate-500 font-normal mt-0.5 overflow-hidden text-ellipsis">${firstCell}</span>
+                </td>
+        `;
+        
+        row.slice(1).forEach((cellVal: string, cIdx: number) => {
+            const c = cIdx + 1; // Real index array
+            cellVal = (cellVal || '').trim();
+            const colHeader = headers[c] || `KOLOM ${c}`;
+            
+            html += `<td class="p-2 border-r border-slate-850 text-center">`;
+            
+            // Check if cell has a 4D number
+            if (/^\d{4}$/.test(cellVal)) {
+                // Render as 4 gorgeous clickable digits
+                html += `<div class="flex items-center gap-1 justify-center">`;
+                const labels = ['AS', 'KOP', 'KEPALA', 'EKOR'];
+                const bgColors = [
+                    'bg-red-500/10 border-red-500/20 hover:bg-red-500/30 text-red-400',
+                    'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/30 text-blue-400',
+                    'bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/30 text-amber-400',
+                    'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400'
+                ];
+                
+                for (let d = 0; d < 4; d++) {
+                    const digit = cellVal[d];
+                    const digitLabel = labels[d];
+                    const dKey = `${r}-${c}-${d}`;
+                    
+                    const isSelected = (window as any).vpbSelectedDigits.some((x: any) => x.id === dKey);
+                    let buttonClass = isSelected 
+                        ? "bg-purple-600 border-purple-500 text-white font-black shadow-[0_0_10px_rgba(147,51,234,0.5)] scale-105" 
+                        : `${bgColors[d]} border`;
+                    
+                    html += `
+                        <button type="button" onclick="(window as any).toggleVpbCell('${dKey}', ${r}, ${c}, ${d}, '${digitLabel}', '${digit}', '${dateLabel}', '${colHeader}')" 
+                                class="h-8 w-8 rounded-lg flex flex-col items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${buttonClass}">
+                            <span class="text-[7px] block font-black leading-none opacity-80">${digitLabel}</span>
+                            <span class="text-xs font-black block mt-0.5 leading-none">${digit}</span>
+                        </button>
+                    `;
+                }
+                html += `</div>`;
+            } else if (cellVal !== '-' && cellVal !== '') {
+                // Non-4D valid cell, render as a single clickable badge
+                const dKey = `${r}-${c}--1`;
+                const isSelected = (window as any).vpbSelectedDigits.some((x: any) => x.id === dKey);
+                let badgeClass = isSelected
+                    ? "bg-purple-600 border-purple-500 text-white font-black shadow-[0_0_10px_rgba(147,51,234,0.4)] scale-105"
+                    : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800/80 hover:border-slate-700";
+                
+                html += `
+                    <button type="button" onclick="(window as any).toggleVpbCell('${dKey}', ${r}, ${c}, -1, '${colHeader}', '${cellVal}', '${dateLabel}', '${colHeader}')"
+                            class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold tracking-wide transition-all cursor-pointer select-none active:scale-95 ${badgeClass}">
+                        ${cellVal}
+                    </button>
+                `;
+            } else {
+                html += `<span class="text-slate-600 font-mono">-</span>`;
+            }
+            
+            html += `</td>`;
+        });
+        
+        html += `
+            </tr>
+        `;
+    }
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+};
+
+(window as any).toggleVpbCell = (id: string, rowIdx: number, colIdx: number, digitIdx: number, digitLabel: string, value: string, dateLabel: string, colHeader: string) => {
+    const list = (window as any).vpbSelectedDigits;
+    const existingIdx = list.findIndex((x: any) => x.id === id);
+    
+    if (existingIdx >= 0) {
+        list.splice(existingIdx, 1);
+    } else {
+        // Limit to maximum 6 selected digits to prevent too complex formulations
+        if (list.length >= 6) {
+            return (window as any).showToast("Maksimal 6 angka terpilih untuk formula", true);
+        }
+        list.push({
+            id,
+            rowIdx,
+            colIdx,
+            digitIdx,
+            digitLabel,
+            value,
+            dateLabel,
+            colHeader
+        });
+    }
+    
+    // Re-render table to update styles
+    (window as any).renderVpbTableGrid();
+    // Update the selected badges list
+    (window as any).renderVpbSelectedBadges();
+};
+
+(window as any).renderVpbSelectedBadges = () => {
+    const container = document.getElementById('vpb-selected-badges');
+    if (!container) return;
+    
+    const list = (window as any).vpbSelectedDigits;
+    if (list.length === 0) {
+        container.innerHTML = `<span class="text-slate-500 italic text-[11px] py-1">Belum ada angka terpilih. Klik sel atau digit angka pada tabel paito di atas!</span>`;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    list.forEach((item: any) => {
+        const badge = document.createElement('div');
+        badge.className = "flex items-center gap-1.5 bg-slate-900 border border-slate-850 text-[10px] md:text-xs text-slate-300 pl-2 rounded-lg py-1 shadow-inner pr-1 hover:border-red-500/30 transition-colors group";
+        
+        let positionText = item.digitIdx === -1 ? item.digitLabel : `${item.colHeader} (${item.digitLabel})`;
+        
+        badge.innerHTML = `
+            <span class="text-purple-400 font-extrabold uppercase bg-purple-500/10 px-1.5 rounded text-[9px]">${item.dateLabel.split(' ')[0]}</span>
+            <span class="text-slate-400">${positionText}:</span>
+            <span class="font-extrabold text-white text-xs bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800/80 drop-shadow-md">${item.value}</span>
+            <button type="button" onclick="(window as any).removeVpbSelected('${item.id}')" 
+                    class="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded p-0.5 transition-all cursor-pointer">
+                <i class="ph-bold ph-x text-[10px]"></i>
+            </button>
+        `;
+        container.appendChild(badge);
+    });
+};
+
+(window as any).removeVpbSelected = (id: string) => {
+    const list = (window as any).vpbSelectedDigits;
+    const idx = list.findIndex((x: any) => x.id === id);
+    if (idx >= 0) {
+        list.splice(idx, 1);
+        (window as any).renderVpbTableGrid();
+        (window as any).renderVpbSelectedBadges();
+    }
+};
+
+(window as any).resetVpbSelection = () => {
+    (window as any).vpbSelectedDigits = [];
+    (window as any).renderVpbTableGrid();
+    (window as any).renderVpbSelectedBadges();
+    
+    const resultBox = document.getElementById('vpb-generated-result-box');
+    if (resultBox) resultBox.classList.add('hidden');
+};
+
+(window as any).generateVpbFormula = () => {
+    const list = (window as any).vpbSelectedDigits;
+    if (list.length === 0) {
+        return (window as any).showToast("Pilih setidaknya satu angka dari tabel paito!", true);
+    }
+    
+    const relTypeEl = document.getElementById('vpb-relation-type') as HTMLSelectElement;
+    const targetVarEl = document.getElementById('vpb-target-variable') as HTMLSelectElement;
+    
+    if (!relTypeEl || !targetVarEl) return;
+    
+    const relationType = relTypeEl.value;
+    const targetVar = targetVarEl.value;
+    
+    let relationLabel = "";
+    switch (relationType) {
+        case "selisih": relationLabel = "Selisih (dikurangi)"; break;
+        case "jumlah": relationLabel = "Jumlah (ditambahkan)"; break;
+        case "mistik_lama": relationLabel = "Mistik Lama (ML)"; break;
+        case "mistik_baru": relationLabel = "Mistik Baru (MB)"; break;
+        case "index": relationLabel = "Index (IND)"; break;
+        case "tarikan_silang": relationLabel = "Tarikan Silang"; break;
+        case "shio_kaitan": relationLabel = "Korelasi Jalur Shio"; break;
+    }
+    
+    let targetLabel = "";
+    switch (targetVar) {
+        case "BBFS": targetLabel = "meracik angka BBFS jitu"; break;
+        case "AM/AI": targetLabel = "menghasilkan Angka Main (AM) / Angka Ikut (AI) jitu"; break;
+        case "KEPALA/EKOR": targetLabel = "mencari draf Kepala dan Ekor akurat"; break;
+        case "JITU_2D": targetLabel = "merumuskan Angka Jitu 2D malam/hari ini"; break;
+        case "SHIO": targetLabel = "memetakan lintasan Shio mati dan Shio hidup"; break;
+    }
+    
+    let formulaText = "";
+    
+    // Sort selected items by row index descending (yesterday to today) to make the ordering logical in timeline!
+    const sorted = [...list].sort((a: any, b: any) => b.rowIdx - a.rowIdx);
+    
+    if (sorted.length === 1) {
+        const item = sorted[0];
+        const dateStr = item.dateLabel;
+        const posStr = item.digitIdx === -1 ? item.digitLabel : `${item.colHeader} bagian ${item.digitLabel}`;
+        
+        if (relationType === "mistik_lama" || relationType === "mistik_baru" || relationType === "index") {
+            formulaText = `Mengacu pada histori paito, ambil angka dari pasaran ${dateStr} pada elemen ${posStr} (angka ${item.value}). Lakukan konversi menggunakan sistem ${relationLabel} untuk ${targetLabel} pasaran terbaru.`;
+        } else if (relationType === "shio_kaitan") {
+            formulaText = `Gunakan angka dari pasaran ${dateStr} di posisi ${posStr} (angka ${item.value}) sebagai patokan utama jalur Shio untuk membantu ${targetLabel}.`;
+        } else {
+            formulaText = `Menilik data ${dateStr}, ambil komponen ${posStr} bernilai ${item.value}. Sandingkan angka ini secara jitu guna ${targetLabel} pasaran berikutnya.`;
+        }
+    } else if (sorted.length === 2) {
+        const a = sorted[0];
+        const b = sorted[1];
+        
+        const posA = a.digitIdx === -1 ? a.digitLabel : `${a.colHeader} ${a.digitLabel}`;
+        const posB = b.digitIdx === -1 ? b.digitLabel : `${b.colHeader} ${b.digitLabel}`;
+        
+        if (relationType === "selisih") {
+            const mathVal = Math.abs(Number(a.value) - Number(b.value));
+            formulaText = `Lakukan penarikan pola selisih antara angka ${posA} (${a.value}) pada pasaran ${a.dateLabel} dikurangi dengan angka ${posB} (${b.value}) pada pasaran ${b.dateLabel}, menghasilkan selisih angka ${mathVal}. Komponen ${mathVal} ini digunakan untuk ${targetLabel}.`;
+        } else if (relationType === "jumlah") {
+            const mathVal = (Number(a.value) + Number(b.value)) % 10;
+            formulaText = `Jumlahkan secara silang angka ${posA} (${a.value}) pada pasaran ${a.dateLabel} dengan angka ${posB} (${b.value}) pada pasaran ${b.dateLabel} (hasil penjumlahan bernilai ${mathVal}). Gunakan angka ${mathVal} ini untuk ${targetLabel}.`;
+        } else if (relationType === "mistik_lama" || relationType === "mistik_baru" || relationType === "index") {
+            formulaText = `Ambil relasi angka ${posA} (${a.value}) pasaran ${a.dateLabel} dan angka ${posB} (${b.value}) pasaran ${b.dateLabel}. Hubungkan keduanya lalu konversikan ke ${relationLabel} sebagai modal utama untuk ${targetLabel}.`;
+        } else if (relationType === "tarikan_silang") {
+            formulaText = `Hubungkan tarikan garis silang paito antara angka ${posA} (${a.value}) pasaran ${a.dateLabel} dengan angka ${posB} (${b.value}) pasaran ${b.dateLabel} untuk mendapatkan koordinat tarikan jitu guna ${targetLabel}.`;
+        } else if (relationType === "shio_kaitan") {
+            formulaText = `Bandingkan poros angka ${posA} (${a.value}) pasaran ${a.dateLabel} dengan angka ${posB} (${b.value}) pasaran ${b.dateLabel} untuk memetakan dinamika Shio baru guna ${targetLabel}.`;
+        }
+    } else {
+        // Multi-elements 3+
+        let elementsDesc = sorted.map((item: any) => {
+            const pos = item.digitIdx === -1 ? item.digitLabel : `${item.colHeader} ${item.digitLabel}`;
+            return `${pos} (${item.value}) pada pasaran ${item.dateLabel}`;
+        }).join(", ");
+        
+        formulaText = `Metode Paito Pola Komposit: Kombinasikan kelompok angka paito meliputi [${elementsDesc}]. Hubungkan komponen-komponen ini menggunakan kecenderungan sistem ${relationLabel} guna ${targetLabel} yang presisi.`;
+    }
+    
+    // Add reference source note
+    formulaText += `\n[Pola disusun silang via Perakit Formula Paito SupremeTOTO]`;
+    
+    const outputEl = document.getElementById('vpb-output-text') as HTMLTextAreaElement;
+    const resultBox = document.getElementById('vpb-generated-result-box');
+    
+    if (outputEl && resultBox) {
+        outputEl.value = formulaText;
+        resultBox.classList.remove('hidden');
+        (window as any).showToast("Rumus berhasil dirakit!");
+    }
+};
+
+(window as any).pasteVpbFormulaToPrompt = () => {
+    const outputEl = document.getElementById('vpb-output-text') as HTMLTextAreaElement;
+    const textIn = document.getElementById('input-prompt-text') as HTMLTextAreaElement;
+    
+    if (!outputEl || !textIn) return;
+    
+    const textToPaste = outputEl.value.trim();
+    if (!textToPaste) return;
+    
+    const existingVal = textIn.value.trim();
+    if (existingVal) {
+        textIn.value = existingVal + "\n\n" + textToPaste;
+    } else {
+        textIn.value = textToPaste;
+    }
+    
+    textIn.focus();
+    textIn.classList.add('border-emerald-500');
+    setTimeout(() => {
+        textIn.classList.remove('border-emerald-500');
+    }, 1500);
+    
+    (window as any).showToast("Formula berhasil ditempel di kolom teks pola!");
+};
+
+// ==========================================
+// VISUAL PATTERN BUILDER (VPB) STUDIO FULLSCREEN V73
+// ==========================================
+(window as any).vpbStudioActiveNode = null;
+(window as any).vpbStudioChains = [];
+(window as any).vpbStudioCellSize = 46;
+(window as any).vpbStudioLayoutMode = 'split'; // 'split' or 'table-only'
+(window as any).vpbStudioScale = 1.0;          // scale factor 0.35 - 1.5
+
+(window as any).toggleVpbStudioLayout = () => {
+    const sidebar = document.getElementById('vpb-studio-sidebar');
+    const tableArea = document.getElementById('vpb-right-content-wrapper');
+    const btnText = document.getElementById('vpb-btn-layout-text');
+    if (!sidebar || !tableArea) return;
+    
+    if ((window as any).vpbStudioLayoutMode === 'split') {
+        (window as any).vpbStudioLayoutMode = 'table-only';
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('lg:flex', 'h-full');
+        
+        tableArea.classList.remove('hidden', 'h-[50%]');
+        tableArea.classList.add('h-full');
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-monitor text-xs"></i> TAMPILAN: TABEL PENUH';
+    } else if ((window as any).vpbStudioLayoutMode === 'table-only') {
+        (window as any).vpbStudioLayoutMode = 'form-only';
+        sidebar.classList.remove('hidden', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+        sidebar.classList.add('lg:flex', 'w-full', 'h-full');
+        
+        tableArea.classList.add('hidden');
+        tableArea.classList.remove('h-full');
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-list-dashes text-xs"></i> TAMPILAN: FORM PENUH';
+    } else {
+        (window as any).vpbStudioLayoutMode = 'split';
+        sidebar.classList.remove('hidden', 'w-full', 'h-full');
+        sidebar.classList.add('lg:flex', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+        
+        tableArea.classList.remove('hidden', 'h-full');
+        tableArea.classList.add('h-[50%]');
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-layout text-xs"></i> TAMPILAN: SPLIT GRID';
+    }
+    
+    // Redraw visual flow lines once layouts shift
+    setTimeout(() => {
+        if ((window as any).drawVpbAlurLines) (window as any).drawVpbAlurLines();
+    }, 150);
+};
+
+(window as any).setVpbTableScale = (scaleValue: string | number) => {
+    const factor = parseFloat(String(scaleValue)) || 1.0;
+    (window as any).vpbStudioScale = factor;
+    
+    // Update dropdown selection element
+    const select = document.getElementById('vpb-studio-scale-select') as HTMLSelectElement;
+    if (select) {
+        select.value = String(factor);
+    }
+    
+    // Apply scale to table container
+    const tableContainer = document.getElementById('vpb-studio-table-container');
+    if (tableContainer) {
+        tableContainer.style.transform = `scale(${factor})`;
+        tableContainer.style.transformOrigin = 'top center';
+        
+        // Adjust the height footprint of container so custom scroll bar remains perfectly scrollable
+        // and doesn't get cut off when zoomed down or zoomed up.
+        tableContainer.style.height = 'auto';
+        tableContainer.style.width = 'max-content';
+    }
+    
+    // Redraw visual flow lines once scaling completes
+    setTimeout(() => {
+        if ((window as any).drawVpbAlurLines) (window as any).drawVpbAlurLines();
+    }, 50);
+};
+
+(window as any).openVpbStudioModal = () => {
+    const modal = document.getElementById('vpb-studio-modal');
+    const content = document.getElementById('vpb-studio-content');
+    const selector = document.getElementById('vpb-studio-pool-selector') as HTMLSelectElement;
+    
+    if (!modal || !content) return;
+    
+    // Clear state
+    (window as any).vpbStudioActiveNode = null;
+    (window as any).vpbStudioChains = [];
+    (window as any).vpbDraftPredictions = {}; // Reset prediction row inputs
+    if(typeof (window as any).clearVpbFormula === 'function') {
+        (window as any).clearVpbFormula();
+    }
+    
+    // Reset layout & scaling
+    const sidebar = document.getElementById('vpb-studio-sidebar');
+    const tableArea = document.getElementById('vpb-right-content-wrapper');
+    const btnText = document.getElementById('vpb-btn-layout-text');
+    
+    (window as any).vpbStudioScale = 1.0;
+    
+    if (window.innerWidth < 1024) {
+        // Mobile starts in form-only mode for better UX
+        (window as any).vpbStudioLayoutMode = 'form-only';
+        if (sidebar) {
+            sidebar.classList.remove('hidden', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+            sidebar.classList.add('lg:flex', 'w-full', 'h-full');
+        }
+        if (tableArea) {
+            tableArea.classList.add('hidden');
+            tableArea.classList.remove('h-[50%]', 'h-full');
+        }
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-list-dashes text-xs"></i> TAMPILAN: FORM PENUH';
+    } else {
+        // Desktop starts in split
+        (window as any).vpbStudioLayoutMode = 'split';
+        if (sidebar) {
+            sidebar.classList.remove('hidden', 'w-full', 'h-full');
+            sidebar.classList.add('lg:flex', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+        }
+        if (tableArea) {
+            tableArea.classList.remove('hidden', 'h-full');
+            tableArea.classList.add('h-[50%]');
+        }
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-layout text-xs"></i> TAMPILAN: SPLIT GRID';
+    }
+    
+    const scaleSelect = document.getElementById('vpb-studio-scale-select') as HTMLSelectElement;
+    if (scaleSelect) scaleSelect.value = '1.0';
+    const tableContainer = document.getElementById('vpb-studio-table-container');
+    if (tableContainer) {
+        tableContainer.style.transform = 'scale(1)';
+        tableContainer.style.transformOrigin = 'top center';
+    }
+    
+    // Hide node editor & results box
+    document.getElementById('vpb-node-editor-box')?.classList.add('hidden');
+    document.getElementById('vpb-studio-result-box')?.classList.add('hidden');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Attach draw repaint events for scrolling or window transformations
+    const scrollBox = document.getElementById('vpb-studio-table-scrollbox');
+    if (scrollBox) {
+        scrollBox.removeEventListener('scroll', (window as any).drawVpbAlurLines);
+        scrollBox.addEventListener('scroll', (window as any).drawVpbAlurLines);
+    }
+    window.removeEventListener('resize', (window as any).drawVpbAlurLines);
+    window.addEventListener('resize', (window as any).drawVpbAlurLines);
+
+    setTimeout(() => {
+        modal.classList.add('opacity-100');
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+    }, 50);
+    
+    // Populate dropdown with options
+    if (selector) {
+        selector.innerHTML = '<option value="">-- PILIH ACUAN PASARAN --</option>';
+        if ((window as any).pools && (window as any).pools.length > 0) {
+            (window as any).pools.forEach((p: any) => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.innerText = p.name;
+                selector.appendChild(opt);
+            });
+        }
+        
+        // Match active pool selector value if any
+        const mainSelector = document.getElementById('vpb-pool-selector') as HTMLSelectElement || document.getElementById('pool-selector') as HTMLSelectElement;
+        if (mainSelector && mainSelector.value) {
+            selector.value = mainSelector.value;
+            (window as any).reloadVpbStudioData();
+        } else {
+            // Pick HK or any first standard if exists
+            const pools = (window as any).pools || [];
+            if (pools.length > 0) {
+                selector.value = pools[0].id;
+                (window as any).reloadVpbStudioData();
+            }
+        }
+    }
+};
+
+(window as any).closeVpbStudioModal = () => {
+    const modal = document.getElementById('vpb-studio-modal');
+    const content = document.getElementById('vpb-studio-content');
+    if (!modal || !content) return;
+    
+    modal.classList.remove('opacity-100');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+(window as any).reloadVpbStudioData = async () => {
+    const selector = document.getElementById('vpb-studio-pool-selector') as HTMLSelectElement;
+    const container = document.getElementById('vpb-studio-table-container');
+    if (!selector || !container) return;
+    
+    const poolId = selector.value;
+    if (!poolId) {
+        container.innerHTML = `
+            <div class="text-center p-12 text-slate-500 max-w-sm">
+                <i class="ph-bold ph-hash text-5xl text-slate-700 mb-2 animate-pulse"></i>
+                <p class="font-extrabold text-slate-400 text-sm">Menunggu Data Pasaran...</p>
+                <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">Pilih pasaran di menu sebelah kiri. Sistem akan memuat data histori 4D terlengkap dengan ukuran sel yang lapang dan nyaman untuk Anda pilah.</p>
+            </div>`;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-12 space-y-3">
+            <i class="ph-bold ph-spinner-gap animate-spin text-5xl text-purple-400"></i>
+            <p class="text-xs text-purple-450 font-extrabold uppercase tracking-widest leading-none">Mengunduh / Sinkronisasi Paito...</p>
+        </div>`;
+        
+    try {
+        const activePoolSel = document.getElementById('pool-selector') as HTMLSelectElement;
+        const originalValue = activePoolSel ? activePoolSel.value : '';
+        if (activePoolSel) {
+            activePoolSel.value = poolId;
+        }
+        
+        await (window as any).fetchTableData(false, true);
+        
+        if (activePoolSel && originalValue) {
+            activePoolSel.value = originalValue;
+        }
+        
+        (window as any).renderVpbStudioTable();
+    } catch (err: any) {
+        container.innerHTML = `
+            <div class="text-center p-12 text-red-400 bg-red-500/5 rounded-2xl border border-red-500/20 max-w-md mx-auto">
+                <i class="ph-bold ph-warning-octagon text-5xl mb-2 text-red-500"></i>
+                <p class="font-extrabold text-sm uppercase">Gagal Menyinkronkan Data</p>
+                <p class="text-[11px] text-slate-400 mt-1">${err.message || 'Koneksi error.'}</p>
+            </div>`;
+    }
+};
+
+(window as any).zoomVpbTable = (delta: number) => {
+    const scaleSelect = document.getElementById('vpb-studio-scale-select') as HTMLSelectElement;
+    if (!scaleSelect) return;
+    
+    let currentIndex = scaleSelect.selectedIndex;
+    if (delta > 0) {
+        // Zoom in: select larger scale option
+        if (currentIndex < scaleSelect.options.length - 1) {
+            scaleSelect.selectedIndex = currentIndex + 1;
+        }
+    } else {
+        // Zoom out: select smaller scale option
+        if (currentIndex > 0) {
+            scaleSelect.selectedIndex = currentIndex - 1;
+        }
+    }
+    
+    // Apply layout scale immediately
+    (window as any).setVpbTableScale(scaleSelect.value);
+};
+
+(window as any).renderVpbStudioTable = () => {
+    const container = document.getElementById('vpb-studio-table-container');
+    if (!container) return;
+    
+    let data = (window as any).currentTableData;
+    if (!data || data.length <= 1) {
+        // Fallback paito data with 4 columns so they can draw anyway even when db is empty
+        const mockHeaders = ['KOLOM 1 (K1)', 'KOLOM 2 (K2)', 'KOLOM 3 (K3)', 'KOLOM 4 (K4)'];
+        data = [
+            mockHeaders,
+            ['H0 (Sesi Terbaru)', '3579', '2468', '1357', '0246'],
+            ['H1 (Sesi Sebelumnya)', '0000', '1111', '2222', '3333'],
+            ['H2 (Sesi T-2)', '4444', '5555', '6666', '7777'],
+            ['H3 (Sesi T-3)', '8888', '9999', '0000', '1111'],
+        ];
+        (window as any).currentTableData = data;
+    }
+    
+    // We define clean, vibrant, high-contrast column groups to make column identification instant!
+    const colors = [
+        { 
+            text: 'text-purple-405 text-purple-400', 
+            border: 'border-purple-500/35', 
+            borderSolid: 'border-purple-500/60', 
+            bg: 'bg-purple-950/20', 
+            hoverBorder: 'hover:border-purple-400', 
+            badge: 'bg-purple-600/10 text-purple-400 border-purple-500/20', 
+            dot: 'bg-purple-500 shadow-[0_0_8px_rgba(147,51,234,0.5)]',
+            active: 'bg-purple-600 text-white border-purple-300 font-extrabold shadow-[0_0_20px_rgba(147,51,234,0.75)]' 
+        },
+        { 
+            text: 'text-emerald-405 text-emerald-400', 
+            border: 'border-emerald-500/35', 
+            borderSolid: 'border-emerald-500/60', 
+            bg: 'bg-emerald-950/20', 
+            hoverBorder: 'hover:border-emerald-400', 
+            badge: 'bg-emerald-600/10 text-emerald-400 border-emerald-500/20', 
+            dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]',
+            active: 'bg-emerald-600 text-white border-emerald-300 font-extrabold shadow-[0_0_20px_rgba(16,185,129,0.75)]' 
+        },
+        { 
+            text: 'text-cyan-405 text-cyan-400', 
+            border: 'border-cyan-500/35', 
+            borderSolid: 'border-cyan-500/60', 
+            bg: 'bg-cyan-950/20', 
+            hoverBorder: 'hover:border-cyan-400', 
+            badge: 'bg-cyan-600/10 text-cyan-400 border-cyan-500/20', 
+            dot: 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]',
+            active: 'bg-cyan-600 text-white border-cyan-300 font-extrabold shadow-[0_0_20px_rgba(6,182,212,0.75)]' 
+        },
+        { 
+            text: 'text-amber-405 text-amber-400', 
+            border: 'border-amber-500/35', 
+            borderSolid: 'border-amber-500/60', 
+            bg: 'bg-amber-950/20', 
+            hoverBorder: 'hover:border-amber-400', 
+            badge: 'bg-amber-600/10 text-amber-400 border-amber-500/20', 
+            dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]',
+            active: 'bg-amber-600 text-white border-amber-300 font-extrabold shadow-[0_0_20px_rgba(245,158,11,0.75)]' 
+        },
+        { 
+            text: 'text-rose-405 text-rose-400', 
+            border: 'border-rose-500/35', 
+            borderSolid: 'border-rose-500/60', 
+            bg: 'bg-rose-950/20', 
+            hoverBorder: 'hover:border-rose-400', 
+            badge: 'bg-rose-600/10 text-rose-400 border-rose-500/20', 
+            dot: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]',
+            active: 'bg-rose-600 text-white border-rose-300 font-extrabold shadow-[0_0_20px_rgba(244,63,94,0.75)]' 
+        },
+        { 
+            text: 'text-indigo-405 text-indigo-400', 
+            border: 'border-indigo-500/35', 
+            borderSolid: 'border-indigo-500/60', 
+            bg: 'bg-indigo-950/20', 
+            hoverBorder: 'hover:border-indigo-400', 
+            badge: 'bg-indigo-600/10 text-indigo-400 border-indigo-500/20', 
+            dot: 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]',
+            active: 'bg-indigo-600 text-white border-indigo-300 font-extrabold shadow-[0_0_20px_rgba(99,102,241,0.75)]' 
+        }
+    ];
+
+    const headers = data[0]; 
+    const limitRows = Math.min(data.length, 11); // Header + 10 data rows
+    const cellSize = (window as any).vpbStudioCellSize || 46;
+    
+    // Zoom configurations for elegant vertical buttons
+    const buttonWidth = cellSize;
+    const buttonHeight = Math.round(cellSize * 1.35);
+    const totalGroupWidth = (buttonWidth * 4) + 24; // 4 buttons + gap spaces + container padding
+    
+    let html = `
+        <div class="relative min-w-max" id="vpb-table-visual-wrapper">
+            <!-- SVG Canvas overlay for chains/alur lines drawing -->
+            <svg id="vpb-studio-alur-svg" class="absolute pointer-events-none inset-0 z-30" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%;">
+                 <defs>
+                     <marker id="vpb-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                     </marker>
+                     <filter id="vpb-glow" x="-20%" y="-20%" width="140%" height="140%">
+                         <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#10b981" flood-opacity="0.8"/>
+                     </filter>
+                     <filter id="vpb-glow-dashed" x="-20%" y="-20%" width="140%" height="140%">
+                         <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#a855f7" flood-opacity="0.8"/>
+                     </filter>
+                 </defs>
+            </svg>
+            <style>
+                @keyframes vpbDashAnimation {
+                    to {
+                        stroke-dashoffset: -1000;
+                    }
+                }
+            </style>
+            
+            <table class="border-collapse select-none">
+                <thead>
+                    <tr class="text-slate-400 text-[10px] uppercase font-black tracking-widest text-center">
+                        <th class="px-4 py-4 text-left text-slate-500 font-mono text-[9px] border-b border-slate-800">TANGGAL / HARI</th>
+                        ${headers.slice(1).map((h: string, idx: number) => {
+                            const theme = colors[idx % colors.length];
+                            return `
+                                <th class="py-2 px-3 border-b border-slate-800 align-middle" style="min-width: ${totalGroupWidth}px;">
+                                    <div class="flex flex-col items-center gap-1 bg-slate-900/90 py-2.5 px-3 rounded-2xl border ${theme.borderSolid} shadow-lg shadow-black/80">
+                                        <span class="text-[9px] uppercase font-black text-slate-400 tracking-widest flex items-center gap-1.5 leading-none">
+                                            <span class="h-2 w-2 rounded-full ${theme.dot}"></span> KOLOM ${idx + 1}
+                                        </span>
+                                        <span class="font-black text-[13px] ${theme.text} tracking-tight leading-none uppercase">${h}</span>
+                                    </div>
+                                </th>
+                            `;
+                        }).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    for (let r = 1; r < limitRows; r++) {
+        const row = data[r];
+        if (!row || row.length === 0) continue;
+        
+        const rawDate = row[0] || 'Day';
+        const displayDate = rawDate.toLowerCase().includes('result') || rawDate.length > 15 ? rawDate.substring(0, 10) : rawDate;
+        const relativeLabel = `H${r - 1}`;
+        
+        html += `
+            <tr class="hover:bg-slate-900/10 transition-colors">
+                <td class="text-left font-mono text-xs text-slate-400 py-3 pr-4 select-none align-middle font-bold leading-none whitespace-nowrap border-b border-slate-900/20">
+                    <div class="flex flex-col gap-1.5 bg-slate-900/80 p-2.5 rounded-2xl border border-slate-800 text-center shadow-inner min-w-[100px]">
+                        <span class="text-purple-400 font-black text-xs">${relativeLabel}</span>
+                        <span class="text-[9px] text-slate-500 font-normal font-sans tracking-tight">${displayDate}</span>
+                    </div>
+                </td>
+        `;
+        
+        for (let c = 1; c < row.length; c++) {
+            const cellValue = String(row[c] || '0000').trim();
+            const colHeader = headers[c] || `KOLOM ${c}`;
+            const theme = colors[(c - 1) % colors.length];
+            
+            const getDigitStyle = (char: string) => {
+                switch (char) {
+                    case '0':
+                        return 'bg-gradient-to-br from-white via-red-200 to-red-600 text-slate-950 border-red-500 font-extrabold shadow-sm';
+                    case '1':
+                        return 'bg-yellow-400 text-slate-950 border-yellow-500 font-extrabold shadow-sm';
+                    case '2':
+                        return 'bg-blue-600 text-white border-blue-700 font-extrabold shadow-sm';
+                    case '3':
+                        return 'bg-red-650 bg-red-600 text-white border-red-700 font-extrabold shadow-sm';
+                    case '4':
+                        return 'bg-purple-650 bg-purple-600 text-white border-purple-700 font-extrabold shadow-sm';
+                    case '5':
+                        return 'bg-orange-500 text-white border-orange-600 font-extrabold shadow-sm';
+                    case '6':
+                        return 'bg-emerald-600 text-white border-emerald-700 font-extrabold shadow-sm';
+                    case '7':
+                        return 'bg-[#7c4d3a] text-white border-[#5c3425] font-extrabold shadow-sm';
+                    case '8':
+                        return 'bg-slate-950 text-white border-slate-800 font-extrabold shadow-sm border';
+                    case '9':
+                        return 'bg-gradient-to-br from-yellow-300 via-yellow-105 to-white text-slate-950 border-yellow-400 font-extrabold shadow-sm';
+                    default:
+                        return 'bg-slate-900 text-slate-300 border-slate-800 font-bold';
+                }
+            };
+
+            const isUnreleased = cellValue.length !== 4 || isNaN(Number(cellValue));
+            if (isUnreleased) {
+                // This session is unreleased! Render it directly as 4 interactive future target prediction inputs.
+                const draftKey = `${r}_${c}`;
+                (window as any).vpbDraftPredictions = (window as any).vpbDraftPredictions || {};
+                if (!(window as any).vpbDraftPredictions[draftKey]) {
+                    if (cellValue && cellValue.length === 4) {
+                        (window as any).vpbDraftPredictions[draftKey] = cellValue.split('');
+                    } else {
+                        (window as any).vpbDraftPredictions[draftKey] = ['?', '?', '?', '?'];
+                    }
+                }
+                const draftDigits = (window as any).vpbDraftPredictions[draftKey];
+
+                html += `
+                    <td class="text-center align-middle relative border-b border-slate-900/20 px-3 py-3">
+                        <div class="flex flex-col gap-2 p-3 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 shadow-md backdrop-blur-xs relative">
+                            <div class="flex justify-between items-center px-1">
+                                <span class="text-[8px] tracking-widest text-slate-400 font-black uppercase leading-none">${colHeader}</span>
+                                <span class="text-[7px] font-mono leading-none px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/35 font-black uppercase">TARGET</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-1.5">
+                `;
+
+                for (let d = 0; d < 4; d++) {
+                    const digitChar = draftDigits[d] || '?';
+                    const digitLabel = d === 0 ? 'As' : d === 1 ? 'Kop' : d === 2 ? 'Kepala' : 'Ekor';
+                    const cellId = `studio_c_${r}_${c}_${d}`;
+                    
+                    const isActive = (window as any).vpbStudioActiveNode && (window as any).vpbStudioActiveNode.id === cellId;
+                    const isChained = (window as any).vpbStudioChains.some((x: any) => x.id === cellId);
+                    
+                    let bgStyleClass = getDigitStyle(digitChar);
+                    let ringClass = "border border-amber-500/30";
+                    if (isActive) {
+                        ringClass = "ring-[5px] ring-purple-500 ring-offset-2 ring-offset-slate-900 scale-110 z-20 shadow-[0_0_20px_rgba(168,85,247,0.85)] border-purple-350";
+                    } else if (isChained) {
+                        ringClass = "ring-[4px] ring-emerald-400 ring-offset-1 ring-offset-slate-900 scale-[1.03] z-10 shadow-[0_0_15px_rgba(52,211,153,0.75)] border-emerald-350";
+                    }
+                    
+                    html += `
+                        <div class="relative" style="width: ${buttonWidth}px; height: ${buttonHeight}px;">
+                            <button type="button"
+                                    onclick="window.onVpbStudioCellClick('${cellId}', ${r}, ${c}, ${d}, '${digitLabel}', '${digitChar}', '${displayDate} (${relativeLabel})', '${colHeader}')"
+                                    class="${bgStyleClass} ${ringClass} rounded-xl w-full h-full flex flex-col items-center justify-center py-1 transition-all duration-205 focus:outline-none"
+                                    title="${digitLabel} Prediksi: ${digitChar}">
+                                <span class="text-[8px] opacity-70 font-black tracking-tight leading-none uppercase select-none pointer-events-none">${digitLabel.substring(0, 3)}</span>
+                                <input type="text" 
+                                       maxlength="1" 
+                                       value="${digitChar === '?' ? '' : digitChar}"
+                                       placeholder="?"
+                                       oninput="window.setVpbDraftPrediction(${r}, ${c}, ${d}, this.value)"
+                                       onfocus="this.select()"
+                                       class="w-full text-center font-black mt-1.5 bg-transparent border-0 outline-none p-0 text-[14px] leading-none text-center cursor-text text-amber-400 placeholder-amber-500/40"
+                                       style="pointer-events: auto;">
+                            </button>
+                        </div>
+                    `;
+                }
+
+                html += `
+                            </div>
+                        </div>
+                    </td>
+                `;
+            } else {
+                // Released draw row, show completed capsules
+                html += `
+                    <td class="text-center align-middle relative border-b border-slate-900/20 px-3 py-3">
+                        <div class="flex flex-col gap-2 p-3 rounded-2xl border ${theme.border} ${theme.bg} shadow-md backdrop-blur-xs transition-all duration-300 hover:border-slate-500/50 hover:bg-slate-900/40 relative">
+                            <!-- Tiny visual column tag above the digits -->
+                            <div class="flex justify-between items-center px-1">
+                                <span class="text-[8px] tracking-widest text-slate-400 font-black uppercase leading-none">${colHeader}</span>
+                                <span class="text-[8px] font-mono leading-none px-1.5 py-0.5 rounded ${theme.badge} font-bold">${relativeLabel}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-1.5">
+                `;
+
+                for (let d = 0; d < 4; d++) {
+                    const digitChar = cellValue[d];
+                    const digitLabel = d === 0 ? 'As' : d === 1 ? 'Kop' : d === 2 ? 'Kepala' : 'Ekor';
+                    const cellId = `studio_c_${r}_${c}_${d}`;
+                    
+                    const isActive = (window as any).vpbStudioActiveNode && (window as any).vpbStudioActiveNode.id === cellId;
+                    const isChained = (window as any).vpbStudioChains.some((x: any) => x.id === cellId);
+                    
+                    let bgStyleClass = getDigitStyle(digitChar);
+                    let ringClass = "";
+                    if (isActive) {
+                        ringClass = "ring-[5px] ring-purple-500 ring-offset-2 ring-offset-slate-900 scale-110 z-20 shadow-[0_0_20px_rgba(168,85,247,0.85)] animate-pulse border-purple-350";
+                    } else if (isChained) {
+                        ringClass = "ring-[4px] ring-emerald-400 ring-offset-1 ring-offset-slate-900 scale-[1.03] z-10 shadow-[0_0_15px_rgba(52,211,153,0.75)] border-emerald-350";
+                    }
+                    
+                    html += `
+                        <button type="button" 
+                                onclick="window.onVpbStudioCellClick('${cellId}', ${r}, ${c}, ${d}, '${digitLabel}', '${digitChar}', '${displayDate} (${relativeLabel})', '${colHeader}')"
+                                class="${bgStyleClass} ${ringClass} rounded-xl flex flex-col items-center justify-center select-none cursor-pointer focus:outline-none transition-all duration-205 shadow-md"
+                                style="width: ${buttonWidth}px; height: ${buttonHeight}px;"
+                                title="${relativeLabel} ${colHeader} (${digitLabel}): ${digitChar}">
+                            <span class="text-[8px] opacity-70 font-black tracking-tight leading-none uppercase select-none pointer-events-none">${digitLabel.substring(0, 3)}</span>
+                            <span class="text-[14px] font-black leading-none mt-1.5 select-none pointer-events-none">${digitChar}</span>
+                        </button>
+                    `;
+                }
+
+                html += `
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
+            html += `
+                </td>
+            `;
+        }
+        
+        html += `</tr>`;
+    }
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Auto-initiator: repaint visual overlay flow lines once the table elements are painted in DOM
+    setTimeout(() => {
+        if ((window as any).drawVpbAlurLines) {
+            (window as any).drawVpbAlurLines();
+        }
+    }, 80);
+};
+
+(window as any).setVpbDraftPrediction = (rowIdx: number, colIdx: number, digitIdx: number, val: string) => {
+    (window as any).vpbDraftPredictions = (window as any).vpbDraftPredictions || {};
+    const draftKey = `${rowIdx}_${colIdx}`;
+    if (!(window as any).vpbDraftPredictions[draftKey]) {
+        (window as any).vpbDraftPredictions[draftKey] = ['?', '?', '?', '?'];
+    }
+    
+    const cleanVal = val.trim().substring(0, 1);
+    (window as any).vpbDraftPredictions[draftKey][digitIdx] = cleanVal || '?';
+    
+    const cellId = `studio_c_${rowIdx}_${colIdx}_${digitIdx}`;
+    
+    // Also find the input inside the button and update its value
+    const btn = document.querySelector(`button[onclick*="'${cellId}'"]`) as HTMLButtonElement;
+    if (btn) {
+        const input = btn.querySelector('input') as HTMLInputElement | null;
+        if (input) {
+            input.value = cleanVal === '?' ? '' : cleanVal;
+        }
+
+        const getDigitStyleInternal = (char: string) => {
+            switch (char) {
+                case '0': return 'bg-gradient-to-br from-white via-red-200 to-red-600 text-slate-950 border-red-500 font-extrabold shadow-sm';
+                case '1': return 'bg-yellow-400 text-slate-950 border-yellow-500 font-extrabold shadow-sm';
+                case '2': return 'bg-blue-600 text-white border-blue-700 font-extrabold shadow-sm';
+                case '3': return 'bg-red-600 text-white border-red-700 font-extrabold shadow-sm';
+                case '4': return 'bg-purple-650 bg-purple-600 text-white border-purple-700 font-extrabold shadow-sm';
+                case '5': return 'bg-orange-500 text-white border-orange-600 font-extrabold shadow-sm';
+                case '6': return 'bg-emerald-600 text-white border-emerald-700 font-extrabold shadow-sm';
+                case '7': return 'bg-[#7c4d3a] text-white border-[#5c3425] font-extrabold shadow-sm';
+                case '8': return 'bg-slate-950 text-white border-slate-800 font-extrabold shadow-sm border';
+                case '9': return 'bg-gradient-to-br from-yellow-300 via-yellow-105 to-white text-slate-950 border-yellow-400 font-extrabold shadow-sm';
+                default: return 'bg-slate-900 border border-slate-800 text-slate-400 font-bold';
+            }
+        };
+
+        const digitStyle = getDigitStyleInternal(cleanVal || '?');
+        const isActive = (window as any).vpbStudioActiveNode && (window as any).vpbStudioActiveNode.id === cellId;
+        const isChained = (window as any).vpbStudioChains.some((x: any) => x.id === cellId);
+        
+        let ringClass = "border border-amber-500/30";
+        if (isActive) {
+            ringClass = "ring-[5px] ring-purple-500 ring-offset-2 ring-offset-slate-900 scale-110 z-20 shadow-[0_0_20px_rgba(168,85,247,0.85)] border-purple-350";
+        } else if (isChained) {
+            ringClass = "ring-[4px] ring-emerald-400 ring-offset-1 ring-offset-slate-900 scale-[1.03] z-10 shadow-[0_0_15px_rgba(52,211,153,0.75)] border-emerald-350";
+        }
+        
+        btn.className = `${digitStyle} ${ringClass} rounded-xl w-full h-full flex flex-col items-center justify-center py-1 transition-all duration-205 focus:outline-none`;
+    }
+    
+    // Sync active node meta if is selected currently
+    if ((window as any).vpbStudioActiveNode && (window as any).vpbStudioActiveNode.id === cellId) {
+        (window as any).vpbStudioActiveNode.value = cleanVal || '?';
+        const label = document.getElementById('vpb-selected-node-label');
+        if (label) {
+            label.innerText = `TARGET PREDIKSI ${digitIdx === 0 ? 'As' : digitIdx === 1 ? 'Kop' : digitIdx === 2 ? 'Kepala' : 'Ekor'}: [${cleanVal || '?'}]`;
+        }
+    }
+    
+    // Redraw SVG connections
+    if ((window as any).drawVpbAlurLines) {
+        (window as any).drawVpbAlurLines();
+    }
+};
+
+(window as any).drawVpbAlurLines = () => {
+    const svg = document.getElementById('vpb-studio-alur-svg') as unknown as SVGElement | null;
+    if (!svg) return;
+    
+    // Clear old visual paths
+    const oldPaths = svg.querySelectorAll('.vpb-flow-path');
+    oldPaths.forEach(p => p.remove());
+    
+    const chains = (window as any).vpbStudioChains || [];
+    const activeNode = (window as any).vpbStudioActiveNode;
+    
+    const wrapper = document.getElementById('vpb-table-visual-wrapper');
+    if (!wrapper) return;
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    const points: { x: number; y: number; id: string }[] = [];
+    
+    // 1. Gather all positions from chains
+    chains.forEach((node: any) => {
+        // Query by substring of onclick handler containing exact node ID
+        const btn = document.querySelector(`button[onclick*="'${node.id}'"]`);
+        if (btn) {
+            const btnRect = btn.getBoundingClientRect();
+            const centerX = (btnRect.left + btnRect.right) / 2 - wrapperRect.left;
+            const centerY = (btnRect.top + btnRect.bottom) / 2 - wrapperRect.top;
+            points.push({ x: centerX, y: centerY, id: node.id });
+        }
+    });
+    
+    // 2. Draw quadratic bezier flows between chained points
+    if (points.length >= 2) {
+        for (let i = 0; i < points.length - 1; i++) {
+            const p1 = points[i];
+            const p2 = points[i+1];
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            
+            // Render curved flow paths for luxurious natural styling
+            const cx1 = p1.x + dx * 0.25;
+            const cy1 = p1.y + dy * 0.75;
+            const cx2 = p1.x + dx * 0.75;
+            const cy2 = p1.y + dy * 0.25;
+            const dPath = `M ${p1.x} ${p1.y} C ${cx1} ${cy1} ${cx2} ${cy2} ${p2.x} ${p2.y}`;
+            
+            line.setAttribute('d', dPath);
+            line.setAttribute('class', 'vpb-flow-path');
+            line.setAttribute('stroke', '#10b981'); // Emerald Glow
+            line.setAttribute('stroke-width', '4');
+            line.setAttribute('fill', 'none');
+            line.setAttribute('marker-end', 'url(#vpb-arrow)');
+            line.setAttribute('style', 'filter: url(#vpb-glow); stroke-dasharray: 8 3; animation: vpbDashAnimation 30s linear infinite;');
+            
+            svg.appendChild(line);
+        }
+    }
+    
+    // 3. Draw temporary path to current active node
+    if (activeNode) {
+        const activeBtn = document.querySelector(`button[onclick*="'${activeNode.id}'"]`);
+        if (activeBtn) {
+            const btnRect = activeBtn.getBoundingClientRect();
+            const ax = (btnRect.left + btnRect.right) / 2 - wrapperRect.left;
+            const ay = (btnRect.top + btnRect.bottom) / 2 - wrapperRect.top;
+            
+            if (points.length > 0) {
+                const lastPoint = points[points.length - 1];
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                
+                const dPath = `M ${lastPoint.x} ${lastPoint.y} Q ${(lastPoint.x + ax)/2} ${(lastPoint.y + ay)/2 - 20} ${ax} ${ay}`;
+                
+                line.setAttribute('d', dPath);
+                line.setAttribute('class', 'vpb-flow-path');
+                line.setAttribute('stroke', '#a855f7'); // Purple
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('fill', 'none');
+                line.setAttribute('style', 'filter: url(#vpb-glow-dashed); stroke-dasharray: 4 4;');
+                
+                svg.appendChild(line);
+            }
+        }
+    }
+};
+
+(window as any).pickVpbCellFlow = () => {
+    // switch to table-only
+    const sidebar = document.getElementById('vpb-studio-sidebar');
+    const tableArea = document.getElementById('vpb-right-content-wrapper');
+    const btnText = document.getElementById('vpb-btn-layout-text');
+    
+    if(sidebar && tableArea) {
+        (window as any).vpbStudioLayoutMode = 'table-only';
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('lg:flex', 'h-full', 'w-full');
+        
+        tableArea.classList.remove('hidden', 'h-[50%]');
+        tableArea.classList.add('h-full');
+        if (btnText) btnText.innerHTML = '<i class="ph-bold ph-monitor text-xs"></i> TAMPILAN: TABEL PENUH';
+        
+        (window as any).isPickingCell = true; // flag to return to form
+        (window as any).showToast("Silakan klik angka pada tabel...");
+        
+        // Redraw lines
+        setTimeout(() => {
+            if ((window as any).drawVpbAlurLines) (window as any).drawVpbAlurLines();
+            // Scroll to top of table so user immediately sees it
+            tableArea.scrollTo({top: 0, behavior: 'smooth'});
+        }, 150);
+    }
+}
+
+(window as any).onVpbStudioCellClick = (id: string, rowIdx: number, colIdx: number, digitIdx: number, digitLabel: string, value: string, dateLabel: string, colHeader: string) => {
+    // If we picked via the picker flow, insert data tag into textarea
+    if ((window as any).isPickingCell) {
+        (window as any).isPickingCell = false;
+        
+        const relativePart = dateLabel.includes('(') ? dateLabel.split('(')[1].replace(')', '') : 'H0';
+        const positionText = digitIdx === -1 ? digitLabel.toUpperCase() : `${colHeader}_${digitLabel.toUpperCase()}`;
+        const dataTag = `[${relativePart}_${positionText}_${value}]`; // e.g. [H0_AS_4] or [H0_S_AS_5] // added value back for user reference
+        
+        (window as any).insertVpbOperator(dataTag);
+        
+        // Restore Layout
+        const sidebar = document.getElementById('vpb-studio-sidebar');
+        const tableArea = document.getElementById('vpb-right-content-wrapper');
+        const btnText = document.getElementById('vpb-btn-layout-text');
+        
+        if (sidebar && tableArea) {
+            if (window.innerWidth >= 1024) { // desktop, go to split
+                (window as any).vpbStudioLayoutMode = 'split';
+                sidebar.classList.remove('hidden', 'w-full', 'h-full');
+                sidebar.classList.add('lg:flex', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+                
+                tableArea.classList.remove('hidden', 'h-full');
+                tableArea.classList.add('h-[50%]');
+                if (btnText) btnText.innerHTML = '<i class="ph-bold ph-layout text-xs"></i> TAMPILAN: SPLIT GRID';
+            } else { // mobile, go to form-only
+                (window as any).vpbStudioLayoutMode = 'form-only';
+                sidebar.classList.remove('hidden', 'lg:w-[400px]', 'xl:w-[450px]', 'h-[50%]');
+                sidebar.classList.add('lg:flex', 'w-full', 'h-full');
+                
+                tableArea.classList.add('hidden');
+                tableArea.classList.remove('h-full');
+                if (btnText) btnText.innerHTML = '<i class="ph-bold ph-list-dashes text-xs"></i> TAMPILAN: FORM PENUH';
+            }
+            
+            setTimeout(() => {
+                const textarea = document.getElementById('vpb-formula-input') as HTMLTextAreaElement;
+                if(textarea) {
+                    textarea.focus(); // Brings focus back to formula
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' }); // keeps the formula building easy 
+                }
+            }, 100);
+        }
+    }
+};
+
+(window as any).insertVpbOperator = (op: string) => {
+    const input = document.getElementById('vpb-formula-input') as HTMLTextAreaElement;
+    if (!input) return;
+    
+    // insert at cursor position
+    const startPos = input.selectionStart;
+    const endPos = input.selectionEnd;
+    const originalText = input.value;
+    
+    input.value = originalText.substring(0, startPos) + op + originalText.substring(endPos);
+    
+    // move cursor
+    const newCursorPos = startPos + op.length;
+    input.setSelectionRange(newCursorPos, newCursorPos);
+    input.focus();
+};
+
+(window as any).insertVpbFormulaNum = () => {
+    const input = document.getElementById('vpb-custom-num-input') as HTMLInputElement;
+    if (input && input.value !== "") {
+        (window as any).insertVpbOperator(input.value);
+        input.value = "";
+    }
+};
+
+(window as any).clearVpbFormula = () => {
+    const input = document.getElementById('vpb-formula-input') as HTMLTextAreaElement;
+    if (input) {
+        input.value = "";
+        input.focus();
+    }
+    const outText = document.getElementById('vpb-studio-output-text') as HTMLTextAreaElement;
+    if (outText) outText.value = "";
+    
+    const box = document.getElementById('vpb-studio-result-box');
+    if (box) box.classList.add('hidden');
+};
+
+(window as any).updateFormulaAlurLines = () => {
+    // If lines/graphics are needed in the future, it goes here
+};
+
+(window as any).generateVpbSpreadsheetPrompt = () => {
+    const input = document.getElementById('vpb-formula-input') as HTMLTextAreaElement;
+    if (!input || !input.value.trim()) {
+        return (window as any).showToast("Rumus Formula masih kosong!", true);
+    }
+    
+    const formulaSource = input.value.trim();
+    
+    const targetVarEl = document.getElementById('vpb-studio-target-variable') as HTMLSelectElement;
+    const targetVar = targetVarEl ? targetVarEl.value : 'AM_AI';
+    
+    let targetLabel = "";
+    switch (targetVar) {
+        case "BBFS": targetLabel = "meracik angka BBFS jitu"; break;
+        case "AM_AI": targetLabel = "menghasilkan Angka Main (AM) / Angka Ikut (AI) jitu"; break;
+        case "4D_3D_2D": targetLabel = "mencari draf tembusan 4D 3D 2D akurat"; break;
+        case "JITU_2D": targetLabel = "merumuskan Angka Jitu 2D"; break;
+        case "SHIO": targetLabel = "memetakan lintasan line Shio pasaran"; break;
+    }
+    
+    // Parse formatting if we need AI prompt mapping, else use literal formula style
+    
+    let finalFormulaText = `=== SPREADSHEET FORMULA POLA TARIKAN PAITO ===
+
+【 FORMULA SPREADSHEET (RAW STRING) 】:
+${formulaSource}
+
+1. TARGET ANALISIS POLA: Membantu AI dalam ${targetLabel}.
+2. INSTRUKSI TRANSLASI: Tolong perhatikan dan asumsikan rumus spreadsheet-like di atas menjadi alur operasi aritmatika & observasi berakar paito, di mana tag seperti [H0_AS_X] merepresentasikan data pada urutan/hari relatif dan posisi (contoh: H0 artinya hari ini, H1 hari kemarin) dan angka X menyimbolkan result historis angkanya. "ML" adalah Mistik Lama, "MB" Mistik Baru, dan "IND" adalah Index.
+
+Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. Evaluasi histori angka dengan seksama dan hasilkan target prediksinya.`;
+
+    const outText = document.getElementById('vpb-studio-output-text') as HTMLTextAreaElement;
+    const box = document.getElementById('vpb-studio-result-box');
+    
+    if (outText && box) {
+        outText.value = finalFormulaText;
+        box.classList.remove('hidden');
+        
+        (window as any).showToast("Prompt Formula sukses di-compile!");
+        outText.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+
+(window as any).applyVpbStudioSpreadsheetFormula = () => {
+    const source = document.getElementById('vpb-studio-output-text') as HTMLTextAreaElement;
+    const parentText = document.getElementById('input-prompt-text') as HTMLTextAreaElement;
+    
+    if (!source || !parentText) return;
+    const text = source.value.trim();
+    if (!text) return;
+    
+    const originalValue = parentText.value.trim();
+    if (originalValue) {
+        parentText.value = originalValue + "\n\n" + text;
+    } else {
+        parentText.value = text;
+    }
+    
+    parentText.focus();
+    (window as any).closeVpbStudioModal();
+    (window as any).showToast("Rumus Spreadsheet sukses digabungkan ke area utama!");
+};
+
 
 (window as any).addGlobalRule = async (e: any) => {
     e.preventDefault();
@@ -2470,17 +3938,20 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     const lines = html.split('\n');
     let insideTable = false;
     let tableHtml = "";
+    let tableStartIndex = -1;
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (line.startsWith('|') && line.endsWith('|')) {
             if (!insideTable) {
                 insideTable = true;
+                tableStartIndex = i;
                 tableHtml += '<div class="overflow-x-auto my-4 rounded-xl border border-slate-800/80 shadow-xl max-w-full"><table class="w-full text-xs text-left text-slate-300 overflow-hidden">';
             }
             
             const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
             if (cells.every(c => c.startsWith('-'))) {
+                lines[i] = "";
                 continue;
             }
             
@@ -2498,19 +3969,21 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                 });
                 tableHtml += '</tr>';
             }
+            lines[i] = ""; // Kosongkan baris aslinya agar tidak dirender ulang sebagai paragraf biasa
         } else {
             if (insideTable) {
                 insideTable = false;
                 tableHtml += '</tbody></table></div>';
-                lines[i - 1] = tableHtml;
+                lines[tableStartIndex] = tableHtml;
                 tableHtml = "";
+                tableStartIndex = -1;
             }
         }
     }
     
     if (insideTable) {
         tableHtml += '</tbody></table></div>';
-        lines[lines.length - 1] = tableHtml;
+        lines[tableStartIndex] = tableHtml;
     }
     
     html = lines.map(l => {
@@ -2762,11 +4235,20 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         (window as any).globalRules.forEach((g:any) => basePrompt += `- ${g.text}\n`);
     }
 
-    let dynamicVarInstruction = `\n[FORMAT OUTPUT WAJIB]:\nKeluarkan hasil akhir HANYA dalam format variabel berikut, sesuai key ini persis:\n`;
+    let dynamicVarInstruction = `\n[FORMAT KEY-VALUE WAJIB]:\nSertakan baris variabel berikut di bagian tersendiri (tiap nilai diletakkan setelah tanda titik dua):\n`;
     (window as any).syairVariables.forEach((v:any) => {
         dynamicVarInstruction += `{{${v}}}: ...\n`;
     });
     basePrompt += dynamicVarInstruction;
+
+    basePrompt += `
+\n[PANDUAN PENULISAN ANALISIS & ANTI-DUPLIKASI]:
+1. **INFORMASI MENDALAM & ANALISIS KUALITATIF JITU**: Selain mengeluarkan variabel di atas, tuliskan penjelasan kualitatif yang mendalam, informatif, dan sangat profesional dalam Bahasa Indonesia mengenai rincian penarikan pola tarikan angka, pergerakan mistik/index, kecenderungan trend dari 50 histori terdahulu, atau korelasi dengan data sandingan tambahan. JANGAN menulis penjelasan yang terlalu singkat atau malas. Buat ulasan teks berupa narasi analisis berbobot.
+2. **STRUKTUR PENYAJIAN YANG RAPI**:
+    - **Tabel Markdown**: Gunakan *HANYA SATU* Tabel Markdown yang ringkas dan indah untuk memetakan rincian posisi atau pembagian angka (misalnya Kepala, Ekor, kelompok Shio, dsb) jika ingin menyajikan data terstruktur.
+    - **Paragraf Penjelasan**: Gunakan paragraf narasi atau poin analisis teoretis untuk menjabarkan ulasan pasaran secara runut mendetail tanpa tabel lagi di bagian teks.
+3. **PANTANGAN UTAMA (ANTI-DUPLIKASI)**: Di dalam teks paragraf penjelasan, hindari mengulang kembali atau mendaftar kembali angka jitu/BBFS mentah yang persis sama dengan yang sudah tertulis di dalam Tabel Markdown atau di format variabel di atas. Fokuskan penjelasan teks pada dasar teori pola, ulasan peristiwa draf sebelumnya, korelasi sandingan, dan alasan rasional pemilihan angka, sehingga tidak terjadi pengulangan informasi jitu yang redundan dan tampak amatir.
+`;
 
     const toggleSandinganEl = document.getElementById('toggle-sandingan') as HTMLInputElement;
     const useSandingan = toggleSandinganEl ? toggleSandinganEl.checked : false;
@@ -4106,3 +5588,86 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 (window as any).initApp();
 
 
+(window as any).tidyUpPrompt = async (elementId: string) => {
+    const el = document.getElementById(elementId) as HTMLTextAreaElement;
+    if (!el) return;
+    
+    const text = el.value.trim();
+    if (!text) {
+        return (window as any).showToast("Form masih kosong, tidak ada yang bisa dirapikan!", true);
+    }
+    
+    const apiKey = (window as any).getGeminiAPIKey();
+    if (!apiKey) {
+        return (window as any).showToast("API Key Gemini belum diatur!", true);
+    }
+    
+    const originalValue = el.value;
+    el.value = "Sedang merapikan kalimat menggunakan AI, mohon tunggu sebentar...";
+    el.disabled = true;
+    (window as any).showToast("Mengirim teks ke AI...");
+    
+    try {
+        const payload = {
+            contents: [{
+                parts: [{ text: "Tugas Anda adalah memeriksa tata bahasa dan merapikan kalimat acak/kasar berikut ini agar menjadi kalimat instruksi ('prompt') yang rapi, terstruktur, sistematis dan jelas untuk dibaca oleh AI (LLM), tanpa merubah makna atau sasaran aslinya. Tolong hanya kembalikan teks hasil rapihannya saja tanpa tanda petik, penjelasan, atau blok kode Markdown.\n\nTeks asli yang harus dirapikan:\n" + text }]
+            }],
+            generationConfig: {
+                temperature: 0.1
+            }
+        };
+        
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+        
+        let res = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
+        
+        if (!res.ok) {
+            // handle fallback
+            const fbUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            res = await fetch(fbUrl, {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+                 body: JSON.stringify(payload)
+            });
+            if(!res.ok) {
+                const fbUrl2 = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                 res = await fetch(fbUrl2, {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify(payload)
+                });
+            }
+        }
+        
+        if(!res.ok) {
+            throw new Error(`HTTP Error: ${res.status}`);
+        }
+        
+        const out = await res.json();
+        if (out.candidates && out.candidates.length > 0) {
+            let cleaned = out.candidates[0].content.parts[0].text;
+            // Clean markdown code blocks just in case
+            cleaned = cleaned.replace(/^```[a-z]*\n?/gm, '').replace(/\n?```$/gm, '');
+            el.value = cleaned.trim();
+            (window as any).showToast("Kalimat sukses dirapikan AI!");
+        } else {
+            throw new Error("Gagal memproses hasil AI.");
+        }
+        
+    } catch (e: any) {
+        el.value = originalValue;
+        (window as any).showToast("Opsi merapikan gagal: " + e.message, true);
+    } finally {
+        el.disabled = false;
+        const evt = new Event('input', { bubbles: true });
+        el.dispatchEvent(evt); // Support React/onChange bindings if any
+        if(elementId === 'global-sand-prompt' && typeof (window as any).saveGlobalSandinganPrompt === 'function') {
+            (window as any).saveGlobalSandinganPrompt(el.value);
+        }
+    }
+};

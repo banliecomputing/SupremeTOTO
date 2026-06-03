@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SupremeTOTO versi 67</title>
+    <title>SupremeTOTO versi 77</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -49,7 +49,7 @@
                     <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 67</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 77</span>
                     </div>
                 </div>
             </div>
@@ -371,8 +371,13 @@
                             
                             <!-- Instruksi Global Khusus Sandingan -->
                             <div class="mb-4 bg-slate-900 p-3 rounded-xl border border-blue-500/30">
-                                <label class="block text-[10px] text-blue-400 uppercase font-bold tracking-wider mb-2"><i class="ph-bold ph-info"></i> Instruksi Global (Khusus Sandingan)</label>
-                                <textarea id="global-sand-prompt" placeholder="Contoh: Jadikan semua data sandingan di bawah ini sebagai faktor penguat angka ekor..." class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-xs outline-none focus:border-blue-500 text-white shadow-inner h-14 resize-none" onchange="saveGlobalSandinganPrompt(this.value)"></textarea>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[10px] text-blue-400 uppercase font-bold tracking-wider"><i class="ph-bold ph-info"></i> Instruksi Global (Khusus Sandingan)</label>
+                                    <button type="button" onclick="window.tidyUpPrompt('global-sand-prompt')" class="text-[10px] flex items-center gap-1 text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-500/30 px-2 py-0.5 rounded border border-blue-500/20 transition-all font-bold cursor-pointer">
+                                        <i class="ph-bold ph-magic-wand"></i> Rapikan AI
+                                    </button>
+                                </div>
+                                <textarea id="global-sand-prompt" placeholder="Contoh: Jadikan semua data sandingan di bawah ini sebagai faktor penguat angka ekor..." class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-xs outline-none focus:border-blue-500 text-white shadow-inner h-14 resize-none" onchange="window.saveGlobalSandinganPrompt(this.value)"></textarea>
                             </div>
 
                             <!-- Daftar Data Sandingan Aktif/Tersimpan -->
@@ -416,7 +421,12 @@
                                     </div>
 
                                     <div class="pt-2 border-t border-slate-800">
-                                        <label class="block text-[10px] text-amber-400 uppercase font-bold tracking-wider mb-1"><i class="ph-bold ph-robot"></i> Instruksi Khusus (Prompt Child)</label>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label class="block text-[10px] text-amber-400 uppercase font-bold tracking-wider"><i class="ph-bold ph-robot"></i> Instruksi Khusus (Prompt Child)</label>
+                                            <button type="button" onclick="window.tidyUpPrompt('sand-prompt')" class="text-[10px] flex items-center gap-1 text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 px-2 py-0.5 rounded border border-amber-500/20 transition-all font-bold cursor-pointer">
+                                                <i class="ph-bold ph-magic-wand"></i> Rapikan AI
+                                            </button>
+                                        </div>
                                         <textarea id="sand-prompt" placeholder="Contoh: Analisa sheet ini khusus untuk mencari angka ganjil..." class="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-600 text-xs outline-none focus:border-amber-500 text-white shadow-inner h-32 resize-y min-h-[100px] leading-relaxed custom-scrollbar"></textarea>
                                     </div>
 
@@ -658,8 +668,143 @@
                                 </div>
     
                                 <form id="form-prompt" onsubmit="addPrompt(event)" class="space-y-3">
-                                    <input id="input-prompt-title" placeholder="Nama Pola Manual" required class="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500 text-white shadow-inner">
+                                    <input id="input-prompt-title" placeholder="Nama Pola Manual" required class="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-705 text-sm outline-none focus:border-purple-500 text-white shadow-inner">
+                                    
+                                    <!-- Dynamic Multi Pasaran Checklist -->
+                                    <div class="bg-slate-900 border border-slate-750 rounded-xl p-3.5 space-y-2">
+                                        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-1">
+                                            <p class="text-[10px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                                                <i class="ph-bold ph-globe text-xs"></i> Terapkan ke Pasaran (Dapat lebih dari satu):
+                                             </p>
+                                             <label class="flex items-center gap-1.5 text-[9px] text-slate-400 cursor-pointer select-none">
+                                                 <input type="checkbox" id="prompt-pool-all" onchange="window.toggleAllPromptPools(this)" class="accent-purple-500 rounded bg-slate-950 border-slate-700">
+                                                 <span class="font-bold uppercase">SEMUA PASARAN</span>
+                                             </label>
+                                         </div>
+                                         <div id="prompt-pools-container" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[140px] overflow-y-auto custom-scrollbar text-[10px] p-0.5">
+                                             <!-- Checkboxes populated dynamically -->
+                                         </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between mt-2 mb-1">
+                                        <label class="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Instruksi Pola Target (Prompt Khusus Utama)</label>
+                                        <button type="button" onclick="window.tidyUpPrompt('input-prompt-text')" class="text-[10px] flex items-center gap-1.5 text-purple-400 hover:text-white bg-purple-500/10 hover:bg-purple-500/30 px-2.5 py-1 rounded-lg border border-purple-500/20 transition-all font-bold cursor-pointer shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                                            <i class="ph-bold ph-magic-wand animate-pulse"></i> Rapikan AI
+                                        </button>
+                                    </div>
                                     <textarea id="input-prompt-text" placeholder="Tulis instruksi pola..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm h-48 md:h-56 min-h-[180px] outline-none focus:border-purple-500 text-white shadow-inner leading-relaxed custom-scrollbar font-mono"></textarea>
+                                    
+                                    <!-- Perakit Pola Paito Visual (Visual Pattern Builder) -->
+                                    <div class="border border-purple-500/30 rounded-xl bg-purple-950/20 p-5 text-center space-y-4 transition-all" id="vpb-wrapper-card">
+                                        <div class="flex items-center justify-center gap-2.5 text-purple-400">
+                                            <i class="ph-bold ph-magic-wand text-2xl animate-spin [animation-duration:4s]"></i>
+                                            <h4 class="text-xs font-black uppercase tracking-wider">AI SPREADSHEET FORMULA BUILDER</h4>
+                                        </div>
+                                        <p class="text-[11px] text-slate-400 max-w-md mx-auto leading-relaxed">
+                                            Kesulitan memilih paito di ruang sempit? Klik tombol di bawah untuk membuka <span class="text-purple-400 font-bold">Studio Fullscreen</span> yang sangat lapang. Anda dapat merakit logika berakar (multi-langkah bersilang, kalkulasi, mistik lama/baru, indeks, dan transformasi dinamik) dengan ukuran sel tabel yang nyaman!
+                                        </p>
+                                        <button type="button" onclick="window.openVpbStudioModal()" class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 px-6 py-3 rounded-xl text-xs font-black text-white uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.7)] cursor-pointer select-none active:scale-95">
+                                            <i class="ph-bold ph-presentation text-base"></i> BUKA STUDIO perakit FORMULA (FULLSCREEN)
+                                        </button>
+                                        
+                                        <div id="visual-pattern-builder-section" class="hidden mt-4 space-y-4 pt-4 border-t border-slate-800" style="display: none !important;">
+                                            <!-- Step 1: Select Pasaran to load -->
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-950/40 p-3 rounded-lg border border-slate-800/80">
+                                                <div class="flex items-center gap-2 min-w-[200px]">
+                                                    <span class="bg-purple-500/10 text-purple-400 font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px]">1</span>
+                                                    <label class="text-xs text-slate-300 font-extrabold select-none uppercase tracking-wider">PILIH ACUAN PAITO</label>
+                                                </div>
+                                                <div class="flex flex-1 items-center gap-2">
+                                                    <select id="vpb-pool-selector" onchange="window.loadVpbPoolData()" class="flex-1 text-xs bg-slate-900 border border-slate-750 hover:border-slate-700 rounded-lg p-2.5 text-slate-200 outline-none focus:border-purple-500 transition-all">
+                                                        <option value="">-- PILIH PASARAN --</option>
+                                                    </select>
+                                                    <button type="button" onclick="window.loadVpbPoolData()" class="p-2.5 text-xs bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg border border-purple-500/20 hover:border-transparent transition-all" title="Reload data"><i class="ph-bold ph-arrows-counter-clockwise text-sm"></i></button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Step 2: Interactive Grid -->
+                                            <div class="space-y-1.5">
+                                                <div class="flex justify-between items-center">
+                                                    <p class="text-xs font-extrabold text-slate-300 flex items-center gap-2 select-none uppercase tracking-wider">
+                                                        <span class="bg-purple-500/10 text-purple-400 font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px]">2</span>
+                                                        KLIK DIGIT / SEL UNTUK DIGABUNGKAN
+                                                    </p>
+                                                    <span class="text-[9px] text-slate-500 font-mono">Baris teratas = Result terbaru (H0)</span>
+                                                </div>
+                                                
+                                                <div id="vpb-table-container" class="min-h-[120px] flex items-center justify-center border border-dashed border-slate-800 rounded-xl bg-slate-950/50 p-3 overflow-x-auto text-xs text-slate-500 max-h-[300px] custom-scrollbar">
+                                                    <div class="text-center p-6 text-slate-500">
+                                                        <i class="ph-bold ph-hand-pointing text-4xl text-slate-600 mb-2 animate-bounce"></i>
+                                                        <p class="font-extrabold text-slate-400">Pilih Pasaran Terlebih Dahulu</p>
+                                                        <p class="text-[10px] text-slate-600 mt-1 max-w-xs leading-relaxed">Sistem akan memuat data histori paito pasaran tersebut dan menampilkan digit 4D interaktif yang bisa diklik.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Step 3: Elements Selected Badges -->
+                                            <div class="bg-slate-950/60 rounded-xl p-3.5 border border-slate-850 space-y-2">
+                                                <div class="flex justify-between items-center border-b border-slate-850 pb-2">
+                                                    <p class="text-xs font-black text-purple-400 flex items-center gap-1.5 uppercase tracking-wide">
+                                                        <i class="ph-fill ph-git-commit text-emerald-400 animate-ping text-[10px]"></i> Angka Paito Terpilih
+                                                    </p>
+                                                    <button type="button" onclick="window.resetVpbSelection()" class="text-[10px] uppercase font-bold text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1">
+                                                        <i class="ph ph-trash-simple"></i> Reset Draft
+                                                    </button>
+                                                </div>
+                                                <div id="vpb-selected-badges" class="flex flex-wrap gap-2 text-xs">
+                                                    <span class="text-slate-500 italic text-[11px] py-1">Belum ada angka terpilih. Klik sel atau digit angka pada tabel paito di atas!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Step 4: Relation formula configuration -->
+                                            <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 space-y-3">
+                                                <p class="text-xs font-black text-slate-300 flex items-center gap-2 select-none uppercase tracking-wider">
+                                                    <span class="bg-purple-500/10 text-purple-400 font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px]">3</span>
+                                                    KONFIGURASI RELASI FORMULA
+                                                </p>
+                                                
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Materi / Hubungan Relasi Matematika/Mistik:</label>
+                                                        <select id="vpb-relation-type" class="w-full text-xs bg-slate-900 border border-slate-750 rounded-lg p-2.5 text-slate-200 outline-none focus:border-purple-500 transition-colors">
+                                                            <option value="selisih">Selisih Angka (Dikurang)</option>
+                                                            <option value="jumlah">Jumlah Angka (Ditambah)</option>
+                                                            <option value="mistik_lama">Mistik Lama (ML)</option>
+                                                            <option value="mistik_baru">Mistik Baru (MB)</option>
+                                                            <option value="index">Index (IND)</option>
+                                                            <option value="tarikan_silang">Koneksi / Tarikan Silang Bebas</option>
+                                                            <option value="shio_kaitan">Korelasi Jalur Shio</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Target Penulisan Output Pola:</label>
+                                                        <select id="vpb-target-variable" class="w-full text-xs bg-slate-900 border border-slate-750 rounded-lg p-2.5 text-slate-200 outline-none focus:border-purple-500 transition-colors">
+                                                            <option value="BBFS">Mereset / Meracik BBFS</option>
+                                                            <option value="AM/AI">Merumuskan Angka Main (AM) / Angka Ikut (AI)</option>
+                                                            <option value="KEPALA/EKOR">Menentukan Kepala & Ekor Jitu</option>
+                                                            <option value="JITU_2D">Menentukan Angka Jitu 2D</option>
+                                                            <option value="SHIO">Mengkaji Pola Shio Pasaran</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="button" onclick="window.generateVpbFormula()" class="w-full bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-xs font-black text-white py-2.5 px-4 rounded-lg uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(147,51,234,0.2)] flex items-center justify-center gap-1.5 cursor-pointer">
+                                                    <i class="ph-bold ph-cpu text-sm animate-spin [animation-duration:3s]"></i> RAKIT INSTRUKSI POLATO (PAITO POLA)
+                                                </button>
+                                            </div>
+
+                                            <!-- Generated Result Box -->
+                                            <div id="vpb-generated-result-box" class="hidden space-y-2.5 animate-fade-in bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/20">
+                                                <div class="flex items-center gap-1.5 text-xs font-extrabold text-emerald-400">
+                                                    <i class="ph-fill ph-check-circle"></i> FORMULA POLA DIHASILKAN
+                                                </div>
+                                                <textarea id="vpb-output-text" class="w-full p-3 rounded-lg bg-slate-950 border border-emerald-500/20 text-xs text-emerald-400 font-mono h-24 min-h-[80px] outline-none leading-relaxed transition-all shadow-inner focus:border-emerald-500/50" readonly></textarea>
+                                                <button type="button" onclick="window.pasteVpbFormulaToPrompt()" class="w-full bg-emerald-600/20 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white text-xs font-black text-emerald-400 hover:text-slate-900 py-2.5 px-4 rounded-lg uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                                    <i class="ph-bold ph-paper-plane-tilt"></i> TAMBAHKAN KE AREA TEKS POLA DI ATAS
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="flex items-center gap-2 justify-end pt-2">
                                         <button type="button" onclick="cancelEditPrompt()" id="btn-cancel-prompt" class="text-xs text-red-400 px-3 py-1.5 border border-red-500/20 rounded-lg bg-red-500/5 hover:bg-red-500/15 transition-all uppercase font-bold cursor-pointer">Batal</button>
                                         <button type="submit" id="btn-submit-prompt" class="bg-purple-600 hover:bg-purple-500 py-2 px-4 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition-all shadow-[0_0_10px_rgba(147,51,234,0.3)] cursor-pointer">SIMPAN POLA MANUAL</button>
@@ -696,6 +841,12 @@
                                 </div>
     
                                 <form id="form-global-rule" onsubmit="addGlobalRule(event)" class="space-y-3 relative z-10">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-amber-500 font-bold uppercase tracking-wider">Teks Instruksi Global Primer</label>
+                                        <button type="button" onclick="window.tidyUpPrompt('input-global-text')" class="text-[10px] flex items-center gap-1.5 text-amber-400 hover:text-white bg-amber-500/10 hover:bg-amber-500/30 px-2.5 py-1 rounded-lg border border-amber-500/20 transition-all font-bold cursor-pointer shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+                                            <i class="ph-bold ph-magic-wand animate-pulse"></i> Rapikan AI
+                                        </button>
+                                    </div>
                                     <textarea id="input-global-text" placeholder="Ketik 1 instruksi global di sini..." required class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm h-48 md:h-56 min-h-[160px] outline-none focus:border-amber-500 text-white shadow-inner font-mono leading-relaxed custom-scrollbar"></textarea>
                                     <div class="flex items-center gap-2 justify-end pt-2">
                                         <button type="button" onclick="cancelEditGlobalRule()" id="btn-cancel-global" class="text-xs text-red-400 px-3 py-1.5 border border-red-500/20 rounded-lg bg-red-500/5 hover:bg-red-500/15 transition-all uppercase font-bold cursor-pointer">Batal</button>
@@ -865,6 +1016,212 @@
             <!-- Modal Scrollable Content Container -->
             <div id="edit-modal-body" class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-slate-950/20">
                 <!-- Elements will be dynamically moved in here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AI SPREADSHEET FORMULA BUILDER (FULLSCREEN STUDIO) -->
+    <div id="vpb-studio-modal" class="fixed inset-0 z-[160] hidden bg-slate-950/98 backdrop-blur-md flex-col transition-all duration-300 opacity-0 p-2 md:p-4 font-sans">
+        <div class="flex flex-col h-full w-full bg-slate-900 border border-purple-500/25 rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-all duration-300" id="vpb-studio-content">
+            
+            <!-- Modal Header -->
+            <div class="px-3 py-2 border-b border-slate-800 flex justify-between items-center bg-slate-900 shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="bg-emerald-600/20 p-1.5 rounded-lg text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                        <i class="ph-bold ph-microsoft-excel-logo text-base animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-emerald-400 text-xs md:text-sm uppercase tracking-wider flex items-center gap-1.5">
+                             AI SPREADSHEET BUILDER <span class="text-[8px] md:text-[9px] text-emerald-300 bg-emerald-900/40 px-1.5 py-0.5 rounded-full border border-emerald-500/20">LOGIC BUILDER</span>
+                        </h3>
+                        <p class="text-[9px] md:text-[10px] text-slate-400 hidden sm:block mt-0.5">Rakit instruksi pola berakar, kalkulasi silang, & mistik angka paito manual interaktif.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Zoom Controls & Layout Toggle -->
+                    <div class="flex items-center gap-2">
+                        <!-- Layout Mode Selector -->
+                        <button type="button" onclick="window.toggleVpbStudioLayout()" id="vpb-btn-layout-toggle" class="px-3 py-2 bg-purple-650/30 hover:bg-purple-600 text-[10px] md:text-[11px] font-black text-purple-300 hover:text-white rounded-xl border border-purple-500/25 transition-all flex items-center gap-1.5 cursor-pointer" title="Saklar Tampilan Fokus">
+                            <span id="vpb-btn-layout-text"><i class="ph-bold ph-layout text-xs"></i> TAMPILAN: SPLIT GRID</span>
+                        </button>
+
+                        <div class="hidden sm:flex items-center gap-1 bg-slate-950/80 p-1 rounded-lg border border-slate-800">
+                            <span class="text-[9px] font-mono text-slate-500 px-1 font-bold">SCALE</span>
+                            <select id="vpb-studio-scale-select" onchange="window.setVpbTableScale(this.value)" class="bg-slate-900 text-[10px] text-slate-300 border-0 outline-none rounded p-1 font-mono font-bold">
+                                <option value="0.35">35%</option>
+                                <option value="0.5">50%</option>
+                                <option value="0.65">65%</option>
+                                <option value="0.8">80%</option>
+                                <option value="0.95">95%</option>
+                                <option value="1.0" selected>100%</option>
+                                <option value="1.15">115%</option>
+                                <option value="1.3">130%</option>
+                                <option value="1.5">150%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.closeVpbStudioModal()" class="text-slate-400 hover:text-red-400 bg-slate-800 hover:bg-slate-700/80 p-2.5 rounded-xl border border-slate-700 hover:border-red-500/30 transition-all active:scale-95 cursor-pointer">
+                        <i class="ph-bold ph-x text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content Split Grid (Flex Row on Desktop, column on Mobile) -->
+            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0 bg-slate-950/40">
+                
+                <!-- LEFT SIDEBAR: Chained Logic Generator & Rooted Tree Output (Width 40%) -->
+                <div id="vpb-studio-sidebar" class="w-full lg:w-[400px] xl:w-[450px] border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col h-[50%] lg:h-full shrink-0 bg-slate-900/50 transition-all duration-300">
+                    
+                    <!-- Sidebar Section 1: Selector Pasaran & Option (Fixed Height) -->
+                    <div class="p-4 border-b border-slate-800 bg-slate-900/30 space-y-3 shrink-0">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-black tracking-widest text-slate-400 uppercase">1. PILIK ACUAN PASARAN</span>
+                            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Data
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="vpb-studio-pool-selector" onchange="window.reloadVpbStudioData()" class="flex-1 text-xs bg-slate-950 border border-slate-750 hover:border-slate-700 rounded-xl p-3 text-slate-200 outline-none focus:border-purple-500 transition-colors">
+                                <option value="">-- MEMUAT PILIHAN PASARAN --</option>
+                            </select>
+                            <button type="button" onclick="window.reloadVpbStudioData()" class="p-3 bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white rounded-xl border border-purple-500/20 hover:border-transparent transition-all cursor-pointer" title="Perbarui paito"><i class="ph-bold ph-arrows-counter-clockwise text-sm"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Section 2: Chained Rooted Formula Builder (Scrollable inner) -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                        
+                        <!-- SPREADSHEET LOGIC FORMULA BUILDER / KEYPAD -->
+                        <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 space-y-3 shadow-inner relative">
+                            <span class="text-[10px] font-black text-slate-400 flex items-center gap-2 select-none uppercase tracking-widest absolute -top-3 left-4 bg-slate-900 px-2">
+                                <span class="bg-emerald-500/10 text-emerald-400 font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px]">1</span>
+                                FORMULA BUILDER
+                            </span>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider"></span>
+                                <button type="button" onclick="window.clearVpbFormula()" class="text-[10px] uppercase font-bold text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="ph ph-trash"></i> Kosongkan
+                                </button>
+                            </div>
+
+                            <!-- Visual Formula Textarea -->
+                            <div class="relative group mt-2">
+                                <div class="absolute left-3 top-3 text-slate-500 font-black"><i class="ph-bold ph-function text-sm"></i></div>
+                                <textarea id="vpb-formula-input" 
+                                    class="w-full bg-slate-950/80 border border-emerald-500/40 rounded-xl p-3 pl-8 text-emerald-300 font-mono text-[11px] focus:border-emerald-400 outline-none shadow-inner h-28 resize-none leading-relaxed placeholder-slate-700 font-bold" 
+                                    placeholder="Contoh: ( [H0_AS] + ML([H1_KOP]) ) == 5 ..." oninput="window.updateFormulaAlurLines()"></textarea>
+                            </div>
+
+                            <!-- Operation Controller / Keypad -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-3">
+                                
+                                <div class="flex items-center justify-between gap-2">
+                                    <button type="button" onclick="window.pickVpbCellFlow()" class="flex-1 bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white rounded py-2 transition-colors flex items-center justify-center gap-1 font-bold text-[10px] cursor-pointer" title="Ambil Variabel Dari Angka Tabel">
+                                        <i class="ph-bold ph-hand-pointing"></i> Pick Data Tabel
+                                    </button>
+                                    
+                                    <div class="flex items-center gap-1 bg-slate-950 p-1 border border-slate-700 rounded w-1/3 relative">
+                                        <input type="number" id="vpb-custom-num-input" placeholder="Angka" class="bg-transparent text-emerald-300 font-mono text-[11px] font-bold outline-none w-full text-center placeholder-slate-600">
+                                        <button type="button" onclick="window.insertVpbFormulaNum()" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 text-white px-2 py-1 rounded font-bold transition-all cursor-pointer"><i class="ph-bold ph-plus"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-5 gap-1.5 pt-2 border-t border-slate-800 pb-1">
+                                    <button type="button" onclick="window.insertVpbOperator(' + ')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-black text-sm py-1.5 transition-colors cursor-pointer shadow-sm">+</button>
+                                    <button type="button" onclick="window.insertVpbOperator(' - ')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-black text-sm py-1.5 transition-colors cursor-pointer shadow-sm">-</button>
+                                    <button type="button" onclick="window.insertVpbOperator(' * ')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-black text-sm py-1.5 transition-colors cursor-pointer shadow-sm">&times;</button>
+                                    <button type="button" onclick="window.insertVpbOperator('(')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-black text-sm py-1.5 transition-colors cursor-pointer shadow-sm">(</button>
+                                    <button type="button" onclick="window.insertVpbOperator(')')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-black text-sm py-1.5 transition-colors cursor-pointer shadow-sm">)</button>
+                                    
+                                    <button type="button" onclick="window.insertVpbOperator(' == ')" class="col-span-2 bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-bold text-[10px] py-1.5 transition-colors cursor-pointer shadow-sm">SAMA (==)</button>
+                                    <button type="button" onclick="window.insertVpbOperator(' != ')" class="col-span-2 bg-slate-950 hover:bg-slate-800 border border-slate-750 text-slate-300 rounded font-bold text-[10px] py-1.5 transition-colors cursor-pointer shadow-sm">BEDA (!=)</button>
+                                    <button type="button" onclick="window.insertVpbOperator(' THEN ')" class="bg-slate-950 hover:bg-slate-800 border border-slate-750 text-purple-400 rounded font-bold text-[10px] py-1.5 transition-colors cursor-pointer shadow-sm">TARGET(->)</button>
+                                </div>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button type="button" onclick="window.insertVpbOperator('ML(')" class="bg-emerald-900/30 hover:bg-emerald-600/50 border border-emerald-500/30 text-emerald-300 rounded font-bold text-[9px] py-1.5 transition-colors cursor-pointer">MISTIK LAMA()</button>
+                                    <button type="button" onclick="window.insertVpbOperator('MB(')" class="bg-emerald-900/30 hover:bg-emerald-600/50 border border-emerald-500/30 text-emerald-300 rounded font-bold text-[9px] py-1.5 transition-colors cursor-pointer">MISTIK BARU()</button>
+                                    <button type="button" onclick="window.insertVpbOperator('IND(')" class="bg-emerald-900/30 hover:bg-emerald-600/50 border border-emerald-500/30 text-emerald-300 rounded font-bold text-[9px] py-1.5 transition-colors cursor-pointer">INDEX()</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Target Variable & Generate Prompt -->
+                        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 space-y-3 relative mt-2">
+                            <span class="text-[10px] font-black text-slate-400 flex items-center gap-2 select-none uppercase tracking-widest absolute -top-3 left-4 bg-slate-900 px-2">
+                                <span class="bg-emerald-500/10 text-emerald-400 font-black h-5 w-5 rounded-full flex items-center justify-center text-[10px]">2</span>
+                                GENERATE AI PROMPT
+                            </span>
+                            
+                            <div class="grid grid-cols-1 gap-2.5 mt-2">
+                                <div>
+                                    <label class="text-[9px] uppercase font-bold text-slate-400 block mb-1">Tujuan Prediksi:</label>
+                                    <select id="vpb-studio-target-variable" class="w-full text-xs bg-slate-900 border border-slate-750 rounded-lg p-2.5 text-slate-200 outline-none focus:border-emerald-500">
+                                        <option value="BBFS">Mereset / Meracik BBFS</option>
+                                        <option value="AM_AI">Angka Main / Angka Ikut</option>
+                                        <option value="4D_3D_2D">Prediksi 4D 3D 2D</option>
+                                        <option value="JITU_2D">Menentukan Angka Jitu 2D</option>
+                                        <option value="SHIO">Mengkaji Pola Shio</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="window.generateVpbSpreadsheetPrompt()" class="w-full bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-xs font-black text-white py-3 px-4 rounded-xl uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-95">
+                                <i class="ph-bold ph-cpu text-sm animate-spin [animation-duration:3s]"></i> GENERATE KE KALIMAT AI
+                            </button>
+                        </div>
+
+                        <!-- Generated Formula Box -->
+                        <div id="vpb-studio-result-box" class="hidden space-y-2.5 animate-fade-in bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/20">
+                            <div class="flex items-center gap-1.5 text-xs font-extrabold text-emerald-400">
+                                <i class="ph-fill ph-check-circle text-emerald-400 animate-bounce"></i> INTRODUKSI POLA MANUAL DIASILKAN:
+                            </div>
+
+                            <textarea id="vpb-studio-output-text" class="w-full p-3 rounded-xl bg-slate-950 border border-emerald-500/20 text-xs text-emerald-400 font-mono h-32 outline-none leading-relaxed shadow-inner" placeholder="Pola hasil rumusan..."></textarea>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="window.applyVpbStudioSpreadsheetFormula()" class="col-span-2 bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 border border-transparent text-xs font-black text-white py-2.5 rounded-lg uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                                    <i class="ph-bold ph-plus"></i> GUNAKAN RUMUS AI INI
+                                </button>
+                                <button type="button" onclick="window.closeVpbStudioModal()" class="col-span-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-black text-slate-300 hover:text-white py-2.5 rounded-lg uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                                    <i class="ph-bold ph-x"></i> TUTUP DIALOG
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT CONTENT AREA: Massive Fullscreen Interactive Table Grid (Width 60%) -->
+                <div id="vpb-right-content-wrapper" class="flex-1 flex flex-col h-[50%] lg:h-full relative bg-slate-950 select-none">
+                    
+                    <!-- Table Grid Floating Header Bar (Zoom controls, status) -->
+                    <div class="absolute top-4 right-4 z-10 flex gap-2 items-center bg-slate-900/90 backdrop-blur border border-slate-800 p-2 rounded-xl shadow-lg">
+                        <span class="text-[10px] text-slate-400 uppercase font-black px-1 flex items-center gap-1.5">
+                            <span class="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span> Ukuran Sel:
+                        </span>
+                        <button type="button" onclick="window.zoomVpbTable(-4)" class="px-2.5 py-1 text-xs text-white bg-slate-800 hover:bg-slate-700/80 rounded border border-slate-700 transition-all font-bold cursor-pointer">-</button>
+                        <button type="button" onclick="window.zoomVpbTable(4)" class="px-2.5 py-1 text-xs text-white bg-slate-800 hover:bg-slate-700/80 rounded border border-slate-700 transition-all font-bold cursor-pointer">+</button>
+                    </div>
+
+                    <!-- Inner Scrollable Table Box -->
+                    <div id="vpb-studio-table-scrollbox" class="flex-1 overflow-auto p-3 md:p-6 custom-scrollbar relative min-h-0 min-w-0 bg-slate-950/40">
+                        <div id="vpb-studio-table-container" class="transition-all duration-300 min-w-max mx-auto flex justify-center py-2">
+                            <!-- Mass-rendered comfortable table will go here -->
+                            <div class="text-center p-12 text-slate-500 max-w-sm">
+                                <i class="ph-bold ph-hash text-5xl text-slate-700 mb-2 animate-pulse"></i>
+                                <p class="font-extrabold text-slate-400 text-sm">Menunggu Data Pasaran...</p>
+                                <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">Pilih pasaran di menu sebelah kiri. Sistem akan memuat data histori 4D terlengkap dengan ukuran sel yang lapang dan nyaman untuk Anda pilah.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer Info Bar inside the Grid Panel -->
+                    <div class="p-3 border-t border-slate-805 bg-slate-900/40 shrink-0 flex flex-col sm:flex-row items-center sm:justify-between text-[11px] text-slate-500 gap-1 select-none leading-none">
+                        <span class="flex items-center gap-1"><i class="ph-bold ph-info"></i> Klik sel untuk memilih angka. Kombinasikan beberapa simpul di kiri untuk membuat instruksi kalkulasi silang.</span>
+                        <span class="font-mono text-[9px] uppercase font-bold bg-slate-900/90 text-slate-500 px-2 py-0.5 rounded border border-slate-800">BARIS H0 = RESULT TERBARU</span>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
