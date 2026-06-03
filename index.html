@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#10b981">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon.svg">
-    <title>SupremeTOTO versi 77</title>
+    <title>SupremeTOTO versi 78</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -52,7 +52,7 @@
                     <div class="bg-emerald-500 p-2 rounded-xl text-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.4)]"><i class="ph-fill ph-crown text-xl"></i></div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 77</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 78</span>
                     </div>
                 </div>
             </div>
@@ -1229,6 +1229,17 @@
         </div>
     </div>
 
+    <div id="pwa-install-banner" class="hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-emerald-600 text-white p-3 flex flex-col justify-between items-start text-xs font-bold z-50 rounded-xl shadow-lg shadow-emerald-500/20 border border-emerald-400 gap-3">
+        <div class="flex items-center gap-2">
+            <i class="ph-bold ph-download-simple text-xl"></i>
+            <span>Install SupremeTOTO ke Layar Utama Anda untuk akses lebih cepat!</span>
+        </div>
+        <div class="flex items-center gap-2 w-full justify-end">
+            <button id="pwa-install-btn" class="bg-white text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors uppercase tracking-wider text-[10px]">Install</button>
+            <button id="pwa-close-btn" class="text-emerald-100 hover:text-white px-2 py-1"><i class="ph-bold ph-x text-lg"></i></button>
+        </div>
+    </div>
+
     <script type="module" src="/src/script.ts"></script>
     <script>
       if ('serviceWorker' in navigator) {
@@ -1239,6 +1250,38 @@
             console.log('SW registration failed: ', registrationError);
           });
         });
+      }
+
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBanner = document.getElementById('pwa-install-banner');
+        if(installBanner) installBanner.classList.remove('hidden');
+      });
+
+      const installBtn = document.getElementById('pwa-install-btn');
+      if(installBtn) {
+        installBtn.addEventListener('click', async () => {
+          const installBanner = document.getElementById('pwa-install-banner');
+          if(installBanner) installBanner.classList.add('hidden');
+          
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+          }
+        });
+      }
+
+      const pwaCloseBtn = document.getElementById('pwa-close-btn');
+      if(pwaCloseBtn) {
+          pwaCloseBtn.addEventListener('click', () => {
+              const installBanner = document.getElementById('pwa-install-banner');
+              if(installBanner) installBanner.classList.add('hidden');
+          });
       }
     </script>
 </body>
