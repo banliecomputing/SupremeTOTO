@@ -5090,6 +5090,11 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         (window as any).sandinganConfig = {};
     }
 
+    const glbSandInput = document.getElementById('global-sand-prompt') as HTMLTextAreaElement;
+    if(glbSandInput && (window as any).sandinganConfig.globalPrompt) {
+        glbSandInput.value = (window as any).sandinganConfig.globalPrompt;
+    }
+
     // Load Syair Template
     try {
         const localSyair = localStorage.getItem('superemetoto_settings_syair_template');
@@ -5226,6 +5231,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                         if (docSnap.exists()) {
                             (window as any).sandinganConfig = docSnap.data();
                             localStorage.setItem('superemetoto_settings_sandingan_config', JSON.stringify((window as any).sandinganConfig));
+                            const glbSandInput = document.getElementById('global-sand-prompt') as HTMLTextAreaElement;
+                            if(glbSandInput && (window as any).sandinganConfig.globalPrompt) {
+                                glbSandInput.value = (window as any).sandinganConfig.globalPrompt;
+                            }
                         }
                     });
 
