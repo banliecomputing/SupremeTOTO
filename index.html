@@ -7,7 +7,7 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.png">
     <link rel="icon" href="./icon.png">
-    <title>SupremeTOTO versi 84</title>
+    <title>SupremeTOTO versi 85</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -19,32 +19,33 @@
     <div class="flex flex-col h-[100dvh] w-full mx-auto bg-slate-900 relative shadow-2xl overflow-hidden" id="main-app-container">
         
         <!-- Header -->
-        <header class="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center z-40 shadow-md shrink-0">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleMainNav()" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-emerald-400 transition-colors shadow-inner">
-                    <i class="ph-bold ph-list text-xl"></i>
+        <header class="bg-slate-800 p-3 sm:p-4 border-b border-slate-700 flex justify-between items-center z-40 shadow-md shrink-0 gap-2">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <button onclick="toggleMainNav()" class="p-1.5 sm:p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-emerald-400 transition-colors shadow-inner shrink-0">
+                    <i class="ph-bold ph-list text-lg sm:text-xl"></i>
                 </button>
-                <h1 id="header-title" class="font-bold text-lg tracking-tight uppercase text-white">LIVE RESULT</h1>
+                <h1 id="header-title" class="font-bold text-sm sm:text-lg tracking-tight uppercase text-white truncate">LIVE RESULT</h1>
             </div>
             
-            <div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- DB Status Indicator -->
-                <div class="flex items-center gap-1.5 bg-slate-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-slate-700/50 shrink-0" id="cloud-indicator" title="Koneksi Database Cloud">
-                    <span class="text-[9px] sm:text-[10px] text-slate-400 font-extrabold tracking-wider" id="cloud-status-text">DB: CEK...</span>
-                    <i class="ph-fill ph-circle text-[7px] sm:text-[8px] text-amber-500 animate-pulse shrink-0" id="cloud-status-icon"></i>
-                </div>
-                <!-- Gemini AI Status Indicator -->
-                <div class="flex items-center gap-1.5 bg-slate-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-slate-700/50 shrink-0" id="gemini-indicator" title="Status Engine Gemini AI">
-                    <span class="text-[9px] sm:text-[10px] text-emerald-400 font-extrabold tracking-wider" id="gemini-status-text">AI: SIAP</span>
-                    <i class="ph-fill ph-circle text-[7px] sm:text-[8px] text-emerald-500 shrink-0" id="gemini-status-icon"></i>
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <!-- Status Indicators Stacked -->
+                <div class="flex flex-col gap-0.5 bg-slate-900 px-1.5 py-1 rounded border border-slate-700/50 shrink-0 min-w-[55px]">
+                    <div class="flex items-center justify-between gap-1" id="cloud-indicator" title="Koneksi Database Cloud">
+                        <span class="text-[8px] text-slate-400 font-extrabold tracking-wider leading-none truncate" id="cloud-status-text">DB: CEK...</span>
+                        <i class="ph-fill ph-circle text-[6px] text-amber-500 animate-pulse shrink-0" id="cloud-status-icon"></i>
+                    </div>
+                    <div class="flex items-center justify-between gap-1" id="gemini-indicator" title="Status Engine Gemini AI">
+                        <span class="text-[8px] text-emerald-400 font-extrabold tracking-wider leading-none" id="gemini-status-text">AI: SIAP</span>
+                        <i class="ph-fill ph-circle text-[6px] text-emerald-500 shrink-0" id="gemini-status-icon"></i>
+                    </div>
                 </div>
                 <!-- Tombol Refresh -->
-                <button onclick="window.location.reload()" id="btn-refresh" class="p-1.5 bg-slate-900 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title="Muat Ulang">
-                    <i class="ph-bold ph-arrows-clockwise text-lg"></i>
+                <button onclick="window.location.reload()" id="btn-refresh" class="p-1.5 sm:p-2 bg-slate-900 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors shrink-0" title="Muat Ulang">
+                    <i class="ph-bold ph-arrows-clockwise text-base sm:text-lg"></i>
                 </button>
                 <!-- Tombol Fullscreen -->
-                <button onclick="toggleFullScreen()" id="btn-fullscreen" class="p-1.5 bg-slate-900 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
-                    <i class="ph-bold ph-arrows-out text-lg" id="icon-fullscreen"></i>
+                <button onclick="toggleFullScreen()" id="btn-fullscreen" class="p-1.5 sm:p-2 bg-slate-900 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors shrink-0">
+                    <i class="ph-bold ph-arrows-out text-base sm:text-lg" id="icon-fullscreen"></i>
                 </button>
             </div>
         </header>
@@ -59,7 +60,7 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 84</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 85</span>
                     </div>
                 </div>
             </div>

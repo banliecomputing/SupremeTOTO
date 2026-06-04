@@ -256,19 +256,19 @@ function writeBatch(dbInstance: any) {
     if (!textEl || !iconEl) return;
     
     if (status === 'ready') {
-        textEl.className = "text-[9px] sm:text-[10px] text-emerald-400 font-extrabold tracking-wider";
+        textEl.className = "text-[8px] text-emerald-400 font-extrabold tracking-wider leading-none truncate";
         textEl.innerHTML = `AI: SIAP`;
-        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-emerald-500 shrink-0";
+        iconEl.className = "ph-fill ph-circle text-[6px] text-emerald-500 shrink-0";
         textEl.parentElement?.setAttribute('title', "Gemini AI: Siap digunakan.");
     } else if (status === 'loading') {
-        textEl.className = "text-[9px] sm:text-[10px] text-purple-400 font-extrabold tracking-wider animate-pulse";
+        textEl.className = "text-[8px] text-purple-400 font-extrabold tracking-wider leading-none truncate animate-pulse";
         textEl.innerHTML = `AI: PROSES`;
-        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-purple-500 animate-pulse shrink-0";
+        iconEl.className = "ph-fill ph-circle text-[6px] text-purple-500 animate-pulse shrink-0";
         textEl.parentElement?.setAttribute('title', "Gemini AI: Sedang memproses analisis.");
     } else if (status === 'failed') {
-        textEl.className = "text-[9px] sm:text-[10px] text-red-500 font-extrabold tracking-wider";
+        textEl.className = "text-[8px] text-red-500 font-extrabold tracking-wider leading-none truncate";
         textEl.innerHTML = `AI: GAGAL`;
-        iconEl.className = "ph-fill ph-circle text-[7px] sm:text-[8px] text-red-500 shrink-0 animate-pulse";
+        iconEl.className = "ph-fill ph-circle text-[6px] text-red-500 shrink-0 animate-pulse";
         textEl.parentElement?.setAttribute('title', message || "Gemini AI: Gagal. Klik Mulai untuk detail.");
     }
 };
@@ -1238,7 +1238,10 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     
     if (pathPrompts.length > 0) {
         const allPromptsText = pathPrompts.map((p: any) => `[POLA: ${p.title}]\n${p.text}`).join("\n\n");
-        aiSel.innerHTML += `<option value="${allPromptsText}">✨ POLA MASTER (BACA SEMUA KHUSUS PASARAN INI) ✨</option>`;
+        const masterOpt = document.createElement('option');
+        masterOpt.value = allPromptsText;
+        masterOpt.innerText = "✨ POLA MASTER (BACA SEMUA KHUSUS PASARAN INI) ✨";
+        aiSel.appendChild(masterOpt);
     }
     
     pathPrompts.forEach((pr: any) => {
@@ -5010,12 +5013,12 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     // Update Header Status Indicator to highlight Mode Mandiri (Local)
     const statusText = document.getElementById('cloud-status-text');
     if (statusText) {
-        statusText.className = "text-[9px] sm:text-[10px] text-amber-400 font-extrabold tracking-wider shrink-0";
-        statusText.innerHTML = `<i class="ph-fill ph-git-fork font-bold"></i> MANDIRI`;
+        statusText.className = "text-[8px] text-amber-400 font-extrabold tracking-wider leading-none truncate";
+        statusText.innerHTML = `DB: LOKAL`;
     }
     const statusIcon = document.getElementById('cloud-status-icon');
     if (statusIcon) {
-        statusIcon.className = "ph-fill ph-circle text-[8px] text-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse";
+        statusIcon.className = "ph-fill ph-circle text-[6px] text-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse";
     }
 
     // Update Status Info in Admin panel
@@ -5155,12 +5158,12 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
                     (window as any).cloudUserId = user.uid;
                     const statusText = document.getElementById('cloud-status-text');
                     if(statusText) {
-                        statusText.className = "text-[9px] sm:text-[10px] text-emerald-500 font-extrabold tracking-wider shrink-0";
-                        statusText.innerHTML = `<i class="ph-fill ph-cloud-check"></i> AKTIF`;
+                        statusText.className = "text-[8px] text-emerald-500 font-extrabold tracking-wider leading-none truncate";
+                        statusText.innerHTML = `DB: AKTIF`;
                     }
                     const statusIcon = document.getElementById('cloud-status-icon');
                     if (statusIcon) {
-                        statusIcon.className = "ph-fill ph-circle text-[8px] text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
+                        statusIcon.className = "ph-fill ph-circle text-[6px] text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
                     }
                     
                     const pid = document.getElementById('active-project-id');
