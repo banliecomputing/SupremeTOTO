@@ -666,6 +666,15 @@ document.addEventListener('fullscreenchange', () => {
     if(tabName === 'live') (window as any).fetchAllLiveResults();
     if(tabName === 'bukumimpi') (window as any).renderBukuMimpi();
     
+    if(tabName === 'tabel') {
+        const poolSel = document.getElementById('pool-selector') as HTMLSelectElement;
+        if(poolSel) (window as any).updateSyncTimeUI(false, poolSel.value);
+    }
+    if(tabName === 'ai') {
+        const aiPoolSel = document.getElementById('ai-pool-selector') as HTMLSelectElement;
+        if(aiPoolSel) (window as any).updateSyncTimeUI(true, aiPoolSel.value);
+    }
+    
     const d = document.getElementById('main-nav-drawer');
     if(d && d.classList.contains('translate-x-0')) (window as any).toggleMainNav();
 };
@@ -1464,6 +1473,29 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     }
 };
 
+(window as any).updateSyncTimeUI = (isAI: boolean, poolId: string) => {
+    const syncInfoTabel = document.getElementById('sync-info-tabel');
+    const syncTimeTabel = document.getElementById('sync-time-tabel');
+    const syncInfoAi = document.getElementById('sync-info-ai');
+    const syncTimeAi = document.getElementById('sync-time-ai');
+    
+    if (!poolId) {
+        if (syncInfoTabel) syncInfoTabel.classList.add('hidden');
+        if (syncInfoAi) syncInfoAi.classList.add('hidden');
+        return;
+    }
+    
+    const lastSyncTime = localStorage.getItem(`last_sync_${poolId}`) || "Belum disinkronkan";
+    
+    if (isAI) {
+        if (syncTimeAi) syncTimeAi.innerText = lastSyncTime;
+        if (syncInfoAi) syncInfoAi.classList.remove('hidden');
+    } else {
+        if (syncTimeTabel) syncTimeTabel.innerText = lastSyncTime;
+        if (syncInfoTabel) syncInfoTabel.classList.remove('hidden');
+    }
+};
+
 (window as any).fetchTableData = async (isAI = false, isSilentPreview = false) => {
     const selId = isAI ? 'ai-pool-selector' : 'pool-selector';
     const poolSelector = document.getElementById(selId) as HTMLSelectElement;
@@ -1473,12 +1505,20 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     
     if (!poolId && container) {
         container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-600"><i class="ph ph-table text-5xl mb-2 opacity-20"></i><p class="text-sm">Pilih pasaran</p></div>`;
+        (window as any).updateSyncTimeUI(isAI, '');
         return;
     }
 
     const targetPool = (window as any).pools.find((p:any) => p.id == poolId);
-    if(!targetPool) return;
+    if(!targetPool) {
+        (window as any).updateSyncTimeUI(isAI, '');
+        return;
+    }
     if(isAI) (window as any).currentAnalyzedPoolName = targetPool.name;
+    
+    // Update showing sync time immediately if found in cache
+    (window as any).updateSyncTimeUI(isAI, poolId);
+
     if(container) container.innerHTML = `<div class="flex flex-col items-center justify-center h-full"><i class="ph ph-spinner-gap animate-spin text-4xl text-emerald-500 mb-3"></i><p class="text-sm font-bold text-emerald-400">Merakit Data...</p></div>`;
 
     try {
@@ -1488,6 +1528,14 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
         
         if (sheetId && targetPool.sheetName) {
             const csvData = await fetchSpreadsheetTab(sheetId, targetPool.sheetName, "", targetPool.rangeHistory);
+            
+            // Save sync timestamp
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            localStorage.setItem(`last_sync_${poolId}`, `${dateStr}, ${timeStr}`);
+            (window as any).updateSyncTimeUI(isAI, poolId);
+
             const rows = csvData.split('\n');
             rows.forEach(row => {
                 const cleanRow = row.trim();
@@ -1498,6 +1546,14 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
             });
         } else {
             const htmlContent = await (window as any).robustFetch(targetPool.urlHistory);
+            
+            // Save sync timestamp
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            localStorage.setItem(`last_sync_${poolId}`, `${dateStr}, ${timeStr}`);
+            (window as any).updateSyncTimeUI(isAI, poolId);
+
             const docParser = new DOMParser().parseFromString(htmlContent, 'text/html');
             const tables = docParser.querySelectorAll('table');
             if (tables.length > 0) {
