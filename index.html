@@ -7,7 +7,7 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.png">
     <link rel="icon" href="./icon.png">
-    <title>SupremeTOTO versi 85</title>
+    <title>SupremeTOTO versi 86</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -19,8 +19,8 @@
     <div class="flex flex-col h-[100dvh] w-full mx-auto bg-slate-900 relative shadow-2xl overflow-hidden" id="main-app-container">
         
         <!-- Header -->
-        <header class="bg-slate-800 p-3 sm:p-4 border-b border-slate-700 flex justify-between items-center z-40 shadow-md shrink-0 gap-2">
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <header class="bg-slate-800 p-3 sm:p-4 border-b border-slate-700 flex justify-between items-center z-40 shadow-md shrink-0 gap-2 w-full">
+            <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <button onclick="toggleMainNav()" class="p-1.5 sm:p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-emerald-400 transition-colors shadow-inner shrink-0">
                     <i class="ph-bold ph-list text-lg sm:text-xl"></i>
                 </button>
@@ -60,7 +60,7 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 85</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 86</span>
                     </div>
                 </div>
             </div>
@@ -164,8 +164,8 @@
                         </div>
                     </div>
                     
-                    <div id="panel-export-syair" class="hidden py-1.5 px-4 bg-slate-900 border-t border-slate-800 shrink-0 shadow-[0_-5px_10px_rgba(0,0,0,0.3)]">
-                        <button onclick="openSyairEditor()" class="w-full max-w-sm mx-auto block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-extrabold tracking-wider py-1.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs uppercase">
+                    <div id="panel-export-syair" class="hidden py-3 px-4 bg-slate-900 border-t border-slate-800 shrink-0 shadow-[0_-5px_10px_rgba(0,0,0,0.3)] pb-6 sm:pb-3 w-full">
+                        <button onclick="openSyairEditor()" class="w-full max-w-sm mx-auto block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-extrabold tracking-wider py-2.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs sm:text-sm uppercase">
                             <i class="ph-fill ph-paint-brush-broad text-base"></i> Studio Syair PNG
                         </button>
                     </div>
