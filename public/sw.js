@@ -1,4 +1,4 @@
-const CACHE_NAME = 'supreme-toto-v5';
+const CACHE_NAME = 'supreme-toto-v7';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -7,7 +7,7 @@ self.addEventListener('install', (e) => {
       return cache.addAll([
         './',
         './index.html',
-        './icon.svg',
+        './icon.png',
         './manifest.json'
       ]);
     })
