@@ -595,6 +595,12 @@ document.addEventListener('fullscreenchange', () => {
             <h4 class="text-xs md:text-sm uppercase font-bold text-blue-400 tracking-wider flex items-center gap-2 mb-2"><i class="ph-fill ph-database"></i> Data Sandingan (Multi-Sheet)</h4>
             ${sourcesInfo}
         </div>
+        
+        <div class="mt-2 bg-slate-900 border-t border-slate-800 pt-4">
+            <button onclick="window.previewRawPrompt()" class="w-full bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold py-3 rounded-xl shadow-md border border-slate-700 focus:border-cyan-500 transition-all flex justify-center items-center gap-2 text-xs uppercase tracking-wider">
+                <i class="ph-bold ph-database text-lg"></i> Pratinjau Data Mentah (Histori & Sandingan)
+            </button>
+        </div>
     `;
 
     modal.classList.remove('hidden');
@@ -611,6 +617,62 @@ document.addEventListener('fullscreenchange', () => {
         document.getElementById('ai-scenario-content')!.classList.replace('scale-100', 'scale-95');
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
+};
+
+(window as any).previewRawPrompt = async () => {
+    const sel = document.getElementById('ai-pool-selector') as HTMLSelectElement;
+    if(!sel || !sel.value) return (window as any).showToast("Pilih pasaran target dulu!", true);
+
+    const prevModal = document.getElementById('table-preview-modal');
+    const body = document.getElementById('table-preview-body');
+    const title = document.getElementById('table-preview-title');
+    if(!prevModal || !body || !title) return;
+
+    (window as any).closeAIScenario();
+    
+    title.innerHTML = `<i class="ph-fill ph-database"></i> Pratinjau Data Mentah Aktual`;
+    body.innerHTML = `<div class="flex flex-col items-center justify-center h-full"><i class="ph-fill ph-spinner-gap animate-spin text-5xl text-cyan-500 mb-3"></i><p class="text-slate-400 text-sm">Menyusun Data & Mengunduh Sandingan...</p></div>`;
+    
+    prevModal.classList.remove('hidden');
+    setTimeout(() => { 
+        prevModal.classList.replace('opacity-0', 'opacity-100'); 
+        document.getElementById('table-preview-content')!.classList.replace('scale-95', 'scale-100'); 
+    }, 10);
+
+    let rawDataDisplay = "";
+
+    const activeSources = ((window as any).extraSources || []).filter((s:any) => s.active);
+    if (activeSources.length > 0) {
+        try {
+            for (let s of activeSources) {
+                if (s.sheetId && s.sheetName) {
+                    const csvData = await fetchSpreadsheetTab(s.sheetId, s.sheetName, s.query, s.range);
+                    rawDataDisplay += `\n[DATA SANDINGAN: ${s.title}]\nInstruksi/Teks: ${s.prompt}\nData Tabel:\n${csvData}\n`;
+                } else if (s.prompt) {
+                    rawDataDisplay += `\n[DATA SANDINGAN (TEKS SAJA): ${s.title}]\nInstruksi/Teks:\n${s.prompt}\n`;
+                }
+            }
+        } catch(e) {
+            rawDataDisplay += `\n[GAGAL MENARIK BEBERAPA DATA SANDINGAN]\n`;
+        }
+    }
+
+    const currentTableData = (window as any).currentTableData || [];
+    rawDataDisplay += `\n[DATA HISTORI (Maksimal 50 baris terakhir)]:\n`;
+    if (currentTableData.length > 0) {
+        rawDataDisplay += JSON.stringify(currentTableData.slice(0, 50), null, 2);
+    } else {
+        rawDataDisplay += `(Data histori tabel kosong atau belum termuat)`;
+    }
+
+    const safeHtml = rawDataDisplay.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    body.innerHTML = `
+        <div class="bg-cyan-500/10 border border-cyan-500/30 p-4 rounded-lg mb-4 text-cyan-400 text-sm font-bold flex gap-3">
+            <i class="ph-fill ph-info text-2xl"></i>
+            <p>Data mentah ini merupakan input data aktual yang disediakan ke dalam sistem AI, mencakup data Sandingan (jika ada) dan data rekap/histori Pasaran.</p>
+        </div>
+        <pre class="bg-slate-950 p-4 rounded-lg border border-slate-800 text-slate-400 text-xs shadow-inner overflow-auto whitespace-pre-wrap word-break tracking-wide font-mono h-[60vh] select-all">${safeHtml}</pre>
+    `;
 };
 
 (window as any).toggleAIControls = (forceHide = false) => {
@@ -1843,10 +1905,10 @@ const fetchSpreadsheetTab = async (sheetId: string, sheetName: string, query = "
     const range = (document.getElementById('sand-range') as HTMLInputElement).value;
     const query = (document.getElementById('sand-query') as HTMLInputElement).value;
     const prompt = (document.getElementById('sand-prompt') as HTMLInputElement).value;
-    const sheetId = getSpreadsheetId(url);
+    const sheetId = getSpreadsheetId(url) || "";
 
-    if (!sheetId) {
-        (window as any).showToast("URL Google Sheets tidak valid. Harus mengandung /d/.../", true);
+    if (url && url.trim().length > 0 && !sheetId) {
+        (window as any).showToast("URL Google Sheets disertakan tapi tidak valid. Harus mengandung /d/.../", true);
         btn.innerHTML = `<i class="ph-bold ph-floppy-disk text-lg"></i> SIMPAN`;
         btn.disabled = false;
         return;
@@ -4309,26 +4371,22 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 3. **PANTANGAN UTAMA (ANTI-DUPLIKASI)**: Di dalam teks paragraf penjelasan, hindari mengulang kembali atau mendaftar kembali angka jitu/BBFS mentah yang persis sama dengan yang sudah tertulis di dalam Tabel Markdown atau di format variabel di atas. Fokuskan penjelasan teks pada dasar teori pola, ulasan peristiwa draf sebelumnya, korelasi sandingan, dan alasan rasional pemilihan angka, sehingga tidak terjadi pengulangan informasi jitu yang redundan dan tampak amatir.
 `;
 
-    const toggleSandinganEl = document.getElementById('toggle-sandingan') as HTMLInputElement;
-    const useSandingan = toggleSandinganEl ? toggleSandinganEl.checked : false;
     let sandinganDataText = "";
-    if (useSandingan) {
-        const activeSources = (window as any).extraSources.filter((s:any) => s.active);
-        if (activeSources.length === 0) {
-            (window as any).showToast("Tombol Hub: Data Sandingan aktif, tapi Anda belum membuat sumber Sandingan aktif di setting.", true);
-        } else {
-             (window as any).showToast(`Menarik ${activeSources.length} sumber data sandingan tambahan...`);
-             try {
-                for (let s of activeSources) {
-                    if (s.sheetId && s.sheetName) {
-                        const csvData = await fetchSpreadsheetTab(s.sheetId, s.sheetName, s.query, s.range);
-                        sandinganDataText += `\n[DATA SANDINGAN: ${s.title}]\nInstruksi Sandingan Ini: ${s.prompt}\nData:\n${csvData}\n`;
-                    }
+    const activeSources = ((window as any).extraSources || []).filter((s:any) => s.active);
+    if (activeSources.length > 0) {
+        (window as any).showToast(`Menarik ${activeSources.length} sumber data sandingan tambahan...`);
+        try {
+            for (let s of activeSources) {
+                if (s.sheetId && s.sheetName) {
+                    const csvData = await fetchSpreadsheetTab(s.sheetId, s.sheetName, s.query, s.range);
+                    sandinganDataText += `\n[DATA SANDINGAN: ${s.title}]\nInstruksi Sandingan Ini: ${s.prompt}\nData:\n${csvData}\n`;
+                } else if (s.prompt) {
+                    sandinganDataText += `\n[DATA SANDINGAN (TEKS SAJA): ${s.title}]\nInstruksi/Teks:\n${s.prompt}\n`;
                 }
-             } catch(e) {
-                 console.error("Error tarik sandingan:", e);
-                 (window as any).showToast("Peringatan: Gagal menarik beberapa data sandingan.", true);
-             }
+            }
+        } catch(e) {
+            console.error("Error tarik sandingan:", e);
+            (window as any).showToast("Peringatan: Gagal menarik beberapa data sandingan.", true);
         }
     }
 
