@@ -6,6 +6,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { initializeFirestore, collection, doc, setDoc as firebaseSetDoc, deleteDoc as firebaseDeleteDoc, onSnapshot, writeBatch as firebaseWriteBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 import backupData from './backup.json';
+import * as htmlToImage from 'html-to-image';
 
 const CUSTOM_FIREBASE_CONFIG = {
     apiKey: "AIzaSyBqfSNZKbLjGm-bDMwpC0cTjDhGJdOOAhU",
@@ -4770,12 +4771,15 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
             }
         }
 
-        // Generate canvas via html2canvas with localized resources
-        const canvas = await (window as any).html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null });
+        // Generate canvas via html-to-image to support modern CSS like oklch
+        const dataUrl = await htmlToImage.toPng(el as HTMLElement, { 
+            pixelRatio: 2, 
+            style: { transform: 'scale(1)', transformOrigin: 'top left' }
+        });
         
         const link = document.createElement('a');
         link.download = `syair-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.href = dataUrl;
         link.click();
         
         (window as any).showToast("Ekspor PNG Berhasil!");
