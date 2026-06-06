@@ -7,9 +7,14 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon.png">
     <link rel="icon" href="./icon.png">
-    <title>SupremeTOTO versi 91</title>
+    <title>SupremeTOTO versi 94</title>
     
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/thin/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" crossorigin="anonymous">
     <link rel="stylesheet" href="./src/style.css">
 </head>
 <body class="bg-slate-950 text-slate-200 antialiased overflow-hidden font-sans">
@@ -59,7 +64,7 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="font-black tracking-tighter text-xl text-white drop-shadow-lg leading-tight">SupremeTOTO</span>
-                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 91</span>
+                        <span class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">Versi 94</span>
                     </div>
                 </div>
             </div>
@@ -187,9 +192,14 @@
                     </div>
                     
                     <div id="panel-export-syair" class="hidden py-3 px-4 bg-slate-900 border-t border-slate-800 shrink-0 shadow-[0_-5px_10px_rgba(0,0,0,0.3)] pb-6 sm:pb-3 w-full">
-                        <button onclick="openSyairEditor()" class="w-full max-w-sm mx-auto block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-extrabold tracking-wider py-2.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs sm:text-sm uppercase">
-                            <i class="ph-fill ph-paint-brush-broad text-base"></i> Studio Syair PNG
-                        </button>
+                        <div class="max-w-md mx-auto flex gap-2">
+                            <button onclick="downloadHasilPDF()" class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold tracking-wider py-2.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs sm:text-sm uppercase">
+                                <i class="ph-bold ph-file-pdf text-base mt-[-2px]"></i> Simpan PDF
+                            </button>
+                            <button onclick="openSyairEditor()" class="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-extrabold tracking-wider py-2.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1.5 text-xs sm:text-sm uppercase">
+                                <i class="ph-fill ph-paint-brush-broad text-base"></i> Studio Syair PNG
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

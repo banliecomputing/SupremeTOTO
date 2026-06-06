@@ -7,6 +7,7 @@ import { initializeFirestore, collection, doc, setDoc as firebaseSetDoc, deleteD
 
 import backupData from './backup.json';
 import * as htmlToImage from 'html-to-image';
+import jsPDF from 'jspdf';
 
 const CUSTOM_FIREBASE_CONFIG = {
     apiKey: "AIzaSyBqfSNZKbLjGm-bDMwpC0cTjDhGJdOOAhU",
@@ -4794,6 +4795,74 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
         });
         btn.innerHTML = oriHTML;
         btn.disabled = false;
+    }
+};
+
+(window as any).downloadHasilPDF = async () => {
+    const el = document.getElementById('hasil-analisis');
+    if (!el) return;
+    
+    // Create loading overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-slate-900/90 z-[9999] flex flex-col items-center justify-center';
+    overlay.innerHTML = `<i class="ph-bold ph-spinner-gap animate-spin text-4xl text-rose-500 mb-3"></i><p class="text-slate-300 font-bold uppercase tracking-wider text-sm">Menghasilkan PDF...</p>`;
+    document.body.appendChild(overlay);
+
+    const originalCssText = el.style.cssText;
+
+    try {
+        const targetWidth = Math.max(el.scrollWidth, 768); // minimal desktop-like width 
+        
+        el.style.width = `${targetWidth}px`;
+        el.style.maxWidth = 'none';
+        el.style.padding = '32px';
+        el.style.margin = '0';
+        el.style.height = 'max-content';
+        el.style.maxHeight = 'none';
+        el.style.overflow = 'visible';
+
+        // wait an event loop tick so DOM updates
+        await new Promise(r => setTimeout(r, 100));
+
+        const dataUrl = await htmlToImage.toJpeg(el as HTMLElement, { 
+            quality: 0.8,
+            pixelRatio: 1.5,
+            width: el.scrollWidth,
+            height: el.scrollHeight,
+            backgroundColor: '#0f172a', // slate-900
+            style: { 
+                transform: 'scale(1)', 
+                transformOrigin: 'top left',
+            }
+        });
+
+        // Buat PDF dengan satu halaman panjang (continuous) agar tidak ada teks terpotong
+        const margin = 10;
+        const pdfWidth = 210; // Default A4 width in mm
+        const contentWidth = pdfWidth - (margin * 2);
+
+        const tempPdf = new jsPDF();
+        const imgProps = tempPdf.getImageProperties(dataUrl);
+        const contentHeight = (imgProps.height * contentWidth) / imgProps.width;
+        const pdfHeight = contentHeight + (margin * 2);
+
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(dataUrl, 'JPEG', margin, margin, contentWidth, contentHeight);
+
+        const fileName = `Hasil-Analisis-${Date.now()}.pdf`;
+        pdf.save(fileName);
+        (window as any).showToast("Ekspor PDF Berhasil!");
+    } catch (err: any) {
+        console.error("Rendering PDF failed:", err);
+        (window as any).showToast("Gagal Merender PDF: " + err.message, true);
+    } finally {
+        el.style.cssText = originalCssText;
+        document.body.removeChild(overlay);
     }
 };
 
