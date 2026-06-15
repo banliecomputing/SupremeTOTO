@@ -1,4 +1,4 @@
-const CACHE_NAME = 'supreme-toto-v21';
+const CACHE_NAME = 'supreme-toto-v25';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

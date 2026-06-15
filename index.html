@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./icon.png" />
     <link rel="icon" href="./icon.png" />
-    <title>SupremeTOTO versi 96</title>
+    <title>SupremeTOTO versi 100</title>
 
     <link
       rel="stylesheet"
@@ -162,7 +162,7 @@
               >
               <span
                 class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase"
-                >Versi 96</span
+                >Versi 100</span
               >
             </div>
           </div>
@@ -933,7 +933,7 @@
                     <input
                       type="file"
                       id="import-gk-file"
-                      accept=".json"
+                      accept="*"
                       class="hidden"
                       onchange="importGeminiKeys(event)"
                     />
@@ -976,7 +976,7 @@
                   <input
                     type="file"
                     id="import-db-file"
-                    accept=".json"
+                    accept="*"
                     class="hidden"
                     onchange="importFullDatabase(event)"
                   />
@@ -1008,12 +1008,39 @@
                       Kelola Data Sandingan (Multi-Sheet)
                     </h3>
                   </div>
-                  <button
-                    onclick="openFormSandingan()"
-                    class="w-full sm:w-auto text-[10px] uppercase font-bold tracking-wider bg-blue-500/20 border border-blue-500/50 px-3 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner flex justify-center items-center gap-1"
+                  <div
+                    class="flex flex-wrap gap-2 w-full sm:w-auto mt-2 sm:mt-0"
                   >
-                    <i class="ph-bold ph-plus"></i> Tambah Data Baru
-                  </button>
+                    <button
+                      onclick="downloadSandingan()"
+                      class="flex-1 sm:flex-none text-[10px] uppercase font-bold tracking-wider bg-indigo-500/15 border border-indigo-500/30 px-3 py-2 rounded-lg text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all shadow-inner flex flex-col sm:flex-row justify-center items-center gap-1"
+                    >
+                      <i class="ph-bold ph-download-simple"></i> Backup
+                    </button>
+                    <input
+                      type="file"
+                      id="import-sandingan-json-file"
+                      accept="*"
+                      class="hidden"
+                      onchange="importSandinganJSON(event)"
+                    />
+                    <button
+                      onclick="
+                        document
+                          .getElementById('import-sandingan-json-file')
+                          .click()
+                      "
+                      class="flex-1 sm:flex-none text-[10px] uppercase font-bold tracking-wider bg-purple-500/15 border border-purple-500/30 px-3 py-2 rounded-lg text-purple-400 hover:bg-purple-500 hover:text-white transition-all shadow-inner flex flex-col sm:flex-row justify-center items-center gap-1"
+                    >
+                      <i class="ph-bold ph-upload-simple"></i> Restore
+                    </button>
+                    <button
+                      onclick="openFormSandingan()"
+                      class="w-full sm:w-auto text-[10px] uppercase font-bold tracking-wider bg-blue-500/20 border border-blue-500/50 px-3 py-2 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner flex justify-center items-center gap-1"
+                    >
+                      <i class="ph-bold ph-plus"></i> Tambah Koneksi
+                    </button>
+                  </div>
                 </div>
                 <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">
                   Data ini akan dibaca oleh AI secara <b>real-time</b> saat
@@ -1805,6 +1832,21 @@
                   >
                     <i class="ph-bold ph-download-simple"></i> Backup
                   </button>
+                  <input
+                    type="file"
+                    id="import-prompt-json-file"
+                    accept="*"
+                    class="hidden"
+                    onchange="importPromptsJSON(event)"
+                  />
+                  <button
+                    onclick="
+                      document.getElementById('import-prompt-json-file').click()
+                    "
+                    class="text-[10px] uppercase font-bold tracking-wider bg-purple-500/15 border border-purple-500/30 px-2.5 py-1.5 rounded-lg text-purple-400 hover:bg-purple-500 hover:text-white transition-all shadow-inner"
+                  >
+                    <i class="ph-bold ph-upload-simple"></i> Restore JSON
+                  </button>
                   <button
                     onclick="openSubAdmin('sub-admin-spreadsheet')"
                     class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"
@@ -1868,7 +1910,7 @@
                     <input
                       type="file"
                       id="import-prompt-file"
-                      accept=".txt"
+                      accept="*"
                       class="hidden"
                       onchange="handleImportPrompts(event)"
                     />
@@ -2251,6 +2293,23 @@
                   >
                     <i class="ph-bold ph-download-simple"></i> Backup
                   </button>
+                  <input
+                    type="file"
+                    id="import-globals-json-file"
+                    accept="*"
+                    class="hidden"
+                    onchange="importGlobalsJSON(event)"
+                  />
+                  <button
+                    onclick="
+                      document
+                        .getElementById('import-globals-json-file')
+                        .click()
+                    "
+                    class="text-[10px] uppercase font-bold tracking-wider bg-purple-500/15 border border-purple-500/30 px-2.5 py-1.5 rounded-lg text-purple-400 hover:bg-purple-500 hover:text-white transition-all shadow-inner"
+                  >
+                    <i class="ph-bold ph-upload-simple"></i> Restore JSON
+                  </button>
                   <button
                     onclick="openSubAdmin('sub-admin-spreadsheet')"
                     class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"
@@ -2297,7 +2356,7 @@
                     <input
                       type="file"
                       id="import-global-file"
-                      accept=".txt"
+                      accept="*"
                       class="hidden"
                       onchange="handleImportGlobals(event)"
                     />
@@ -2416,7 +2475,7 @@
                     <input
                       type="file"
                       id="import-syair-file"
-                      accept=".json,.html,.txt"
+                      accept="*"
                       class="hidden"
                       onchange="importSyairHTML(event)"
                     />

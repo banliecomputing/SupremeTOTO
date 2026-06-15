@@ -6432,9 +6432,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
 (window as any).resetSyairHTML = async () => {
   if (!(window as any).cloudUserId) return;
-  if (
-    confirm("Yakin ingin mengembalikan seluruh pengaturan desain ke DEFAULT?")
-  ) {
+  (window as any).showConfirm("Yakin ingin mengembalikan seluruh pengaturan desain ke DEFAULT?", async () => {
     try {
       await setDoc(doc(db, "settings", "syair_template"), {
         bgUrl:
@@ -6468,7 +6466,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     } catch (e: any) {
       (window as any).showToast(`Error: ${e.message}`, true);
     }
-  }
+  });
 };
 
 (window as any).saveSyairTemplate = async (e: any) => {
@@ -6598,7 +6596,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
 (window as any).deleteSyairVar = async (varName: string) => {
   if (!(window as any).cloudUserId) return;
-  if (!confirm(`Yakin ingin menghapus variabel {{${varName}}}?`)) return;
+  (window as any).showConfirm(`Yakin ingin menghapus variabel {{${varName}}}?`, async () => {
 
   (window as any).syairVariables = (
     (window as any).syairVariables || []
@@ -6642,6 +6640,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   } catch (err: any) {
     (window as any).showToast("Gagal menghapus: " + err.message, true);
   }
+  });
 };
 
 (window as any).importSyairHTML = (e: any) => {
@@ -6773,21 +6772,17 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
 (window as any).clearAllPrompts = async () => {
   if (!(window as any).cloudUserId) return;
-  if (
-    !confirm(
-      "Yakin hapus SEMUA Database Pola / Prompt dari sistem? Ini tidak bisa dibatalkan.",
-    )
-  )
-    return;
-  try {
-    const pIds = (window as any).aiPrompts.map((p: any) => p.id);
-    const b = writeBatch(db);
-    pIds.forEach((id: string) => b.delete(doc(db, "prompts", id)));
-    await b.commit();
-    (window as any).showToast("Semua pola berhasil dihapus!");
-  } catch (e: any) {
-    (window as any).showToast("Gagal menghapus: " + e.message, true);
-  }
+  (window as any).showConfirm("Yakin hapus SEMUA Database Pola / Prompt dari sistem? Ini tidak bisa dibatalkan.", async () => {
+    try {
+      const pIds = (window as any).aiPrompts.map((p: any) => p.id);
+      const b = writeBatch(db);
+      pIds.forEach((id: string) => b.delete(doc(db, "prompts", id)));
+      await b.commit();
+      (window as any).showToast("Semua pola berhasil dihapus!");
+    } catch (e: any) {
+      (window as any).showToast("Gagal menghapus: " + e.message, true);
+    }
+  });
 };
 
 (window as any).downloadPrompts = () => {
@@ -6807,16 +6802,17 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
 (window as any).clearAllGlobals = async () => {
   if (!(window as any).cloudUserId) return;
-  if (!confirm("Yakin hapus SEMUA Aturan Global dari sistem?")) return;
-  try {
-    const gIds = (window as any).globalRules.map((g: any) => g.id);
-    const b = writeBatch(db);
-    gIds.forEach((id: string) => b.delete(doc(db, "globals", id)));
-    await b.commit();
-    (window as any).showToast("Semua aturan global berhasil dihapus!");
-  } catch (e: any) {
-    (window as any).showToast("Gagal menghapus: " + e.message, true);
-  }
+  (window as any).showConfirm("Yakin hapus SEMUA Aturan Global dari sistem?", async () => {
+    try {
+      const gIds = (window as any).globalRules.map((g: any) => g.id);
+      const b = writeBatch(db);
+      gIds.forEach((id: string) => b.delete(doc(db, "globals", id)));
+      await b.commit();
+      (window as any).showToast("Semua aturan global berhasil dihapus!");
+    } catch (e: any) {
+      (window as any).showToast("Gagal menghapus: " + e.message, true);
+    }
+  });
 };
 
 (window as any).downloadGlobals = () => {
@@ -6867,58 +6863,174 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   reader.onload = async (ev: any) => {
     try {
       const parsed = JSON.parse(ev.target.result);
-      if (
-        !confirm(
-          "Anda yakin ingin MERESTORE FULL DATABASE? Ini akan memakan waktu dan menumpuk data lama.",
-        )
-      )
-        return;
-      const b = writeBatch(db);
+      (window as any).showConfirm("Anda yakin ingin MERESTORE FULL DATABASE? Ini akan menumpuk data lama.", async () => {
+        try {
+          const b = writeBatch(db);
 
-      if (parsed.pools)
-        parsed.pools.forEach((p: any) =>
-          b.set(doc(db, "pools", p.id), p, { merge: true }),
-        );
-      if (parsed.mimpi)
-        parsed.mimpi.forEach((m: any) =>
-          b.set(doc(db, "mimpi", m.id), m, { merge: true }),
-        );
-      if (parsed.prompts)
-        parsed.prompts.forEach((p: any) =>
-          b.set(doc(db, "prompts", p.id), p, { merge: true }),
-        );
-      if (parsed.globals)
-        parsed.globals.forEach((g: any) =>
-          b.set(doc(db, "globals", g.id), g, { merge: true }),
-        );
-      if (parsed.extraSources)
-        parsed.extraSources.forEach((s: any) =>
-          b.set(doc(db, "extra_sources", s.id), s, { merge: true }),
-        );
+          if (parsed.pools)
+            parsed.pools.forEach((p: any) =>
+              b.set(doc(db, "pools", p.id), p, { merge: true }),
+            );
+          if (parsed.mimpi)
+            parsed.mimpi.forEach((m: any) =>
+              b.set(doc(db, "mimpi", m.id), m, { merge: true }),
+            );
+          if (parsed.templates)
+            parsed.templates.forEach((t: any) =>
+              b.set(doc(db, "templates", t.id), t, { merge: true }),
+            );
+          if (parsed.extra_sources)
+            parsed.extra_sources.forEach((s: any) =>
+              b.set(doc(db, "extra_sources", s.id), s, { merge: true }),
+            );
+          if (parsed.prompts)
+            parsed.prompts.forEach((p: any) =>
+              b.set(doc(db, "prompts", p.id), p, { merge: true }),
+            );
+          if (parsed.globals)
+            parsed.globals.forEach((g: any) =>
+              b.set(doc(db, "globals", g.id), g, { merge: true }),
+            );
 
-      // Handle both old nested and new flat formats for settings
-      const conf = parsed.config || parsed.settings?.config;
-      const sandConf =
-        parsed.sandinganConfig || parsed.settings?.sandinganConfig;
-      const syConf = parsed.syairTemplate || parsed.settings?.syairTemplate;
-
-      if (conf) b.set(doc(db, "settings", "config"), conf, { merge: true });
-      if (sandConf)
-        b.set(doc(db, "settings", "sandingan_config"), sandConf, {
-          merge: true,
-        });
-      if (syConf)
-        b.set(doc(db, "settings", "syair_template"), syConf, { merge: true });
-
-      await b.commit();
-      (window as any).showToast("Restore FULL Database Selesai!");
+          await b.commit();
+          (window as any).showToast("Database berhasil direstore!");
+          
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err: any) {
+          (window as any).showToast("Gagal menumpuk database: " + err.message, true);
+        }
+      });
     } catch (err: any) {
-      (window as any).showToast(
-        "Gagal parse/restore JSON: " + err.message,
-        true,
-      );
+      (window as any).showToast("Format file tidak valid / Gagal baca " + err.message, true);
+    } finally {
+      if (e.target) e.target.value = "";
     }
-    e.target.value = "";
+  };
+  reader.readAsText(file);
+};
+
+(window as any).importPromptsJSON = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  console.log("Membaca file:", file.name);
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const parsed = JSON.parse(event.target?.result as string);
+      if (!Array.isArray(parsed))
+        throw new Error("Format JSON harus berupa array");
+
+      (window as any).showConfirm(`Restore ${parsed.length} Pola AI?`, async () => {
+        try {
+          const b = writeBatch(db);
+          parsed.forEach((p: any) => {
+            if (p.id) b.set(doc(db, "prompts", p.id), p, { merge: true });
+          });
+          await b.commit();
+          (window as any).showToast("Restore Pola AI berhasil!");
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(err: any) {
+          console.error("Gagal restore:", err);
+          (window as any).showToast("Gagal restore: " + (err.message || err.toString()), true);
+        }
+      });
+    } catch (err: any) {
+      console.error("Gagal membaca:", err);
+      (window as any).showToast("Gagal baca: " + (err.message || err.toString()), true);
+    } finally {
+      if (e.target) e.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+};
+
+(window as any).importGlobalsJSON = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  console.log("Membaca file:", file.name);
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const parsed = JSON.parse(event.target?.result as string);
+      if (!Array.isArray(parsed))
+        throw new Error("Format JSON harus berupa array");
+
+      (window as any).showConfirm(`Restore ${parsed.length} Aturan Global?`, async () => {
+        try {
+          const b = writeBatch(db);
+          parsed.forEach((p: any) => {
+            if (p.id) b.set(doc(db, "globals", p.id), p, { merge: true });
+          });
+          await b.commit();
+          (window as any).showToast("Restore Aturan Global berhasil!");
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(err: any) {
+          console.error("Gagal restore:", err);
+          (window as any).showToast("Gagal restore: " + (err.message || err.toString()), true);
+        }
+      });
+    } catch (err: any) {
+      console.error("Gagal membaca:", err);
+      (window as any).showToast("Gagal baca: " + (err.message || err.toString()), true);
+    } finally {
+      if (e.target) e.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+};
+
+(window as any).downloadSandingan = () => {
+  if (
+    !(window as any).extraSources ||
+    (window as any).extraSources.length === 0
+  )
+    return (window as any).showToast(
+      "Tidak ada data sandingan untuk dibackup.",
+      true,
+    );
+  const dataStr =
+    "data:text/json;charset=utf-8," +
+    encodeURIComponent(JSON.stringify((window as any).extraSources, null, 2));
+  const a = document.createElement("a");
+  a.href = dataStr;
+  a.download = `backup-sandingan-${Date.now()}.json`;
+  a.click();
+};
+
+(window as any).importSandinganJSON = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  console.log("Membaca file:", file.name);
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const parsed = JSON.parse(event.target?.result as string);
+      if (!Array.isArray(parsed))
+        throw new Error("Format JSON harus berupa array");
+
+      (window as any).showConfirm(`Restore ${parsed.length} Data Sandingan?`, async () => {
+        try {
+          const b = writeBatch(db);
+          parsed.forEach((p: any) => {
+            if (p.id) b.set(doc(db, "extra_sources", p.id), p, { merge: true });
+          });
+          await b.commit();
+          (window as any).showToast("Restore Sandingan berhasil!");
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(err: any) {
+          console.error("Gagal restore:", err);
+          (window as any).showToast("Gagal restore: " + (err.message || err.toString()), true);
+        }
+      });
+    } catch (err: any) {
+      console.error("Gagal membaca:", err);
+      (window as any).showToast("Gagal baca: " + (err.message || err.toString()), true);
+    } finally {
+      if (e.target) e.target.value = "";
+    }
   };
   reader.readAsText(file);
 };
@@ -7651,9 +7763,9 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 };
 
 (window as any).deleteGeminiKey = async (id: string) => {
-  if (!confirm("Hapus Kunci Gemini ini dari daftar?")) return;
-  try {
-    const config = (window as any).appConfig || {};
+  (window as any).showConfirm("Hapus Kunci Gemini ini dari daftar?", async () => {
+    try {
+      const config = (window as any).appConfig || {};
     let keys = config.geminiKeys || [];
 
     keys = keys.filter((k: any) => k.id !== id);
@@ -7668,12 +7780,13 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     const editingIdIn = document.getElementById(
       "gemini-key-editing-id",
     ) as HTMLInputElement;
-    if (editingIdIn && editingIdIn.value === id) {
-      (window as any).cancelGeminiKeyEdit();
+      if (editingIdIn && editingIdIn.value === id) {
+        (window as any).cancelGeminiKeyEdit();
+      }
+    } catch (e: any) {
+      (window as any).showToast("Gagal menghapus: " + e.message, true);
     }
-  } catch (e: any) {
-    (window as any).showToast("Gagal menghapus: " + e.message, true);
-  }
+  });
 };
 
 (window as any).exportGeminiKeys = () => {
@@ -7712,14 +7825,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
           true,
         );
       }
-      if (
-        !confirm(
-          `Impor ${parsed.length} Kunci Gemini? Data baru akan digabungkan.`,
-        )
-      )
-        return;
-
-      const config = (window as any).appConfig || {};
+      (window as any).showConfirm(
+        `Impor ${parsed.length} Kunci Gemini? Data baru akan digabungkan.`,
+      async () => {
+        const config = (window as any).appConfig || {};
       let keys = config.geminiKeys || [];
       if (!Array.isArray(keys)) keys = [];
 
@@ -7748,6 +7857,7 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
       (window as any).showToast(
         `Berhasil restore ${parsed.length} Kunci Gemini!`,
       );
+      });
     } catch (err: any) {
       (window as any).showToast(
         "Gagal parse/restore JSON: " + err.message,
