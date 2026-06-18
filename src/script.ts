@@ -1088,10 +1088,12 @@ document.addEventListener("fullscreenchange", () => {
   const mapMimpi = document.getElementById("mapping-mimpi");
   const mapPrompt = document.getElementById("mapping-prompt");
   const mapGlobal = document.getElementById("mapping-global");
+  const mapPools = document.getElementById("mapping-pools");
 
   if (mapMimpi) mapMimpi.classList.toggle("hidden", val !== "mimpi");
   if (mapPrompt) mapPrompt.classList.toggle("hidden", val !== "prompt");
   if (mapGlobal) mapGlobal.classList.toggle("hidden", val !== "global");
+  if (mapPools) mapPools.classList.toggle("hidden", val !== "pools");
 };
 
 (window as any).loadTabsForURLValue = async (url: string, nameId: string) => {
@@ -1218,6 +1220,28 @@ document.addEventListener("fullscreenchange", () => {
 const getSpreadsheetId = (url: string) => {
   const match = url.match(/\/d\/(.*?)\//);
   return match ? match[1] : null;
+};
+
+const convertDriveUrlToDirect = (url: string): string => {
+  if (!url) return "";
+  url = url.trim();
+  if (!url.includes("drive.google.com") && !url.includes("docs.google.com")) {
+    return url;
+  }
+  let fileId = "";
+  const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) {
+    fileId = fileDMatch[1];
+  } else {
+    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idParamMatch && idParamMatch[1]) {
+      fileId = idParamMatch[1];
+    }
+  }
+  if (fileId) {
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
+  }
+  return url;
 };
 
 const fetchSpreadsheetTab = async (
@@ -1451,17 +1475,23 @@ const fetchSpreadsheetTab = async (
                     <input id="live-url-${idx}" value="${draw.urlLive || ""}" onchange="updateLiveDraw(${idx}, 'urlLive', this.value)" placeholder="URL Web / URL Spreadsheet (Live)" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono placeholder-slate-500">
                 </div>
 
-                <div class="flex gap-3">
-                    <div class="flex-1 relative">
+                <div class="flex gap-2">
+                    <div class="flex-[1.5] relative">
                         <div class="relative">
-                            <input id="live-sheet-${idx}" value="${draw.sheetNameLive || ""}" onchange="updateLiveDraw(${idx}, 'sheetNameLive', this.value)" placeholder="Nama Sheet (Jika ada)" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner pr-8 placeholder-slate-500">
+                            <input id="live-sheet-${idx}" value="${draw.sheetNameLive || ""}" onchange="updateLiveDraw(${idx}, 'sheetNameLive', this.value)" placeholder="Nama Sheet" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner pr-8 placeholder-slate-500">
                             <button type="button" onclick="loadTabsForURLValue(window.currentLiveDraws[${idx}].urlLive, 'live-sheet-${idx}')" class="absolute right-1.5 top-1.5 text-blue-400 bg-blue-500/20 p-1.5 rounded hover:bg-blue-500 hover:text-white transition-colors" title="Cari Sheet Otomatis"><i class="ph-bold ph-list-magnifying-glass"></i></button>
                         </div>
                     </div>
-                    <div class="w-1/3 relative">
+                    <div class="flex-1 relative">
                         <div class="relative">
-                            <input id="live-range-${idx}" value="${draw.rangeLive || ""}" onchange="updateLiveDraw(${idx}, 'rangeLive', this.value)" placeholder="Sel (Cth: B2)" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono pr-8 placeholder-slate-500">
+                            <input id="live-range-${idx}" value="${draw.rangeLive || ""}" onchange="updateLiveDraw(${idx}, 'rangeLive', this.value)" placeholder="Sel Res (e.g. B2)" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono pr-8 placeholder-slate-500" title="Sel Angka Hasil">
                             <button type="button" onclick="openVisualSelector('live-url-${idx}', 'live-sheet-${idx}', 'live-range-${idx}')" class="absolute right-1.5 top-1.5 text-emerald-400 bg-emerald-500/20 p-1.5 rounded hover:bg-emerald-500 hover:text-white transition-colors" title="Pilih Sel Visual"><i class="ph-bold ph-selection-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative">
+                        <div class="relative">
+                            <input id="live-range-date-${idx}" value="${draw.rangeLiveDate || ""}" onchange="updateLiveDraw(${idx}, 'rangeLiveDate', this.value)" placeholder="Sel Tgl (e.g. A2)" class="w-full p-2.5 rounded bg-slate-800 border border-slate-600 text-[10px] md:text-xs outline-none focus:border-emerald-500 text-white shadow-inner font-mono pr-8 placeholder-slate-500" title="Sel Tanggal Live">
+                            <button type="button" onclick="openVisualSelector('live-url-${idx}', 'live-sheet-${idx}', 'live-range-date-${idx}')" class="absolute right-1.5 top-1.5 text-indigo-400 bg-indigo-500/20 p-1.5 rounded hover:bg-indigo-500 text-white transition-colors" title="Pilih Sel Tanggal Visual"><i class="ph-bold ph-calendar"></i></button>
                         </div>
                     </div>
                 </div>
@@ -1477,6 +1507,7 @@ const fetchSpreadsheetTab = async (
     urlLive: "",
     sheetNameLive: "",
     rangeLive: "",
+    rangeLiveDate: "",
   });
   (window as any).renderLiveDrawsEditor();
 };
@@ -1506,6 +1537,52 @@ const fetchSpreadsheetTab = async (
     if ((window as any).pools.find((p: any) => p.id == val))
       (el as HTMLSelectElement).value = val;
   });
+};
+
+(window as any).renderAdminMimpiListOnly = () => {
+  const mList = document.getElementById("admin-mimpi-list");
+  if (!mList) return;
+
+  const searchEl = document.getElementById("admin-mimpi-search") as HTMLInputElement;
+  const countEl = document.getElementById("admin-mimpi-count");
+  const query = searchEl ? searchEl.value.toLowerCase().trim() : "";
+
+  // Filter based on search query
+  const filtered = (window as any).dataBukuMimpi.filter((m: any) => {
+    if (!query) return true;
+    return (
+      m.type.toLowerCase().includes(query) ||
+      m.no.toLowerCase().includes(query) ||
+      m.desc.toLowerCase().includes(query)
+    );
+  });
+
+  // Sort so latest added/modified is on top
+  const sorted = filtered.slice().reverse();
+
+  if (countEl) {
+    countEl.innerText = `${sorted.length} Data`;
+  }
+
+  mList.innerHTML =
+    sorted.length === 0
+      ? '<p class="text-sm text-slate-500 text-center py-4 md:col-span-2">Tidak ada tafsir yang cocok</p>'
+      : "";
+
+  // To keep rendering super fast and responsive even with thousands of entries,
+  // we show a slice of latest items. If searching, show all matching.
+  const displayCount = query ? sorted.length : 100;
+  const sliceToShow = sorted.slice(0, displayCount);
+
+  sliceToShow.forEach((m: any) => {
+    const directImgUrl = m.imageUrl ? convertDriveUrlToDirect(m.imageUrl) : "";
+    const miniImg = directImgUrl ? `<img src="${directImgUrl}" referrerpolicy="no-referrer" class="w-8 h-8 rounded border border-slate-700 object-cover shrink-0 ml-1" onerror="this.style.display='none';">` : "";
+    mList.innerHTML += `<div class="bg-slate-900 p-4 rounded-lg border border-slate-700/80 flex justify-between items-center shadow-md gap-3"><div class="flex items-center gap-3 truncate min-w-0 flex-1">${miniImg}<div class="truncate"><p class="text-sm md:text-base font-bold text-white">${m.type} - ${m.no}</p><p class="text-[10px] md:text-xs text-slate-500 truncate mt-1">${m.desc}</p></div></div><div class="flex gap-1 shrink-0"><button onclick="editMimpi('${m.id}')" class="p-2 md:p-3 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors cursor-pointer" title="Edit"><i class="ph-bold ph-pencil text-lg"></i></button><button onclick="duplicateMimpi('${m.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors cursor-pointer" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button><button onclick="deleteMimpi('${m.id}')" class="p-2 md:p-3 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button></div></div>`;
+  });
+
+  if (sorted.length > displayCount) {
+    mList.innerHTML += `<div class="col-span-1 md:col-span-2 text-center py-2 text-[11px] text-slate-500 bg-slate-900/40 rounded-lg border border-slate-800 border-dashed">Menampilkan ${displayCount} data terbaru dari total ${sorted.length}. Gunakan pencarian untuk menyaring lebih spesifik.</div>`;
+  }
 };
 
 (window as any).renderAdminLists = () => {
@@ -1599,20 +1676,7 @@ const fetchSpreadsheetTab = async (
     });
   }
 
-  const mList = document.getElementById("admin-mimpi-list");
-  if (mList) {
-    mList.innerHTML =
-      (window as any).dataBukuMimpi.length === 0
-        ? '<p class="text-sm text-slate-500 text-center py-4 md:col-span-2">Belum ada tafsir</p>'
-        : "";
-    (window as any).dataBukuMimpi
-      .slice()
-      .reverse()
-      .slice(0, 12)
-      .forEach((m: any) => {
-        mList.innerHTML += `<div class="bg-slate-900 p-4 rounded-lg border border-slate-700/80 flex justify-between items-center shadow-md"><div class="truncate pr-4"><p class="text-sm md:text-base font-bold text-white">${m.type} - ${m.no}</p><p class="text-[10px] md:text-xs text-slate-500 truncate mt-1">${m.desc}</p></div><div class="flex gap-1 shrink-0"><button onclick="editMimpi('${m.id}')" class="p-2 md:p-3 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors cursor-pointer" title="Edit"><i class="ph-bold ph-pencil text-lg"></i></button><button onclick="duplicateMimpi('${m.id}')" class="p-2 md:p-3 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors cursor-pointer" title="Duplikat"><i class="ph-bold ph-copy text-lg"></i></button><button onclick="deleteMimpi('${m.id}')" class="p-2 md:p-3 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer" title="Hapus"><i class="ph-bold ph-trash text-lg"></i></button></div></div>`;
-      });
-  }
+  (window as any).renderAdminMimpiListOnly();
 
   const prList = document.getElementById("admin-prompt-list");
   const aiSel = document.getElementById("ai-prompt-selector");
@@ -1773,6 +1837,34 @@ const fetchSpreadsheetTab = async (
   }
 };
 
+(window as any).zoomMimpiImage = (url: string, title: string) => {
+  const overlay = document.createElement("div");
+  overlay.className = "fixed inset-0 bg-slate-950/95 z-[9999] flex flex-col items-center justify-center p-4 backdrop-blur-md transition-all duration-300 animate-fade-in";
+  overlay.id = "image-zoom-overlay";
+  
+  overlay.innerHTML = `
+    <div class="relative max-w-2xl w-full flex flex-col items-center gap-4 bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl animate-scale-up">
+      <button onclick="document.getElementById('image-zoom-overlay').remove()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 hover:text-red-400 text-white p-2.5 rounded-full transition-all duration-200 cursor-pointer shadow-lg z-50 hover:rotate-90" title="Tutup">
+        <i class="ph-bold ph-x text-base"></i>
+      </button>
+      
+      <div class="w-full max-h-[70vh] rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800/80 shadow-inner relative group">
+        <img src="${url}" alt="${title}" referrerpolicy="no-referrer" class="max-w-full max-h-[70vh] object-contain transition-transform duration-300">
+      </div>
+      
+      <div class="text-center px-4 w-full mt-2">
+        <h4 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-widest bg-slate-950/80 px-4 py-2 rounded-xl inline-block border border-slate-800 shadow-sm">${title}</h4>
+      </div>
+    </div>
+  `;
+  
+  overlay.onclick = (e) => {
+    if (e.target === overlay) overlay.remove();
+  };
+  
+  document.body.appendChild(overlay);
+};
+
 (window as any).renderBukuMimpi = () => {
   const searchEl = document.getElementById("search-mimpi") as HTMLInputElement;
   const list = document.getElementById("buku-mimpi-list");
@@ -1787,10 +1879,65 @@ const fetchSpreadsheetTab = async (
   );
   if (filtered.length === 0)
     return (list.innerHTML = `<div class="text-center py-10 md:py-20 text-slate-500 text-base md:col-span-2 lg:col-span-3"><i class="ph ph-magnifying-glass text-5xl md:text-6xl mb-3 opacity-50"></i><p>Tidak ditemukan</p></div>`);
+
   filtered
     .sort((a: any, b: any) => a.no.localeCompare(b.no))
     .forEach((i: any) => {
-      list.innerHTML += `<div class="bg-slate-800 p-4 md:p-5 rounded-xl border border-slate-700 flex gap-4 items-center shadow-sm hover:border-emerald-500/50 transition-colors"><div class="bg-slate-900 text-emerald-400 font-bold text-xl md:text-2xl px-4 py-2 md:py-3 rounded-lg border border-slate-700/50 min-w-[5rem] md:min-w-[6rem] text-center">${i.no}</div><div class="text-sm md:text-base text-slate-300 leading-relaxed">${i.desc}</div></div>`;
+      let imgHtml = "";
+      if (i.imageUrl && i.imageUrl.trim() !== "") {
+        const directImgUrl = convertDriveUrlToDirect(i.imageUrl);
+        imgHtml = `
+          <div onclick="zoomMimpiImage('${directImgUrl}', 'Tafsir Mimpi ${i.type} - Nomor ${i.no}')" class="relative w-full h-52 md:h-60 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center cursor-zoom-in group/img transition-all duration-300 hover:border-emerald-500/40 shadow-inner">
+            <img src="${directImgUrl}" alt="${i.no} - ${i.desc}" referrerpolicy="no-referrer" class="w-full h-full object-cover transition-all duration-700 group-hover/img:scale-[1.08]" onerror="this.src='https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400';">
+            <div class="absolute inset-0 bg-slate-950/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[1px]">
+              <span class="bg-[#10b981]/90 border border-emerald-400/30 text-slate-950 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 transform translate-y-2 group-hover/img:translate-y-0 transition-transform duration-300">
+                <i class="ph-bold ph-magnifying-glass-plus text-base text-slate-900 animate-pulse"></i> Klik Untuk Perbesar
+              </span>
+            </div>
+          </div>
+        `;
+      } else {
+        imgHtml = `
+          <div class="relative w-full h-52 md:h-60 rounded-2xl overflow-hidden border border-slate-850 bg-slate-950/40 flex flex-col items-center justify-center text-slate-600 shadow-inner p-4 text-center">
+            <div class="absolute inset-0 bg-cover bg-center opacity-[0.03] mix-blend-overlay" style="background-image: url('https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400');"></div>
+            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 mb-3 shadow">
+              <i class="ph-bold ph-book-open text-2xl text-slate-500"></i>
+            </div>
+            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 bg-slate-900/60 px-3 py-1 rounded-lg border border-slate-800/60">Gambar Belum Tersedia</span>
+          </div>
+        `;
+      }
+      list.innerHTML += `
+        <div class="relative rounded-2xl border border-slate-850 shadow-xl overflow-hidden bg-slate-900/40 backdrop-blur-md transition-all duration-300 hover:border-emerald-500/50 hover:shadow-emerald-950/10 flex flex-col justify-between group p-5">
+          <!-- Background glow on hover -->
+          <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-emerald-500/5 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+          <!-- TOP SECTION: NOMOR DITENGAH -->
+          <div class="text-center font-bold mb-4 flex flex-col items-center justify-center gap-1.5 shrink-0 relative z-10 w-full">
+            <span class="text-[9px] uppercase tracking-widest text-[#10b981] font-extrabold bg-[#10b981]/15 border border-[#10b981]/25 px-2.5 py-1 rounded-full shadow-sm">
+              Tafsir ${i.type}
+            </span>
+            <div class="relative mt-2">
+              <span class="text-3xl md:text-4xl font-extrabold tracking-widest text-slate-100 font-mono select-all bg-slate-950/90 px-6 py-2 rounded-2xl border border-slate-800/80 shadow-inner inline-block text-center min-w-[6.5rem]">
+                ${i.no}
+              </span>
+            </div>
+          </div>
+
+          <!-- MIDDLE SECTION: GAMBAR DITENGAH -->
+          <div class="relative z-10 my-1 w-full flex-1">
+            ${imgHtml}
+          </div>
+
+          <!-- BOTTOM SECTION: PENJELASAN TAFSIR -->
+          <div class="text-center mt-3 pt-4 border-t border-slate-800/60 flex flex-col items-center justify-center min-h-[55px] relative z-10 w-full">
+            <span class="text-[9px] text-[#10b981] uppercase tracking-widest font-black mb-1 opacity-80">Arti Tafsir</span>
+            <p class="text-xs md:text-sm text-slate-300 font-bold leading-relaxed break-words px-1 text-center group-hover:text-emerald-300 transition-colors duration-200 uppercase tracking-wide">
+              ${i.desc}
+            </p>
+          </div>
+        </div>
+      `;
     });
 };
 
@@ -1856,49 +2003,52 @@ const fetchSpreadsheetTab = async (
       ? '<p class="text-center text-slate-500 py-10 md:py-20 md:text-lg md:col-span-2 lg:col-span-3">Belum ada pasaran.</p>'
       : "";
 
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
 
-  for (let p of active) {
-    let draws: any[] = [];
-    if (p.liveDraws && p.liveDraws.length > 0) {
-      draws = p.liveDraws;
-    } else {
-      draws = [
-        {
-          name: "Live Result",
-          urlLive: p.urlLive,
-          sheetNameLive: p.sheetNameLive,
-          rangeLive: p.rangeLive,
-        },
-      ];
-    }
+    for (let p of active) {
+      let draws: any[] = [];
+      if (p.liveDraws && p.liveDraws.length > 0) {
+        draws = p.liveDraws;
+      } else {
+        draws = [
+          {
+            name: "Live Result",
+            urlLive: p.urlLive,
+            sheetNameLive: p.sheetNameLive,
+            rangeLive: p.rangeLive,
+            rangeLiveDate: p.rangeLiveDate || "",
+            cachedResult: p.cachedResult || "",
+            cachedDate: p.cachedDate || "",
+          },
+        ];
+      }
 
-    let mainDrawIdx = 0;
-    let mainDraw = draws[0];
+      let mainDrawIdx = 0;
+      let mainDraw = draws[0];
 
-    const liveResIdx = draws.findIndex(
-      (d: any) => d.name && d.name.toLowerCase().includes("live result"),
-    );
-    if (liveResIdx !== -1) {
-      mainDrawIdx = liveResIdx;
-      mainDraw = draws[liveResIdx];
-    }
+      const liveResIdx = draws.findIndex(
+        (d: any) => d.name && d.name.toLowerCase().includes("live result"),
+      );
+      if (liveResIdx !== -1) {
+        mainDrawIdx = liveResIdx;
+        mainDraw = draws[liveResIdx];
+      }
 
-    const card = document.createElement("div");
-    card.className =
-      "relative rounded-2xl border border-slate-800 shadow-xl overflow-hidden bg-slate-900/50 backdrop-blur-md transition-all duration-300 hover:border-slate-700/60 hover:shadow-cyan-950/20 flex flex-col justify-between";
+      const card = document.createElement("div");
+      card.className =
+        "relative rounded-2xl border border-slate-800 shadow-xl overflow-hidden bg-slate-900/50 backdrop-blur-md transition-all duration-300 hover:border-slate-700/60 hover:shadow-cyan-950/20 flex flex-col justify-between";
 
-    const bgStyle = p.imageUrl ? `background-image: url('${p.imageUrl}')` : "";
-    const bgLayer = p.imageUrl
-      ? `<div class="absolute inset-0 bg-cover bg-center opacity-[0.08] mix-blend-overlay pointer-events-none" style="${bgStyle}"></div><div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-slate-900/10 pointer-events-none"></div>`
-      : "";
+      const bgStyle = p.imageUrl ? `background-image: url('${p.imageUrl}')` : "";
+      const bgLayer = p.imageUrl
+        ? `<div class="absolute inset-0 bg-cover bg-center opacity-[0.08] mix-blend-overlay pointer-events-none" style="${bgStyle}"></div><div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-slate-900/10 pointer-events-none"></div>`
+        : "";
 
-    let innerHtml = `
+      let innerHtml = `
             ${bgLayer}
             <div class="relative z-10 p-5 md:p-6 h-full flex flex-col justify-between">
                 <!-- Header Pasaran -->
@@ -1926,15 +2076,16 @@ const fetchSpreadsheetTab = async (
                         <button onclick="previewLiveScrape('${p.id}', ${mainDrawIdx})" class="absolute top-3 right-3 z-20 text-slate-500 hover:text-emerald-400 opacity-60 hover:opacity-100 bg-slate-950 p-1.5 rounded-lg border border-slate-800 transition-all active:scale-95 cursor-pointer" title="Lihat Raw Data"><i class="ph-bold ph-eye text-xs md:text-sm"></i></button>
                         <span class="text-[9px] md:text-[10px] font-extrabold text-emerald-400 tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 mb-2 uppercase">${mainDraw.name}</span>
                         <div class="text-4xl md:text-5xl font-black text-emerald-400/40 animate-pulse tracking-widest font-mono drop-shadow-sm select-all" id="draw-res-${p.id}-${mainDrawIdx}">....</div>
+                        <div class="text-[10px] text-slate-400 font-bold bg-slate-950 px-2.5 py-0.5 rounded border border-slate-850 mt-2 inline-block" id="draw-date-${p.id}-${mainDrawIdx}">Memuat Tanggal...</div>
                     </div>
         `;
 
-    if (draws.length > 1) {
-      const otherDraws = draws
-        .map((d: any, index: number) => ({ d, index }))
-        .filter((item: any) => item.index !== mainDrawIdx);
+      if (draws.length > 1) {
+        const otherDraws = draws
+          .map((d: any, index: number) => ({ d, index }))
+          .filter((item: any) => item.index !== mainDrawIdx);
 
-      innerHtml += `
+        innerHtml += `
                     <!-- Accordion Toggle Button -->
                     <button id="toggle-btn-${p.id}" onclick="toggleOtherDraws('${p.id}')" class="w-full mt-3 py-2 px-3 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-emerald-400 rounded-xl border border-slate-850 hover:border-slate-800 text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm">
                         <i class="ph-bold ph-grid-four text-slate-500"></i>
@@ -1946,81 +2097,131 @@ const fetchSpreadsheetTab = async (
                     <div id="other-draws-${p.id}" class="hidden grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-800/60 transition-all">
             `;
 
-      otherDraws.forEach((item: any) => {
-        innerHtml += `
+        otherDraws.forEach((item: any) => {
+          innerHtml += `
                         <div class="bg-slate-950/60 hover:bg-slate-950 p-2.5 rounded-xl border border-slate-850 hover:border-emerald-500/20 text-center relative group/sub transition-all">
                             <button onclick="previewLiveScrape('${p.id}', ${item.index})" class="absolute top-1 right-1 opacity-0 group-hover/sub:opacity-100 text-[9px] text-slate-500 hover:text-emerald-400 transition-opacity active:scale-95 cursor-pointer" title="Lihat Raw Data"><i class="ph-bold ph-eye"></i></button>
                             <span class="text-[8px] md:text-[9px] font-bold text-slate-400 block truncate uppercase tracking-tight mb-1">${item.d.name}</span>
                             <div class="text-sm md:text-base font-extrabold text-emerald-400/40 animate-pulse font-mono tracking-wider" id="draw-res-${p.id}-${item.index}">..</div>
+                            <div class="text-[8px] text-slate-500 font-bold bg-slate-950/80 px-1 py-0.5 rounded border border-slate-850/50 mt-1 inline-block" id="draw-date-${p.id}-${item.index}">..</div>
                         </div>
                 `;
-      });
+        });
 
-      innerHtml += `
+        innerHtml += `
                     </div>
             `;
-    }
+      }
 
-    innerHtml += `
+      innerHtml += `
                 </div>
             </div>
         `;
 
-    card.innerHTML = innerHtml;
-    c.appendChild(card);
+      card.innerHTML = innerHtml;
+      c.appendChild(card);
 
-    draws.forEach(async (d: any, idx: number) => {
-      const resEl = document.getElementById(`draw-res-${p.id}-${idx}`);
-      if (!resEl) return;
+      draws.forEach(async (d: any, idx: number) => {
+        const resEl = document.getElementById(`draw-res-${p.id}-${idx}`);
+        const dateEl = document.getElementById(`draw-date-${p.id}-${idx}`);
+        if (!resEl) return;
 
-      try {
-        let cleanRes = "0000";
-        const sId = getSpreadsheetId(d.urlLive);
+        try {
+          let cleanRes = "0000";
+          let cleanDate = "";
+          const sId = getSpreadsheetId(d.urlLive);
 
-        if (sId && d.sheetNameLive) {
-          const csvData = await fetchSpreadsheetTab(
-            sId,
-            d.sheetNameLive,
-            "",
-            d.rangeLive,
+          if (sId && d.sheetNameLive) {
+            // Fetch result range
+            if (d.rangeLive) {
+              const csvData = await fetchSpreadsheetTab(
+                sId,
+                d.sheetNameLive,
+                "",
+                d.rangeLive,
+              );
+              const matches = csvData.match(/\d{4,5}/g);
+              if (matches && matches.length > 0)
+                cleanRes = matches[matches.length - 1];
+              else cleanRes = csvData.trim() || "0000";
+            } else {
+              cleanRes = d.cachedResult || "---";
+            }
+
+            // Fetch date range (New/Mandatory!)
+            if (d.rangeLiveDate) {
+              try {
+                const dateCsv = await fetchSpreadsheetTab(
+                  sId,
+                  d.sheetNameLive,
+                  "",
+                  d.rangeLiveDate,
+                );
+                cleanDate = dateCsv.trim();
+              } catch (de) {
+                console.warn("Gagal menarik tanggal live:", de);
+              }
+            } else {
+              cleanDate = d.cachedDate || "";
+            }
+          } else if (d.urlLive && d.urlLive.trim() !== "") {
+            const html = await (window as any).robustFetch(d.urlLive);
+            const docParser = new DOMParser().parseFromString(html, "text/html");
+            const td = docParser.querySelector("td");
+            let resText = td ? td.innerText.trim() : html;
+            const match = resText.match(/\d{4}/);
+            cleanRes = match ? match[0] : resText.slice(-4);
+            cleanDate = d.cachedDate || "";
+          } else {
+            cleanRes = d.cachedResult || "---";
+            cleanDate = d.cachedDate || "";
+          }
+
+          resEl.classList.remove("text-emerald-400/40", "animate-pulse");
+          resEl.classList.add(
+            "text-emerald-400",
+            "drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]",
           );
-          const matches = csvData.match(/\d{4,5}/g);
-          if (matches && matches.length > 0)
-            cleanRes = matches[matches.length - 1];
-          else throw new Error("Angka 4 digit tidak ditemukan");
-        } else if (d.urlLive && d.urlLive.trim() !== "") {
-          const html = await (window as any).robustFetch(d.urlLive);
-          const docParser = new DOMParser().parseFromString(html, "text/html");
-          const td = docParser.querySelector("td");
-          let resText = td ? td.innerText.trim() : html;
-          const match = resText.match(/\d{4}/);
-          cleanRes = match ? match[0] : resText.slice(-4);
-        } else {
-          cleanRes = "---";
-        }
+          resEl.innerText = cleanRes;
 
-        resEl.classList.remove("text-emerald-400/40", "animate-pulse");
-        resEl.classList.add(
-          "text-emerald-400",
-          "drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]",
-        );
-        resEl.innerText = cleanRes;
-      } catch (e) {
-        resEl.classList.remove(
-          "text-emerald-400/40",
-          "animate-pulse",
-          "text-sm",
-          "text-base",
-          "text-lg",
-          "text-3xl",
-          "text-4xl",
-          "text-5xl",
-        );
-        resEl.classList.add("text-red-400", "text-xs");
-        resEl.innerHTML = `<i class="ph-fill ph-warning-circle"></i> Offline`;
-      }
-    });
-  }
+          if (dateEl) {
+            if (!cleanDate) {
+              const defaultToday = new Date();
+              cleanDate = defaultToday.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              });
+            }
+            dateEl.innerText = cleanDate;
+            dateEl.classList.add("text-emerald-400/80");
+          }
+        } catch (e) {
+          resEl.classList.remove(
+            "text-emerald-400/40",
+            "animate-pulse",
+            "text-sm",
+            "text-base",
+            "text-lg",
+            "text-3xl",
+            "text-4xl",
+            "text-5xl",
+          );
+          resEl.classList.add("text-red-400", "text-xs");
+          resEl.innerHTML = `<i class="ph-fill ph-warning-circle"></i> Offline`;
+
+          if (dateEl) {
+            const defaultToday = new Date();
+            dateEl.innerText = defaultToday.toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            });
+            dateEl.classList.add("text-slate-500");
+          }
+        }
+      });
+    }
 };
 
 (window as any).updateSyncTimeUI = (isAI: boolean, poolId: string) => {
@@ -2313,7 +2514,7 @@ const fetchSpreadsheetTab = async (
 
   // Validate live draws
   const validLiveDraws = (window as any).currentLiveDraws.filter(
-    (d: any) => d.name && d.urlLive,
+    (d: any) => d.name,
   );
 
   const id = (window as any).editingPasaranId || Date.now().toString();
@@ -4784,6 +4985,7 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
       type: m.type,
       no: m.no,
       desc: m.desc + " (Copy)",
+      imageUrl: m.imageUrl || "",
     });
     (window as any).showToast("Tafsir mimpi diduplikasi!");
   } catch (err: any) {
@@ -4856,6 +5058,10 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
   ).value;
   const no = (document.getElementById("input-mimpi-no") as HTMLInputElement)
     .value;
+  const imageUrlRaw = (
+    document.getElementById("input-mimpi-image") as HTMLInputElement
+  ).value;
+  const imageUrl = convertDriveUrlToDirect(imageUrlRaw);
   const desc = (
     document.getElementById("input-mimpi-desc") as HTMLTextAreaElement
   ).value;
@@ -4870,6 +5076,7 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
         type,
         no,
         desc,
+        imageUrl,
       },
       { merge: true },
     );
@@ -4899,6 +5106,8 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
     m.type || "2D";
   (document.getElementById("input-mimpi-no") as HTMLInputElement).value =
     m.no || "";
+  (document.getElementById("input-mimpi-image") as HTMLInputElement).value =
+    m.imageUrl || "";
   (document.getElementById("input-mimpi-desc") as HTMLTextAreaElement).value =
     m.desc || "";
 
@@ -4916,6 +5125,7 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
   (document.getElementById("input-mimpi-type") as HTMLSelectElement).value =
     "2D";
   (document.getElementById("input-mimpi-no") as HTMLInputElement).value = "";
+  (document.getElementById("input-mimpi-image") as HTMLInputElement).value = "";
   (document.getElementById("input-mimpi-desc") as HTMLTextAreaElement).value =
     "";
 
@@ -4933,6 +5143,7 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
   (document.getElementById("input-mimpi-type") as HTMLSelectElement).value =
     "2D";
   (document.getElementById("input-mimpi-no") as HTMLInputElement).value = "";
+  (document.getElementById("input-mimpi-image") as HTMLInputElement).value = "";
   (document.getElementById("input-mimpi-desc") as HTMLTextAreaElement).value =
     "";
 
@@ -5090,12 +5301,97 @@ Data rujukan dirakit secara interaktif via AI SPREADSHEET BUILDER SupremeTOTO. E
           (document.getElementById("map-mimpi-desc") as HTMLInputElement).value,
           2,
         );
+        const imgColVal = ((document.getElementById("map-mimpi-image") as HTMLInputElement)?.value || "").trim();
+        const rawImageUrl = getPart(imgColVal, 3) || "";
+        const imageUrl = convertDriveUrlToDirect(rawImageUrl);
 
         const finalType = type ? type.toUpperCase() : "";
         if (["2D", "3D", "4D"].includes(finalType) && no) {
           const id = Date.now().toString() + count;
-          batch.set(getDocRef("mimpi", id), { id, type: finalType, no, desc });
+          batch.set(getDocRef("mimpi", id), { id, type: finalType, no, desc, imageUrl: imageUrl || "" });
           count++;
+        }
+      } else if (targetType === "pools") {
+        const pName = getPart(
+          (document.getElementById("map-pool-name") as HTMLInputElement).value,
+          0,
+        );
+        const pDate = getPart(
+          (document.getElementById("map-pool-date") as HTMLInputElement).value,
+          1,
+        );
+        const pResult = getPart(
+          (document.getElementById("map-pool-result") as HTMLInputElement).value,
+          2,
+        );
+
+        // Optional parameters
+        const histUrlCol = (document.getElementById("map-pool-history-url") as HTMLInputElement).value;
+        const histSheetCol = (document.getElementById("map-pool-history-sheet") as HTMLInputElement).value;
+        const liveRangeCol = (document.getElementById("map-pool-live-range") as HTMLInputElement).value;
+        const liveDateRangeCol = (document.getElementById("map-pool-live-date-range") as HTMLInputElement).value;
+
+        const pHistoryUrl = histUrlCol ? getPart(histUrlCol, -1) : "";
+        const pHistorySheet = histSheetCol ? getPart(histSheetCol, -1) : "";
+        const pLiveRange = liveRangeCol ? getPart(liveRangeCol, -1) : "";
+        const pLiveDateRange = liveDateRangeCol ? getPart(liveDateRangeCol, -1) : "";
+
+        if (
+          pName &&
+          pName.toLowerCase() !== "nama pasaran" &&
+          pName.toLowerCase() !== "pasaran" &&
+          pName.toLowerCase() !== "name"
+        ) {
+          const pid = pName.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+          if (pid) {
+            // Find existing pool to prevent overriding customized fields
+            const existingPool = (window as any).pools?.find(
+              (pl: any) => pl.id === pid,
+            );
+
+            let liveDraws = [
+              {
+                name: "Putaran Utama",
+                urlLive: "",
+                sheetNameLive: "",
+                rangeLive: pLiveRange || "",
+                rangeLiveDate: pLiveDateRange || "",
+                cachedResult: pResult || "---",
+                cachedDate: pDate || "",
+              },
+            ];
+
+            if (
+              existingPool &&
+              existingPool.liveDraws &&
+              existingPool.liveDraws.length > 0
+            ) {
+              liveDraws = JSON.parse(JSON.stringify(existingPool.liveDraws));
+              // Update first putaran
+              liveDraws[0].cachedResult = pResult || "---";
+              liveDraws[0].cachedDate = pDate || "";
+              if (pLiveRange) liveDraws[0].rangeLive = pLiveRange;
+              if (pLiveDateRange) liveDraws[0].rangeLiveDate = pLiveDateRange;
+            }
+
+            const poolPayload = {
+              id: pid,
+              name: pName,
+              imageUrl: existingPool?.imageUrl || "",
+              urlHistory: pHistoryUrl || existingPool?.urlHistory || "",
+              sheetName: pHistorySheet || existingPool?.sheetName || "Sheet1",
+              rangeHistory: existingPool?.rangeHistory || "A5:F",
+              mapCols: existingPool?.mapCols || "B,C,D",
+              mapHeaders: existingPool?.mapHeaders || "Tanggal,Angka",
+              autoFill: existingPool?.autoFill !== undefined ? existingPool.autoFill : true,
+              visible: existingPool?.visible !== undefined ? existingPool.visible : true,
+              liveDraws: liveDraws,
+              order: existingPool?.order !== undefined ? existingPool.order : count,
+            };
+
+            batch.set(getDocRef("pools", pid), poolPayload);
+            count++;
+          }
         }
       }
     }
@@ -6785,6 +7081,21 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   });
 };
 
+(window as any).clearAllMimpi = async () => {
+  if (!(window as any).cloudUserId) return;
+  (window as any).showConfirm("Yakin hapus SEMUA Tafsir Mimpi dari sistem? Ini tidak bisa dibatalkan.", async () => {
+    try {
+      const mIds = (window as any).dataBukuMimpi.map((m: any) => m.id);
+      const b = writeBatch(db);
+      mIds.forEach((id: string) => b.delete(doc(db, "mimpi", id)));
+      await b.commit();
+      (window as any).showToast("Semua data mimpi berhasil dihapus!");
+    } catch (e: any) {
+      (window as any).showToast("Gagal menghapus: " + e.message, true);
+    }
+  });
+};
+
 (window as any).downloadPrompts = () => {
   if (!(window as any).aiPrompts || (window as any).aiPrompts.length === 0)
     return (window as any).showToast(
@@ -6797,6 +7108,21 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   const a = document.createElement("a");
   a.href = dataStr;
   a.download = `backup-prompts-${Date.now()}.json`;
+  a.click();
+};
+
+(window as any).downloadMimpi = () => {
+  if (!(window as any).dataBukuMimpi || (window as any).dataBukuMimpi.length === 0)
+    return (window as any).showToast(
+      "Tidak ada data buku mimpi untuk dibackup.",
+      true,
+    );
+  const dataStr =
+    "data:text/json;charset=utf-8," +
+    encodeURIComponent(JSON.stringify((window as any).dataBukuMimpi, null, 2));
+  const a = document.createElement("a");
+  a.href = dataStr;
+  a.download = `backup-bukumimpi-${Date.now()}.json`;
   a.click();
 };
 
@@ -6929,6 +7255,42 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
           });
           await b.commit();
           (window as any).showToast("Restore Pola AI berhasil!");
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(err: any) {
+          console.error("Gagal restore:", err);
+          (window as any).showToast("Gagal restore: " + (err.message || err.toString()), true);
+        }
+      });
+    } catch (err: any) {
+      console.error("Gagal membaca:", err);
+      (window as any).showToast("Gagal baca: " + (err.message || err.toString()), true);
+    } finally {
+      if (e.target) e.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+};
+
+(window as any).importMimpiJSON = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  console.log("Membaca file:", file.name);
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const parsed = JSON.parse(event.target?.result as string);
+      if (!Array.isArray(parsed))
+        throw new Error("Format JSON harus berupa array");
+
+      (window as any).showConfirm(`Restore ${parsed.length} Data Mimpi?`, async () => {
+        try {
+          const b = writeBatch(db);
+          parsed.forEach((p: any) => {
+            if (p.id) b.set(doc(db, "mimpi", p.id), p, { merge: true });
+          });
+          await b.commit();
+          (window as any).showToast("Restore Data Mimpi berhasil!");
           setTimeout(() => window.location.reload(), 1500);
         } catch(err: any) {
           console.error("Gagal restore:", err);

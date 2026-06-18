@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./icon.png" />
     <link rel="icon" href="./icon.png" />
-    <title>SupremeTOTO versi 100</title>
+    <title>SupremeTOTO versi 106</title>
 
     <link
       rel="stylesheet"
@@ -162,7 +162,7 @@
               >
               <span
                 class="text-[10px] text-emerald-400 font-bold tracking-widest uppercase"
-                >Versi 100</span
+                >Versi 106</span
               >
             </div>
           </div>
@@ -569,7 +569,7 @@
           </div>
           <div
             id="buku-mimpi-list"
-            class="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 no-scrollbar pb-10 max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            class="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar pb-10 max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
           ></div>
         </div>
 
@@ -1319,6 +1319,9 @@
                         Import ke: Database Pola AI
                       </option>
                       <option value="global">Import ke: Rule Global AI</option>
+                      <option value="pools">
+                        Import ke: Daftar Pasaran Utama (Daftar Pasaran, Tanggal, & Result/Scraper)
+                      </option>
                     </select>
                   </div>
 
@@ -1399,7 +1402,7 @@
                       <div class="flex gap-2">
                         <div class="flex-1">
                           <label class="block text-[8px] text-slate-400"
-                            >Kolom Tipe (2D/3D/4D)</label
+                            >Kolom Tipe</label
                           ><input
                             id="map-mimpi-type"
                             placeholder="Cth: A"
@@ -1421,6 +1424,15 @@
                           ><input
                             id="map-mimpi-desc"
                             placeholder="Cth: C"
+                            class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-emerald-500"
+                          />
+                        </div>
+                        <div class="flex-1">
+                          <label class="block text-[8px] text-slate-400"
+                            >Kolom Gambar (Url)</label
+                          ><input
+                            id="map-mimpi-image"
+                            placeholder="Cth: D"
                             class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-emerald-500"
                           />
                         </div>
@@ -1474,6 +1486,91 @@
                             placeholder="Cth: A"
                             class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-amber-500"
                           />
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      id="mapping-pools"
+                      class="hidden bg-slate-950 p-4 rounded-lg border border-slate-800 mb-2 space-y-3"
+                    >
+                      <p
+                        class="text-[9px] text-blue-400 font-bold uppercase border-b border-slate-800 pb-1"
+                      >
+                        Pemetaan Kolom Import Pasaran & Live Result (Pools)
+                      </p>
+                      <div class="grid grid-cols-3 gap-2">
+                        <div>
+                          <label class="block text-[8px] text-slate-400"
+                            >Nama Pasaran*</label
+                          ><input
+                            id="map-pool-name"
+                            placeholder="Cth: A"
+                            value="A"
+                            class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-[8px] text-slate-400"
+                            >Tanggal/Hari*</label
+                          ><input
+                            id="map-pool-date"
+                            placeholder="Cth: B"
+                            value="B"
+                            class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-[8px] text-slate-400"
+                            >Live Result*</label
+                          ><input
+                            id="map-pool-result"
+                            placeholder="Cth: C"
+                            value="C"
+                            class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-center outline-none focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                      <div class="border-t border-slate-800 pt-2 space-y-2">
+                        <p class="text-[8px] text-slate-500 leading-tight">
+                          * Kolom opsional di bawah ini digunakan jika Anda ingin mengonfigurasi scraper histori/sandingan otomatis sekaligus.
+                        </p>
+                        <div class="grid grid-cols-4 gap-1.5">
+                          <div>
+                            <label class="block text-[7px] text-slate-400"
+                              >URL Histori</label
+                            ><input
+                              id="map-pool-history-url"
+                              placeholder="Cth: D"
+                              class="w-full p-1.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-center outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-[7px] text-slate-400"
+                              >Sheet Histori</label
+                            ><input
+                              id="map-pool-history-sheet"
+                              placeholder="Cth: E"
+                              class="w-full p-1.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-center outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-[7px] text-slate-400"
+                              >Sel Result</label
+                            ><input
+                              id="map-pool-live-range"
+                              placeholder="Cth: F"
+                              class="w-full p-1.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-center outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-[7px] text-slate-400"
+                              >Sel Tanggal</label
+                            ><input
+                              id="map-pool-live-date-range"
+                              placeholder="Cth: G"
+                              class="w-full p-1.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-center outline-none focus:border-blue-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1736,17 +1833,43 @@
                   <i class="ph-fill ph-book-open text-indigo-400 text-lg"></i>
                   Buku Mimpi & Tafsir
                 </h3>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2 justify-end">
+                  <button
+                    onclick="clearAllMimpi()"
+                    class="text-[10px] uppercase font-bold tracking-wider bg-red-500/15 border border-red-500/30 px-2.5 py-1.5 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-inner"
+                  >
+                    <i class="ph-bold ph-trash"></i> Hapus Semua
+                  </button>
+                  <button
+                    onclick="downloadMimpi()"
+                    class="text-[10px] uppercase font-bold tracking-wider bg-blue-500/15 border border-blue-500/30 px-2.5 py-1.5 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-inner"
+                  >
+                    <i class="ph-bold ph-download-simple"></i> Backup
+                  </button>
+                  <input
+                    type="file"
+                    id="import-mimpi-json-file"
+                    accept="*"
+                    class="hidden"
+                    onchange="importMimpiJSON(event)"
+                  />
+                  <button
+                    onclick="
+                      document.getElementById('import-mimpi-json-file').click()
+                    "
+                    class="text-[10px] uppercase font-bold tracking-wider bg-purple-500/15 border border-purple-500/30 px-2.5 py-1.5 rounded-lg text-purple-400 hover:bg-purple-500 hover:text-white transition-all shadow-inner"
+                  >
+                    <i class="ph-bold ph-upload-simple"></i> Restore JSON
+                  </button>
                   <button
                     onclick="openSubAdmin('sub-admin-spreadsheet')"
-                    class="text-xs uppercase font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer"
+                    class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-inner"
                   >
-                    <i class="ph-bold ph-google-logo text-sm"></i> Sedot
-                    Spreadsheet
+                    <i class="ph-bold ph-google-logo"></i> Sedot
                   </button>
                   <button
                     onclick="openAddNewMimpi()"
-                    class="text-xs uppercase font-bold tracking-wider bg-indigo-500/10 border border-indigo-500/30 px-3 py-2 rounded-lg text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer font-extrabold"
+                    class="text-[10px] uppercase font-bold tracking-wider bg-indigo-500/20 border border-indigo-500/55 px-3 py-1.5 rounded-lg text-indigo-300 hover:bg-indigo-600 hover:text-white transition-all shadow-inner font-extrabold flex items-center gap-1 cursor-pointer"
                   >
                     <i class="ph-bold ph-plus-circle text-xs"></i> Tambah Manual
                   </button>
@@ -1775,6 +1898,11 @@
                         class="flex-1 p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-sm outline-none focus:border-indigo-500 text-white shadow-inner"
                       />
                     </div>
+                    <input
+                      id="input-mimpi-image"
+                      placeholder="URL Gambar Tafsir (Opsional, cth: https://...)"
+                      class="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs outline-none focus:border-indigo-500 text-white shadow-inner"
+                    />
                     <textarea
                       id="input-mimpi-desc"
                       placeholder="Deskripsi Tafsir Mimpi..."
@@ -1801,9 +1929,22 @@
                   </form>
                 </div>
               </div>
+              
+              <!-- Search bar for admin mimpi -->
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex gap-3 items-center shadow-inner">
+                <i class="ph-bold ph-magnifying-glass text-indigo-400 text-lg"></i>
+                <input
+                  id="admin-mimpi-search"
+                  oninput="renderAdminMimpiListOnly()"
+                  placeholder="Cari nomor atau tafsir mimpi di panel admin..."
+                  class="bg-transparent flex-1 outline-none text-xs text-white placeholder-slate-500 font-medium"
+                />
+                <span id="admin-mimpi-count" class="text-[9px] text-indigo-400 font-extrabold bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">0 Data</span>
+              </div>
+
               <div
                 id="admin-mimpi-list"
-                class="space-y-2 pb-10 grid grid-cols-1 md:grid-cols-2 gap-4"
+                class="space-y-2 pb-10 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar"
               ></div>
             </div>
 
