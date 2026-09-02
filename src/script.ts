@@ -6037,6 +6037,83 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   }
 };
 
+const detectPolaBandar = (historyData: any[]) => {
+  let riskScore = 0;
+  let reasons: string[] = [];
+  
+  if (!historyData || historyData.length < 5) {
+    return { level: "Rendah", score: 0, reasons: ["Data histori kurang dari 5 putaran, aman."], text: "" };
+  }
+
+  // Extract all numbers (length 4 or 5) from the last 15 objects
+  const recentStr = JSON.stringify(historyData.slice(0, 15));
+  const numberMatches = recentStr.match(/\b\d{4,5}\b/g) || [];
+  
+  // Count twins and consecutive numbers
+  let twinCount = 0;
+  let consecutiveCount = 0;
+  
+  numberMatches.forEach(num => {
+    // Twin checks
+    if (/(\d)\1\1/.test(num)) {
+       twinCount += 2; // Triple or more gets higher weight
+    } else if (/(\d)\1/.test(num)) {
+       twinCount += 1; // Double
+    }
+
+    // Consecutive check (e.g. 1234, 4321, 6789)
+    if ("0123456789".includes(num) || "9876543210".includes(num) || "012345".includes(num.substring(0,4)) || "987654".includes(num.substring(0,4))) {
+       consecutiveCount += 1;
+    }
+  });
+
+  if (twinCount >= 4) {
+     riskScore += 3;
+     reasons.push("Frekuensi angka Twin/Kembar sangat tinggi di putaran terakhir.");
+  } else if (twinCount >= 2) {
+     riskScore += 1;
+     reasons.push("Terdapat indikasi pergerakan angka Twin.");
+  }
+
+  if (consecutiveCount >= 1) {
+     riskScore += 2;
+     reasons.push("Terdapat kemunculan deret angka berurutan tak wajar (Anomali).");
+  }
+
+  // Check repeating digits in the exact same position across consecutive days
+  let repeatTailCount = 0;
+  for(let i = 0; i < numberMatches.length - 1; i++) {
+     if (numberMatches[i].slice(-1) === numberMatches[i+1].slice(-1)) {
+        repeatTailCount += 1;
+     }
+  }
+  if (repeatTailCount >= 2) {
+     riskScore += 2;
+     reasons.push("Angka Ekor terlihat sering ditahan/diulang oleh bandar berurutan.");
+  }
+
+  let level = "Rendah";
+  let alertColor = "text-emerald-400";
+  let alertBg = "bg-emerald-500/10 border-emerald-500/30";
+  
+  if (riskScore >= 4) {
+    level = "TINGGI (BAHAYA ⚠️)";
+    alertColor = "text-red-400";
+    alertBg = "bg-red-500/20 border-red-500/50";
+  } else if (riskScore >= 2) {
+    level = "SEDANG (WASPADA ⚡)";
+    alertColor = "text-amber-400";
+    alertBg = "bg-amber-500/20 border-amber-500/40";
+  }
+
+  let textWarning = "";
+  if (riskScore > 0) {
+    textWarning = `PERHATIAN AI: Sistem mendeteksi 'Pola Manipulasi Bandar' dengan Resiko ${level}. Alasan: ${reasons.join(" ")}. Wajib sesuaikan racikan (terutama antisipasi twin atau patahan tarikan) agar prediksi tidak meleset!`;
+  }
+
+  return { level, score: riskScore, reasons, alertColor, alertBg, text: textWarning };
+};
+
 (window as any).generateAI = async () => {
   const sel = document.getElementById("ai-pool-selector") as HTMLSelectElement;
   const aiRes = (document.getElementById("hasil-analisis") ||
@@ -6070,9 +6147,21 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     btn.disabled = true;
   }
 
+  const polaBandarResult = detectPolaBandar((window as any).currentTableData || []);
+
   // Render dynamic premium loader inside the results container
   if (aiRes) {
     aiRes.innerHTML = `
+            ${polaBandarResult.score > 0 ? `
+            <div class="mb-6 p-4 rounded-xl border ${polaBandarResult.alertBg} flex items-start gap-3 animate-fade-in text-left">
+                <i class="ph-fill ph-warning-circle text-2xl ${polaBandarResult.alertColor} shrink-0 mt-0.5"></i>
+                <div>
+                    <h4 class="text-[11px] font-black uppercase tracking-widest ${polaBandarResult.alertColor} mb-1">Status Resiko: ${polaBandarResult.level}</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">${polaBandarResult.reasons.join(" ")}</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-mono">⚠️ Sistem sedang menginstruksikan AI untuk menyesuaikan racikan angka demi menghindari manipulasi ini...</p>
+                </div>
+            </div>
+            ` : ""}
             <div class="flex flex-col items-center justify-center h-full min-h-[300px] text-center text-slate-400 select-none animate-pulse">
                 <div class="relative w-16 h-16 mb-5">
                     <div class="absolute inset-0 rounded-full border-4 border-purple-500/20"></div>
@@ -6087,6 +6176,10 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
   let basePrompt =
     "Kamu adalah Engine SupremeTOTO Master yang bertugas menganalisis histori angka dan meracik angka paten.\n";
+
+  if (polaBandarResult.text) {
+      basePrompt += `\n[SISTEM PERINGATAN DINI - DETEKSI POLA BANDAR]:\n${polaBandarResult.text}\n`;
+  }
 
   // Filter global rules based on active pool
   const activeGlobals = ((window as any).globalRules || []).filter((g: any) => {
@@ -6113,6 +6206,8 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
     - **Tabel Markdown**: Gunakan *HANYA SATU* Tabel Markdown yang ringkas dan indah untuk memetakan rincian posisi atau pembagian angka (misalnya Kepala, Ekor, kelompok Shio, dsb) jika ingin menyajikan data terstruktur.
     - **Paragraf Penjelasan**: Gunakan paragraf narasi atau poin analisis teoretis untuk menjabarkan ulasan pasaran secara runut mendetail tanpa tabel lagi di bagian teks.
 3. **PANTANGAN UTAMA (ANTI-DUPLIKASI)**: Di dalam teks paragraf penjelasan, hindari mengulang kembali atau mendaftar kembali angka jitu/BBFS mentah yang persis sama dengan yang sudah tertulis di dalam Tabel Markdown atau di format variabel di atas. Fokuskan penjelasan teks pada dasar teori pola, ulasan peristiwa draf sebelumnya, korelasi sandingan, dan alasan rasional pemilihan angka, sehingga tidak terjadi pengulangan informasi jitu yang redundan dan tampak amatir.
+4. **PENGAYAAN MEMORI (OPSIONAL)**: Jika selama proses analisis ini kamu menemukan pola tak wajar dari bandar, kecenderungan result yang konsisten, atau saran logika rumus baru yang sangat penting untuk dijadikan ATURAN PERMANEN di masa depan, tuliskan saranmu dalam format wajib di akhir teks. SYARAT MUTLAK: Saran HARUS bersifat UNIVERSAL dan AGNOSTIK WAKTU (berlaku kapan saja). DILARANG KERAS menggunakan kata penunjuk waktu spesifik seperti "hari ini", "sore ini", atau "putaran besok". Gunakan logika kondisi (Contoh benar: "Jika sistem mendeteksi fase patahan manipulasi, maka hindari betting berlebihan pada angka Twin murni dan fokuskan penguatan pada posisi Kepala"). Maksimal 2 kalimat.
+{{SARAN_AI}}: [Tulis saran aturan logika universalmu di sini]
 `;
 
   let sandinganDataText = "";
@@ -6234,6 +6329,13 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
       );
     }
 
+    let saranAI = "";
+    const saranMatch = resTxt.match(/\{\{SARAN_AI\}\}:\s*(.+)/i);
+    if (saranMatch && saranMatch[1]) {
+      saranAI = saranMatch[1].trim();
+      resTxt = resTxt.replace(saranMatch[0], "");
+    }
+
     (window as any).lastAITextSyair = resTxt;
     (window as any).currentAIBasePrompt = basePrompt;
 
@@ -6247,7 +6349,24 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
 
     // Render response details inside the page container
     if (aiRes) {
+      let saranHtml = "";
+      if (saranAI) {
+         const safeSaran = saranAI.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+         saranHtml = `
+            <div class="mb-5 p-4 rounded-xl border border-indigo-500/40 bg-indigo-500/10 flex flex-col gap-2.5 animate-fade-in text-left shadow-lg">
+              <div class="flex items-center gap-2 text-indigo-400 font-black uppercase tracking-widest text-[11px]">
+                <i class="ph-fill ph-brain text-sm"></i> Temuan AI Baru (Saran Aturan)
+              </div>
+              <p class="text-xs text-slate-200 italic leading-relaxed border-l-2 border-indigo-500/50 pl-3">"${saranAI}"</p>
+              <button onclick="simpanSaranAI('${safeSaran}', '${sel.value}')" class="mt-2 text-[10px] uppercase font-black tracking-widest bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-lg w-fit transition-all shadow-md flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                <i class="ph-bold ph-floppy-disk text-sm"></i> Simpan ke Memori Global
+              </button>
+            </div>
+         `;
+      }
+
       aiRes.innerHTML = `
+                ${saranHtml}
                 <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 md:p-8 text-sm text-slate-300 leading-relaxed shadow-lg mb-6 backdrop-blur-sm animate-fade-in">
                     ${(window as any).parseMarkdown(resTxt)}
                 </div>
@@ -7124,6 +7243,32 @@ async function fetchGeminiWithRetry(url: string, options: any, maxRetries = 3) {
   a.href = dataStr;
   a.download = `backup-bukumimpi-${Date.now()}.json`;
   a.click();
+};
+
+(window as any).simpanSaranAI = async (saran: string, poolId: string) => {
+  if (!(window as any).cloudUserId) return (window as any).showToast("Gagal: Anda belum login!", true);
+  
+  (window as any).showConfirm("Simpan temuan cerdas AI ini ke Aturan Global? Setelah disimpan, AI akan selalu mengingat aturan ini secara permanen saat melakukan analisis pasaran ini di masa depan.", async () => {
+    try {
+      const ruleData = {
+        userId: (window as any).cloudUserId,
+        text: saran,
+        isActive: true,
+        poolIds: [poolId],
+        createdAt: Date.now(),
+      };
+      await addDoc(collection(db, "globals"), ruleData);
+      (window as any).showToast("Saran berhasil diabadikan ke Memori AI (Aturan Global)!");
+      
+      // Optionally re-fetch globals so it applies immediately on next click
+      if (typeof (window as any).fetchGlobals === "function") {
+        (window as any).fetchGlobals();
+      }
+    } catch (e: any) {
+      console.error(e);
+      (window as any).showToast("Gagal menyimpan saran: " + (e.message || e.toString()), true);
+    }
+  });
 };
 
 (window as any).clearAllGlobals = async () => {
