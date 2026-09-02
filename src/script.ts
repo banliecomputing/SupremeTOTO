@@ -15,6 +15,7 @@ import {
   deleteDoc as firebaseDeleteDoc,
   onSnapshot,
   writeBatch as firebaseWriteBatch,
+  addDoc,
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 import backupData from "./backup.json";
